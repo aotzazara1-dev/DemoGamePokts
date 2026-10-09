@@ -200,9 +200,9 @@ export class RoamingBeastManager {
       }
     }
 
-    // 2. Passive Wander (35% chance to move, 65% chance to idle)
+    // 2. Passive Wander (70% chance to roam, 30% chance to idle)
     const roll = rng();
-    if (roll < 0.35) {
+    if (roll < 0.70) {
       const directions = [
         { dx: 1, dy: 0 },
         { dx: -1, dy: 0 },

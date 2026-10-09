@@ -111,7 +111,10 @@ export class OverworldRoom extends Room<OverworldState> {
 
         // B. Collision with Roaming Beast
         const collidedBeast = Array.from(this.state.roamingBeasts.values()).find(
-          b => b.mapId === player.mapId && !b.inCombat && b.x === player.x && b.y === player.y
+          b => b.mapId === player.mapId && !b.inCombat && (
+            (b.x === player.x && b.y === player.y) ||
+            (b.x === message.targetX && b.y === message.targetY)
+          )
         );
 
         if (collidedBeast) {

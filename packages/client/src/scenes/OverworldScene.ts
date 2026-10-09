@@ -74,6 +74,7 @@ export class OverworldScene extends Phaser.Scene {
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
+  private clickedOnInteractive: boolean = false;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor() {
@@ -113,13 +114,15 @@ export class OverworldScene extends Phaser.Scene {
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.isAnyModalOpen()) return;
+      if (this.clickedOnInteractive) {
+        this.clickedOnInteractive = false;
+        return;
+      }
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
       const targetX = Math.round(isoCoord.tileX);
       const targetY = Math.round(isoCoord.tileY);
-
-      if (targetX === this.playerTile.x && targetY === this.playerTile.y) return;
 
       // Check if clicked directly on an NPC
       const targetNPC = this.mapConfig.npcs?.find(
@@ -137,9 +140,11 @@ export class OverworldScene extends Phaser.Scene {
         b => b.tile.x === targetX && b.tile.y === targetY && b.container.visible
       );
       if (targetBeast) {
-        this.navigateToRoamingBeast(targetBeast.entity);
+        this.navigateToRoamingBeast(targetBeast.tile.x, targetBeast.tile.y, targetBeast.entity);
         return;
       }
+
+      if (targetX === this.playerTile.x && targetY === this.playerTile.y) return;
 
       // Check if clicked directly on a portal
       const targetPortal = this.mapConfig.portals?.find(
@@ -350,42 +355,36 @@ export class OverworldScene extends Phaser.Scene {
         this.removeOtherPlayer(sessionId);
       });
 
-      // Listen for synchronized roaming beasts
-      const setupRoamingBeasts = (roamingBeasts: any) => {
-        if (!roamingBeasts) return;
-
-        // 1. Process all beasts already present in room state
-        if (typeof roamingBeasts.forEach === 'function') {
-          roamingBeasts.forEach((beast: any, beastId: string) => {
-            this.addRoamingBeast(beastId, beast);
-            beast.onChange = () => {
-              this.updateRoamingBeast(beastId, beast);
-            };
+      // Listen to room state updates on every state change patch
+      room.onStateChange((state: any) => {
+        if (state?.players) {
+          state.players.forEach((player: any, sessionId: string) => {
+            if (sessionId !== room.sessionId) {
+              if (this.otherPlayers.has(sessionId)) {
+                this.updateOtherPlayer(sessionId, player);
+              } else {
+                this.addOtherPlayer(sessionId, player);
+              }
+            }
           });
         }
 
-        // 2. Listen for newly added beasts
-        roamingBeasts.onAdd((beast: any, beastId: string) => {
-          this.addRoamingBeast(beastId, beast);
-          beast.onChange = () => {
-            this.updateRoamingBeast(beastId, beast);
-          };
-        });
-
-        // 3. Listen for removed beasts
-        roamingBeasts.onRemove((_beast: any, beastId: string) => {
-          this.removeRoamingBeast(beastId);
-        });
-      };
-
-      if ((room.state as any)?.roamingBeasts) {
-        setupRoamingBeasts((room.state as any).roamingBeasts);
-      }
-      room.onStateChange.once((state: any) => {
         if (state?.roamingBeasts) {
-          setupRoamingBeasts(state.roamingBeasts);
+          state.roamingBeasts.forEach((beast: any, beastId: string) => {
+            if (this.roamingBeasts.has(beastId)) {
+              this.updateRoamingBeast(beastId, beast);
+            } else {
+              this.addRoamingBeast(beastId, beast);
+            }
+          });
         }
       });
+
+      if ((room.state as any)?.roamingBeasts) {
+        (room.state as any).roamingBeasts.onRemove((_beast: any, beastId: string) => {
+          this.removeRoamingBeast(beastId);
+        });
+      }
 
       // Listen for wild encounter triggers
       this.network.onEncounter((payload) => {
@@ -1244,14 +1243,18 @@ export class OverworldScene extends Phaser.Scene {
     container.setVisible(isSameMap);
 
     // Clickable hit area
-    container.setSize(48, 48);
-    container.setInteractive(new Phaser.Geom.Rectangle(-24, -36, 48, 48), Phaser.Geom.Rectangle.Contains);
+    container.setSize(56, 56);
+    container.setInteractive(new Phaser.Geom.Rectangle(-28, -42, 56, 56), Phaser.Geom.Rectangle.Contains);
     container.input!.cursor = 'pointer';
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.isAnyModalOpen()) return;
       pointer.event.stopPropagation();
-      this.navigateToRoamingBeast(beast);
+      this.clickedOnInteractive = true;
+      const cur = this.roamingBeasts.get(beastId);
+      const bx = cur ? cur.tile.x : beast.x;
+      const by = cur ? cur.tile.y : beast.y;
+      this.navigateToRoamingBeast(bx, by, beast);
     });
 
     this.roamingBeasts.set(beastId, {
@@ -1262,8 +1265,12 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private updateRoamingBeast(beastId: string, beast: any) {
-    const remote = this.roamingBeasts.get(beastId);
-    if (!remote) return;
+    let remote = this.roamingBeasts.get(beastId);
+    if (!remote) {
+      this.addRoamingBeast(beastId, beast);
+      remote = this.roamingBeasts.get(beastId);
+      if (!remote) return;
+    }
 
     remote.entity = beast;
 
@@ -1283,6 +1290,10 @@ export class OverworldScene extends Phaser.Scene {
       }
     }
 
+    if (beast.x === remote.tile.x && beast.y === remote.tile.y && wasVisible) {
+      return;
+    }
+
     if (!wasVisible || Math.abs(dx) > 1 || Math.abs(beast.y - remote.tile.y) > 1) {
       this.tweens.killTweensOf(remote.container);
       remote.container.setPosition(screenPos.x, screenPos.y);
@@ -1291,14 +1302,15 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
+    this.tweens.killTweensOf(remote.container);
+    remote.tile = { x: beast.x, y: beast.y };
     this.tweens.add({
       targets: remote.container,
       x: screenPos.x,
       y: screenPos.y,
-      duration: 250,
+      duration: 300,
       ease: 'Linear',
       onComplete: () => {
-        remote.tile = { x: beast.x, y: beast.y };
         remote.container.setDepth(getIsometricDepth(beast.x, beast.y, 80));
       }
     });
@@ -1312,18 +1324,39 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
-  private navigateToRoamingBeast(beast: any) {
+  private navigateToRoamingBeast(targetX: number, targetY: number, beast: any) {
     if (this.isTransitioning) return;
 
-    const targetX = beast.x;
-    const targetY = beast.y;
+    // A. If already on the exact tile:
+    if (this.playerTile.x === targetX && this.playerTile.y === targetY) {
+      if (!this.network.getRoom()) {
+        const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(beast);
+        this.triggerBattleTransition({
+          encounter: { zoneId: beast.zoneId, wildEnemies: [combatant] },
+          playerPosition: { x: targetX, y: targetY }
+        });
+      } else {
+        this.network.sendMove(targetX, targetY, this.mapConfig.id);
+      }
+      return;
+    }
 
+    // B. If adjacent (distance = 1):
+    const dist = Math.abs(this.playerTile.x - targetX) + Math.abs(this.playerTile.y - targetY);
+    if (dist === 1) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+      this.attemptMove(targetX, targetY);
+      return;
+    }
+
+    // C. Pathfind towards the beast's tile:
     const path = findPath(this.playerTile, { x: targetX, y: targetY }, this.mapConfig);
     if (path && path.length > 1) {
       this.pendingNPCInteraction = null;
       this.currentPath = path.slice(1);
       this.showDestinationMarker(targetX, targetY);
-      if (!this.isMoving) {
+      if (!this.isMoving && this.currentPath.length > 0) {
         const next = this.currentPath.shift()!;
         this.attemptMove(next.x, next.y);
       }
@@ -1577,17 +1610,36 @@ export class OverworldScene extends Phaser.Scene {
 
     // If offline exploration mode without active server, roll encounters locally
     if (!this.network.getRoom() && !portal) {
-      const offlinePlayerState = {
-        playerId: 'local_hero',
-        position: { x: this.playerTile.x, y: this.playerTile.y },
-        facingDirection: 'down' as Direction,
-        stepsInCurrentZone: 0
-      };
-      const offlineResult = OverworldEngine.movePlayer(offlinePlayerState, { x: targetX, y: targetY }, this.mapConfig);
-      if (offlineResult.encounterTriggered && offlineResult.encounter) {
+      // 1. Check offline roaming beast collision
+      const touchedBeast = Array.from(this.roamingBeasts.values()).find(
+        b => b.entity.mapId === this.mapConfig.id && !b.entity.inCombat && b.tile.x === targetX && b.tile.y === targetY
+      );
+      if (touchedBeast) {
+        touchedBeast.entity.inCombat = true;
+        const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(touchedBeast.entity);
         this.time.delayedCall(190, () => {
-          this.triggerBattleTransition(offlineResult);
+          this.triggerBattleTransition({
+            encounter: {
+              zoneId: touchedBeast.entity.zoneId,
+              wildEnemies: [combatant]
+            },
+            playerPosition: { x: targetX, y: targetY }
+          });
         });
+      } else {
+        // 2. Otherwise check step-based random grass encounter
+        const offlinePlayerState = {
+          playerId: 'local_hero',
+          position: { x: this.playerTile.x, y: this.playerTile.y },
+          facingDirection: 'down' as Direction,
+          stepsInCurrentZone: 0
+        };
+        const offlineResult = OverworldEngine.movePlayer(offlinePlayerState, { x: targetX, y: targetY }, this.mapConfig);
+        if (offlineResult.encounterTriggered && offlineResult.encounter) {
+          this.time.delayedCall(190, () => {
+            this.triggerBattleTransition(offlineResult);
+          });
+        }
       }
     }
 
