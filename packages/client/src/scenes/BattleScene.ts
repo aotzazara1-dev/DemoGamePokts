@@ -209,7 +209,7 @@ export class BattleScene extends Phaser.Scene {
     this.battleState = {
       round: 1,
       outcome: 'ongoing',
-      allies: {
+      allies: this.encounterData?.alliesFormation || {
         front: [null, null, hero, null, null],
         back: [null, null, beast, null, null]
       },
@@ -219,6 +219,18 @@ export class BattleScene extends Phaser.Scene {
       },
       capturedBeastIds: []
     };
+
+    // Determine initial active actor (Hero or first living ally)
+    for (let c = 0; c < 5; c++) {
+      if (this.battleState.allies.front[c]?.isHero) {
+        this.currentTurnActorId = this.battleState.allies.front[c]!.id;
+        break;
+      }
+      if (this.battleState.allies.back[c]?.isHero) {
+        this.currentTurnActorId = this.battleState.allies.back[c]!.id;
+        break;
+      }
+    }
   }
 
   private renderGridsAndUnits() {
@@ -556,26 +568,29 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private advanceTurnInput() {
-    if (this.currentTurnActorId === 'hero_1') {
-      // Check if beast exists and is alive
-      const beast = this.combatantVisuals.get('beast_1');
-      if (beast && beast.unit.hp > 0 && !this.stagedActions['beast_1']) {
-        this.currentTurnActorId = 'beast_1';
-        this.updateActiveActorHUD();
-        this.statusBannerText.setText('Hero command locked! Select command for Active Beast:');
-        this.statusBannerText.setColor('#38bdf8');
-        this.selectedActionType = null;
-        return;
-      }
+    const livingAllies: Combatant[] = [];
+    ['front', 'back'].forEach(r => {
+      this.battleState.allies[r as 'front' | 'back'].forEach(u => {
+        if (u && u.hp > 0) livingAllies.push(u);
+      });
+    });
+
+    const nextUnstaged = livingAllies.find(u => !this.stagedActions[u.id]);
+    if (nextUnstaged) {
+      this.currentTurnActorId = nextUnstaged.id;
+      this.updateActiveActorHUD();
+      this.statusBannerText.setText(`Command locked! Select command for ${nextUnstaged.name}:`);
+      this.statusBannerText.setColor('#38bdf8');
+      this.selectedActionType = null;
+      return;
     }
 
-    // Both units submitted -> lock actions and resolve!
+    // All units submitted -> lock actions and resolve!
     if (this.activeActorText) {
       this.activeActorText.setText('Waiting for Resolution Phase...');
       this.activeActorText.setColor('#94a3b8');
     }
     this.statusBannerText.setText('All commands locked in! Executing Resolution Phase...');
-    this.statusBannerText.setColor('#a7f3d0');
     this.statusBannerText.setColor('#a7f3d0');
 
     this.submitAllActions();
@@ -606,14 +621,13 @@ export class BattleScene extends Phaser.Scene {
 
     if (this.actionTimerSeconds <= 0 && this.battleState.outcome === 'ongoing') {
       // Timer expired, auto-submit: default to defend for unsubmitted living units
-      ['hero_1', 'beast_1'].forEach(id => {
-        if (!this.stagedActions[id]) {
-          const vis = this.combatantVisuals.get(id);
-          if (vis && vis.unit.hp > 0) {
-            this.stagedActions[id] = { type: 'defend' };
-            this.updateActorStagingBadge(id, 'defend');
+      ['front', 'back'].forEach(r => {
+        this.battleState.allies[r as 'front' | 'back'].forEach(u => {
+          if (u && u.hp > 0 && !this.stagedActions[u.id]) {
+            this.stagedActions[u.id] = { type: 'defend' };
+            this.updateActorStagingBadge(u.id, 'defend');
           }
-        }
+        });
       });
       this.advanceTurnInput();
     }
@@ -694,7 +708,16 @@ export class BattleScene extends Phaser.Scene {
       } else {
         // Next round
         this.actionTimerSeconds = 30;
-        this.currentTurnActorId = 'hero_1';
+        for (let c = 0; c < 5; c++) {
+          if (this.battleState.allies.front[c]?.isHero && this.battleState.allies.front[c]!.hp > 0) {
+            this.currentTurnActorId = this.battleState.allies.front[c]!.id;
+            break;
+          }
+          if (this.battleState.allies.back[c]?.isHero && this.battleState.allies.back[c]!.hp > 0) {
+            this.currentTurnActorId = this.battleState.allies.back[c]!.id;
+            break;
+          }
+        }
         this.stagedActions = {};
         this.clearAllStagingBadges();
         this.updateActiveActorHUD();
@@ -898,10 +921,18 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
         this.scene.stop();
+
+        const capturedBeasts: Combatant[] = [];
+        const wildEnemies: Combatant[] = this.encounterData?.encounter?.wildEnemies || [];
+        (capturedBeastIds || this.battleState.capturedBeastIds || []).forEach(id => {
+          const found = wildEnemies.find(w => w.id === id);
+          if (found) capturedBeasts.push(found);
+        });
+
         if (isDefeat) {
-          this.scene.resume('OverworldScene', { respawnTile: { x: 10, y: 10 } });
+          this.scene.resume('OverworldScene', { respawnTile: { x: 10, y: 10 }, capturedBeasts });
         } else {
-          this.scene.resume('OverworldScene');
+          this.scene.resume('OverworldScene', { capturedBeasts });
         }
       });
     });

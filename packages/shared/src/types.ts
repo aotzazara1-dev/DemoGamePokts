@@ -161,3 +161,18 @@ export interface MovementResult {
   };
   reason?: 'out_of_bounds' | 'obstacle_blocked' | 'invalid_distance';
 }
+
+export interface FormationSlot {
+  row: 'front' | 'back';
+  col: number; // 0..4
+}
+
+export interface PlayerRosterState {
+  hero: Combatant;
+  activeBeastId: string;
+  beasts: Combatant[];
+  formation: {
+    heroSlot: FormationSlot;
+    beastSlot: FormationSlot;
+  };
+}

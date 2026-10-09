@@ -1,7 +1,15 @@
 import Phaser from 'phaser';
 import { OverworldNetwork, type PlayerNetData } from '../network/OverworldNetwork.js';
 import { isoToScreen, screenToIso, getIsometricDepth } from '../utils/isometric.js';
-import { DEFAULT_OVERWORLD_MAP, findPath, type MapConfig, type TileCoord } from '@poktsonline/shared';
+import {
+  DEFAULT_OVERWORLD_MAP,
+  findPath,
+  RosterManager,
+  type MapConfig,
+  type TileCoord,
+  type Combatant,
+  type PlayerRosterState
+} from '@poktsonline/shared';
 
 export class OverworldScene extends Phaser.Scene {
   private network!: OverworldNetwork;
@@ -21,6 +29,13 @@ export class OverworldScene extends Phaser.Scene {
   private currentPath: TileCoord[] = [];
   private destinationMarker?: Phaser.GameObjects.Graphics;
   private pointerDownTime: number = 0;
+
+  // Beast Roster and Formation state
+  private roster: PlayerRosterState = RosterManager.createInitialRoster();
+  private isRosterOpen: boolean = false;
+  private rosterModalContainer?: Phaser.GameObjects.Container;
+  private rosterButtonText?: Phaser.GameObjects.Text;
+  private selectedFormationUnitType: 'hero' | 'beast' = 'hero';
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -64,6 +79,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isRosterOpen) return;
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -87,12 +103,26 @@ export class OverworldScene extends Phaser.Scene {
     // 5. Connect to Colyseus Server
     this.connectToServer();
 
-    // 6. Handle returning from battle (including defeat respawn)
-    this.events.on('resume', (_sys: any, data?: { respawnTile?: TileCoord }) => {
+    // 6. Handle returning from battle (including defeat respawn & captured beasts)
+    this.events.on('resume', (_sys: any, data?: { respawnTile?: TileCoord; capturedBeasts?: Combatant[] }) => {
       this.currentPath = [];
       this.clearDestinationMarker();
       this.network.sendBattleConcluded();
       const zoneDisplay = document.getElementById('zone-display');
+
+      if (data?.capturedBeasts && data.capturedBeasts.length > 0) {
+        data.capturedBeasts.forEach(b => {
+          const res = RosterManager.addCapturedBeast(this.roster, b);
+          if (res.success) {
+            this.roster = res.roster;
+            if (zoneDisplay) {
+              zoneDisplay.innerText = `🎉 Successfully captured ${b.name} and added to Beast Roster!`;
+              zoneDisplay.style.color = '#a855f7';
+            }
+          }
+        });
+        this.updateRosterButtonLabel();
+      }
 
       if (data?.respawnTile) {
         this.playerTile = { ...data.respawnTile };
@@ -104,11 +134,18 @@ export class OverworldScene extends Phaser.Scene {
           zoneDisplay.style.color = '#6ee7b7';
         }
       } else {
-        if (zoneDisplay) {
+        if (zoneDisplay && (!data?.capturedBeasts || data.capturedBeasts.length === 0)) {
           zoneDisplay.innerText = 'Returned to Overworld. Exploring...';
         }
       }
     });
+
+    // 7. Setup Beast Roster & Formation button and keyboard shortcuts
+    this.createRosterButton();
+    if (this.input.keyboard) {
+      this.input.keyboard.on('keydown-B', () => this.toggleRosterModal());
+      this.input.keyboard.on('keydown-F', () => this.toggleRosterModal());
+    }
   }
 
   private async connectToServer() {
@@ -320,6 +357,8 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
+    if (this.isRosterOpen) return;
+
     // 1. Mouse Hold-to-Move
     const pointer = this.input.activePointer;
     if (pointer.isDown && this.time.now - this.pointerDownTime > 200) {
@@ -497,6 +536,10 @@ export class OverworldScene extends Phaser.Scene {
     this.currentPath = [];
     this.clearDestinationMarker();
 
+    if (this.isRosterOpen) {
+      this.toggleRosterModal();
+    }
+
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
     this.cameras.main.shake(300, 0.015);
@@ -505,8 +548,303 @@ export class OverworldScene extends Phaser.Scene {
       this.scene.pause();
       this.scene.launch('BattleScene', {
         encounter: payload.encounter,
-        network: this.network
+        network: this.network,
+        roster: this.roster,
+        alliesFormation: RosterManager.buildTeamFormation(this.roster)
       });
     });
+  }
+
+  // ==========================================
+  // BEAST ROSTER & FORMATION UI
+  // ==========================================
+
+  private createRosterButton() {
+    const { width } = this.scale;
+    const btnContainer = this.add.container(width - 120, 36);
+    btnContainer.setScrollFactor(0);
+    btnContainer.setDepth(2000);
+
+    const bg = this.add.rectangle(0, 0, 190, 42, 0x0f172a, 0.95);
+    bg.setStrokeStyle(2, 0xd4af37, 0.9);
+
+    this.rosterButtonText = this.add.text(0, 0, `🐾 BEASTS (${this.roster.beasts.length}/10)`, {
+      fontSize: '13px',
+      color: '#facc15',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    btnContainer.add([bg, this.rosterButtonText]);
+    btnContainer.setSize(190, 42);
+    btnContainer.setInteractive({ useHandCursor: true });
+
+    btnContainer.on('pointerover', () => bg.setFillStyle(0x1e293b, 1.0));
+    btnContainer.on('pointerout', () => bg.setFillStyle(0x0f172a, 0.95));
+    btnContainer.on('pointerdown', () => this.toggleRosterModal());
+  }
+
+  private updateRosterButtonLabel() {
+    if (this.rosterButtonText) {
+      this.rosterButtonText.setText(`🐾 BEASTS (${this.roster.beasts.length}/10)`);
+    }
+  }
+
+  private toggleRosterModal() {
+    this.isRosterOpen = !this.isRosterOpen;
+    if (this.isRosterOpen) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+      this.renderRosterModal();
+    } else {
+      if (this.rosterModalContainer) {
+        this.rosterModalContainer.destroy();
+        this.rosterModalContainer = undefined;
+      }
+    }
+  }
+
+  private renderRosterModal() {
+    if (this.rosterModalContainer) {
+      this.rosterModalContainer.destroy();
+    }
+
+    const { width, height } = this.scale;
+    const container = this.add.container(width / 2, height / 2);
+    container.setScrollFactor(0);
+    container.setDepth(3000);
+
+    // Dim background
+    const dim = this.add.rectangle(0, 0, width, height, 0x000000, 0.75).setInteractive();
+    dim.on('pointerdown', () => { /* prevent click through */ });
+
+    // Modal background
+    const modalBg = this.add.rectangle(0, 0, 940, 560, 0x0f172a, 0.98);
+    modalBg.setStrokeStyle(3, 0xd4af37, 1);
+
+    // Title
+    const title = this.add.text(0, -250, '🐾 BEAST ROSTER & FORMATION GRID', {
+      fontSize: '20px',
+      color: '#fbbf24',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    const subtitle = this.add.text(0, -225, 'Manage captured Beasts and configure 2x5 Formation Grid tactics', {
+      fontSize: '12px',
+      color: '#94a3b8'
+    }).setOrigin(0.5, 0.5);
+
+    // Close button
+    const closeBtn = this.add.rectangle(430, -245, 60, 30, 0x991b1b).setInteractive({ useHandCursor: true });
+    const closeBtnText = this.add.text(430, -245, '✕ Close', { fontSize: '11px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5, 0.5);
+    closeBtn.on('pointerdown', () => this.toggleRosterModal());
+
+    container.add([dim, modalBg, title, subtitle, closeBtn, closeBtnText]);
+
+    // ==========================================
+    // LEFT COLUMN: BEAST ROSTER
+    // ==========================================
+    const leftX = -230;
+    const rosterHeader = this.add.text(leftX, -190, `BEAST ROSTER (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY})`, {
+      fontSize: '13px',
+      color: '#38bdf8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    container.add(rosterHeader);
+
+    const startY = -145;
+    this.roster.beasts.slice(0, 4).forEach((beast, idx) => {
+      const cardY = startY + idx * 82;
+      const isActive = beast.id === this.roster.activeBeastId;
+
+      const cardBg = this.add.rectangle(leftX, cardY, 410, 72, 0x1e293b);
+      cardBg.setStrokeStyle(1.5, isActive ? 0xfbbf24 : 0x334155, 1);
+
+      const elemColors: Record<string, string> = {
+        Water: '#38bdf8',
+        Fire: '#f87171',
+        Earth: '#fb923c',
+        Wind: '#4ade80'
+      };
+      const elemColor = elemColors[beast.element] || '#ffffff';
+
+      const nameText = this.add.text(leftX - 190, cardY - 22, `${beast.name} Lv.${beast.level} [${beast.element}]`, {
+        fontSize: '12px',
+        color: elemColor,
+        fontStyle: 'bold'
+      });
+
+      const statsText = this.add.text(leftX - 190, cardY - 4, `HP: ${beast.hp}/${beast.maxHp}  SP: ${beast.sp}/${beast.maxSp}`, {
+        fontSize: '10px',
+        color: '#e2e8f0'
+      });
+
+      const attrsText = this.add.text(leftX - 190, cardY + 12, `ATK: ${beast.atk}  DEF: ${beast.def}  AGI: ${beast.agi}`, {
+        fontSize: '10px',
+        color: '#94a3b8'
+      });
+
+      container.add([cardBg, nameText, statsText, attrsText]);
+
+      if (isActive) {
+        const activeBadge = this.add.text(leftX + 130, cardY, '⭐ ACTIVE', {
+          fontSize: '11px',
+          color: '#fbbf24',
+          fontStyle: 'bold'
+        }).setOrigin(0.5, 0.5);
+        container.add(activeBadge);
+      } else {
+        const deployBtn = this.add.rectangle(leftX + 135, cardY, 90, 30, 0x0284c7).setInteractive({ useHandCursor: true });
+        const deployText = this.add.text(leftX + 135, cardY, 'Deploy', {
+          fontSize: '11px',
+          color: '#ffffff',
+          fontStyle: 'bold'
+        }).setOrigin(0.5, 0.5);
+        deployBtn.on('pointerdown', () => {
+          this.roster = RosterManager.setActiveBeast(this.roster, beast.id);
+          this.renderRosterModal();
+        });
+        container.add([deployBtn, deployText]);
+      }
+    });
+
+    if (this.roster.beasts.length === 0) {
+      const emptyText = this.add.text(leftX, -100, 'No beasts captured yet.\nExplore Whispering Meadow to capture wild beasts!', {
+        fontSize: '12px',
+        color: '#64748b',
+        align: 'center'
+      }).setOrigin(0.5, 0.5);
+      container.add(emptyText);
+    }
+
+    // ==========================================
+    // RIGHT COLUMN: 2x5 FORMATION GRID
+    // ==========================================
+    const rightX = 230;
+    const formationHeader = this.add.text(rightX, -190, 'TACTICAL FORMATION (2x5 GRID)', {
+      fontSize: '13px',
+      color: '#38bdf8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    // Unit selector buttons
+    const heroSelected = this.selectedFormationUnitType === 'hero';
+    const selHeroBtn = this.add.rectangle(rightX - 95, -150, 160, 32, heroSelected ? 0x1d4ed8 : 0x334155).setInteractive({ useHandCursor: true });
+    selHeroBtn.setStrokeStyle(1.5, heroSelected ? 0xfde047 : 0x475569);
+    const selHeroText = this.add.text(rightX - 95, -150, '🧙 Move Hero', {
+      fontSize: '11px',
+      color: heroSelected ? '#ffffff' : '#94a3b8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    selHeroBtn.on('pointerdown', () => {
+      this.selectedFormationUnitType = 'hero';
+      this.renderRosterModal();
+    });
+
+    const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
+    const beastSelected = this.selectedFormationUnitType === 'beast';
+    const selBeastBtn = this.add.rectangle(rightX + 95, -150, 160, 32, beastSelected ? 0x059669 : 0x334155).setInteractive({ useHandCursor: true });
+    selBeastBtn.setStrokeStyle(1.5, beastSelected ? 0xfde047 : 0x475569);
+    const selBeastText = this.add.text(rightX + 95, -150, `🦁 Move ${activeBeast?.name || 'Beast'}`, {
+      fontSize: '11px',
+      color: beastSelected ? '#ffffff' : '#94a3b8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    selBeastBtn.on('pointerdown', () => {
+      this.selectedFormationUnitType = 'beast';
+      this.renderRosterModal();
+    });
+
+    container.add([formationHeader, selHeroBtn, selHeroText, selBeastBtn, selBeastText]);
+
+    // Front Row Label
+    const frontLabel = this.add.text(rightX, -112, '--- FRONT ROW (Intercepts Melee Attacks) ---', {
+      fontSize: '11px',
+      color: '#f87171',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    container.add(frontLabel);
+
+    // Front Row Slots (col 0..4)
+    for (let col = 0; col < 5; col++) {
+      const slotX = rightX - 160 + col * 80;
+      const slotY = -72;
+      this.renderFormationSlotBox(container, slotX, slotY, 'front', col, activeBeast);
+    }
+
+    // Back Row Label
+    const backLabel = this.add.text(rightX, -22, '--- BACK ROW (Shielded by Front Row) ---', {
+      fontSize: '11px',
+      color: '#60a5fa',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    container.add(backLabel);
+
+    // Back Row Slots (col 0..4)
+    for (let col = 0; col < 5; col++) {
+      const slotX = rightX - 160 + col * 80;
+      const slotY = 18;
+      this.renderFormationSlotBox(container, slotX, slotY, 'back', col, activeBeast);
+    }
+
+    // Formation Summary
+    const summaryText = this.add.text(rightX, 85,
+      `Current Formation:\n🧙 Hero: ${this.roster.formation.heroSlot.row.toUpperCase()} Row, Slot ${this.roster.formation.heroSlot.col}\n🦁 ${activeBeast?.name || 'Beast'}: ${this.roster.formation.beastSlot.row.toUpperCase()} Row, Slot ${this.roster.formation.beastSlot.col}`, {
+      fontSize: '11px',
+      color: '#e2e8f0',
+      align: 'center',
+      lineSpacing: 4
+    }).setOrigin(0.5, 0.5);
+
+    const tipText = this.add.text(rightX, 150, '💡 TS Online Tactics:\nFront Row intercepts melee attacks, protecting the Back Row\nunit in the same column until the front unit is cleared.', {
+      fontSize: '10px',
+      color: '#fbbf24',
+      align: 'center',
+      lineSpacing: 3
+    }).setOrigin(0.5, 0.5);
+
+    // Save & Close Button
+    const saveBtn = this.add.rectangle(0, 235, 260, 40, 0xd97706).setInteractive({ useHandCursor: true });
+    const saveBtnText = this.add.text(0, 235, '✔️ Confirm & Close', {
+      fontSize: '13px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+    saveBtn.on('pointerdown', () => this.toggleRosterModal());
+
+    container.add([summaryText, tipText, saveBtn, saveBtnText]);
+
+    this.rosterModalContainer = container;
+  }
+
+  private renderFormationSlotBox(
+    container: Phaser.GameObjects.Container,
+    x: number,
+    y: number,
+    row: 'front' | 'back',
+    col: number,
+    activeBeast?: Combatant
+  ) {
+    const isHeroHere = this.roster.formation.heroSlot.row === row && this.roster.formation.heroSlot.col === col;
+    const isBeastHere = this.roster.formation.beastSlot.row === row && this.roster.formation.beastSlot.col === col;
+
+    const bgColor = isHeroHere ? 0x1d4ed8 : isBeastHere ? 0x059669 : 0x1e293b;
+    const strokeColor = isHeroHere ? 0x60a5fa : isBeastHere ? 0x34d399 : 0x334155;
+
+    const slotBox = this.add.rectangle(x, y, 74, 52, bgColor).setInteractive({ useHandCursor: true });
+    slotBox.setStrokeStyle(1.5, strokeColor);
+
+    const label = isHeroHere ? '🧙 Hero' : isBeastHere ? `🦁 ${activeBeast?.name?.split(' ')[0] || 'Beast'}` : `Slot ${col}`;
+    const slotText = this.add.text(x, y, label, {
+      fontSize: '10px',
+      color: isHeroHere || isBeastHere ? '#ffffff' : '#64748b',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    slotBox.on('pointerdown', () => {
+      this.roster = RosterManager.setFormationSlot(this.roster, this.selectedFormationUnitType, { row, col });
+      this.renderRosterModal();
+    });
+
+    container.add([slotBox, slotText]);
   }
 }

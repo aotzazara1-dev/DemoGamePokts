@@ -11,6 +11,7 @@ import {
 
 export interface BattleRoomOptions {
   playerCombatants?: Combatant[];
+  alliesFormation?: TeamFormation;
   wildEnemies?: Combatant[];
 }
 
@@ -27,7 +28,7 @@ export class BattleRoom extends Room<BattleRoomState> {
     const wildEnemies = options.wildEnemies || [];
 
     // Initialize 2x5 formation for allies and enemies
-    const alliesFormation: TeamFormation = {
+    const alliesFormation: TeamFormation = options.alliesFormation || {
       front: [null, null, null, null, null],
       back: [null, null, null, null, null]
     };
@@ -37,22 +38,33 @@ export class BattleRoom extends Room<BattleRoomState> {
       back: [null, null, null, null, null]
     };
 
-    // Position player combatants
-    playerCombatants.forEach((combatant, idx) => {
-      // Put hero or first unit in front slot 2, beast in back slot 2 or front slot 1
-      if (idx === 0) {
-        alliesFormation.front[2] = combatant;
-        this.addCombatantToState(combatant, 'allies', 'front', 2);
-      } else if (idx === 1) {
-        alliesFormation.back[2] = combatant;
-        this.addCombatantToState(combatant, 'allies', 'back', 2);
-      } else {
-        const slot = idx < 5 ? idx : idx % 5;
-        const row = idx < 5 ? 'front' : 'back';
-        alliesFormation[row][slot] = combatant;
-        this.addCombatantToState(combatant, 'allies', row, slot);
-      }
-    });
+    if (options.alliesFormation) {
+      ['front', 'back'].forEach(rowKey => {
+        const row = alliesFormation[rowKey as 'front' | 'back'];
+        row.forEach((combatant, col) => {
+          if (combatant) {
+            this.addCombatantToState(combatant, 'allies', rowKey, col);
+          }
+        });
+      });
+    } else {
+      // Position player combatants
+      playerCombatants.forEach((combatant, idx) => {
+        // Put hero or first unit in front slot 2, beast in back slot 2 or front slot 1
+        if (idx === 0) {
+          alliesFormation.front[2] = combatant;
+          this.addCombatantToState(combatant, 'allies', 'front', 2);
+        } else if (idx === 1) {
+          alliesFormation.back[2] = combatant;
+          this.addCombatantToState(combatant, 'allies', 'back', 2);
+        } else {
+          const slot = idx < 5 ? idx : idx % 5;
+          const row = idx < 5 ? 'front' : 'back';
+          alliesFormation[row][slot] = combatant;
+          this.addCombatantToState(combatant, 'allies', row, slot);
+        }
+      });
+    }
 
     // Position wild enemies
     wildEnemies.forEach((enemy, idx) => {
