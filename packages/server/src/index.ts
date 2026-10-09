@@ -1,5 +1,5 @@
 import http from 'http';
-import { Server } from 'colyseus';
+import { Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { OverworldRoom, DEFAULT_OVERWORLD_MAP } from './rooms/OverworldRoom.js';
 import { BattleRoom } from './rooms/BattleRoom.js';

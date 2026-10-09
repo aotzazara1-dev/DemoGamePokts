@@ -7,7 +7,9 @@
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "server": "npm run build --workspace=@poktsonline/shared && npm run build --workspace=@poktsonline/server && node packages/server/dist/index.js",
+    "client": "npm run dev --workspace=@poktsonline/client"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
