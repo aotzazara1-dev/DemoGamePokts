@@ -8,12 +8,13 @@ echo ========================================================
 echo.
 
 set "PATH=%LOCALAPPDATA%\Programs\Git\cmd;%LOCALAPPDATA%\Programs\Git\ucrt64\bin;%LOCALAPPDATA%\Programs\Git\bin;%PATH%"
+set "GCM_CREDENTIAL_STORE=wincredman"
 
 cd /d "E:\Poktsonline"
 
 echo [1/2] Adding files...
 git add .
-git commit -m "update prototype" 2>nul
+git commit -m "update prototype and files" 2>nul
 
 echo [2/2] Pushing to GitHub...
 echo.
@@ -26,7 +27,7 @@ if %ERRORLEVEL% EQU 0 (
     echo SUCCESS! Pushed to GitHub.
 ) else (
     color 0c
-    echo PUSH FAILED or CANCELLED.
+    echo PUSH FAILED.
 )
 echo ========================================================
 echo.
