@@ -942,8 +942,8 @@
       "degree": 33
     },
     {
-      "id": "ref_vitest",
-      "label": "vitest",
+      "id": "packages_shared_src_types_mapconfig",
+      "label": "MapConfig",
       "degree": 29
     },
     {
@@ -952,8 +952,8 @@
       "degree": 29
     },
     {
-      "id": "packages_shared_src_types_mapconfig",
-      "label": "MapConfig",
+      "id": "ref_vitest",
+      "label": "vitest",
       "degree": 29
     },
     {
@@ -969,33 +969,11 @@
   ],
   "surprises": [
     {
-      "source": "OverworldEntityManagerConfig",
-      "target": "NPCDefinition",
+      "source": "OverworldRoom",
+      "target": "MapConfig",
       "source_files": [
-        "packages/client/src/entities/OverworldEntityManager.ts",
+        "packages/server/src/rooms/OverworldRoom.ts",
         "packages/shared/src/types.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "OverworldEntityManager",
-      "target": "TileCoord",
-      "source_files": [
-        "packages/client/src/entities/OverworldEntityManager.ts",
-        "packages/shared/src/types.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "OverworldScene",
-      "target": "OverworldEntityManager",
-      "source_files": [
-        "packages/client/src/scenes/OverworldScene.ts",
-        "packages/client/src/entities/OverworldEntityManager.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "references",
@@ -1013,19 +991,74 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "OverworldScene",
-      "target": "OverworldNetwork",
+      "source": "HeroFullSaveState",
+      "target": "Combatant",
       "source_files": [
-        "packages/client/src/scenes/OverworldScene.ts",
-        "packages/client/src/network/OverworldNetwork.ts"
+        "packages/shared/src/auth/types.ts",
+        "packages/shared/src/types.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "HeroFullSaveState",
+      "target": "Direction",
+      "source_files": [
+        "packages/shared/src/auth/types.ts",
+        "packages/shared/src/types.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "HeroFullSaveState",
+      "target": "InventoryState",
+      "source_files": [
+        "packages/shared/src/auth/types.ts",
+        "packages/shared/src/types.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "references",
       "why": "bridges separate communities"
     }
   ],
-  "tokens": {
-    "input": 0,
-    "output": 0
-  }
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `Combatant` connect `Combatant` to `HeroRepository.ts`, `Element`, `BattleScene.ts`, `InventoryState`, `.setupUIControllers`, `OverworldRoom.ts`, `OverworldScene.ts`, `BattleRoom.ts`, `battle-engine.ts`, `MapConfig`, `src/types.ts`, `.create`, `overworld-engine.ts`, `CharacterModalController`, `PlayerRosterState`, `RosterModalController`?",
+      "why": "High betweenness centrality (0.087) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `Earth`, `Fire`, `Water` to the rest of the system?",
+      "why": "13 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `HeroRepository.ts` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.08439897698209718 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `OverworldScene` connect `OverworldScene` to `Element`, `BattleScene.ts`, `InventoryState`, `OverworldEntityManager`, `.setupUIControllers`, `OverworldScene.ts`, `ChatController`, `MapConfig`, `.create`, `TileCoord`, `OverworldRenderer.ts`, `CharacterModalController`, `PlayerRosterState`, `RosterModalController`, `NPCDefinition`?",
+      "why": "High betweenness centrality (0.071) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Element` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `SoundManager` connect `SoundManager` to `BattleScene.ts`?",
+      "why": "High betweenness centrality (0.059) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `BattleScene.ts` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.0625 - nodes in this community are weakly interconnected."
+    }
+  ]
 }
