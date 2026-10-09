@@ -4,10 +4,10 @@
 
 **Blocked by:** 04: Colyseus Authoritative Server Rooms, 05: Phaser Isometric Overworld Client
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Battle Scene renders friendly Hero + Active Beast and enemy wild Beasts placed on their respective 2x5 Formation Grid slots.
-- [ ] Action HUD displays 6 action choices (Attack, Skill, Defend, Capture, Flee, Item) and a 30-second countdown bar.
-- [ ] Targeting interface allows selecting valid opposing slots (highlighting valid front/back row targets).
-- [ ] Resolution Phase plays back action events in order: attacking animations, floating damage numbers, combo visual sync, capture capture effect, and unit faints.
-- [ ] Victory, defeat, or escape banner displays with rewards/new Beast notification, then transitions back to the Overworld scene.
+- [x] Battle Scene renders friendly Hero + Active Beast and enemy wild Beasts placed on their respective 2x5 Formation Grid slots.
+- [x] Action HUD displays 6 action choices (Attack, Skill, Defend, Capture, Flee, Item) and a 30-second countdown bar.
+- [x] Targeting interface allows selecting valid opposing slots (highlighting valid front/back row targets).
+- [x] Resolution Phase plays back action events in order: attacking animations, floating damage numbers, combo visual sync, capture effect, and unit faints.
+- [x] Victory, defeat, or escape banner displays with rewards/new Beast notification, then transitions back to the Overworld scene.

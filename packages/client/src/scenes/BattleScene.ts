@@ -1,7 +1,45 @@
 import Phaser from 'phaser';
+import { BattleNetwork } from '../network/BattleNetwork.js';
+import { getValidTargets } from '../battle/targeting.js';
+import {
+  Element,
+  type Combatant,
+  type BattleState,
+  type CombatAction,
+  type CombatActionType,
+  type BattleEvent
+} from '@poktsonline/shared';
 
 export class BattleScene extends Phaser.Scene {
+  private network!: BattleNetwork;
   private encounterData: any;
+
+  // Domain state
+  private battleState!: BattleState;
+  private currentTurnActorId: string = 'hero_1';
+  private selectedActionType: CombatActionType | null = null;
+  private stagedActions: Record<string, CombatAction> = {};
+
+  // Timers and UI
+  private actionTimerSeconds: number = 30;
+  private timerProgressBar!: Phaser.GameObjects.Rectangle;
+  private timerText!: Phaser.GameObjects.Text;
+  private statusBannerText!: Phaser.GameObjects.Text;
+
+  // Interactive containers
+  private combatantVisuals: Map<string, {
+    container: Phaser.GameObjects.Container;
+    hpBar: Phaser.GameObjects.Rectangle;
+    spBar: Phaser.GameObjects.Rectangle;
+    hpText: Phaser.GameObjects.Text;
+    sprite: Phaser.GameObjects.Image;
+    unit: Combatant;
+    x: number;
+    y: number;
+  }> = new Map();
+
+  private slotHighlightBoxes: Phaser.GameObjects.Rectangle[] = [];
+  private actionButtons: Phaser.GameObjects.Container[] = [];
 
   constructor() {
     super({ key: 'BattleScene' });
@@ -9,69 +47,681 @@ export class BattleScene extends Phaser.Scene {
 
   init(data: any) {
     this.encounterData = data;
+    this.network = data.battleNetwork || new BattleNetwork();
+    this.stagedActions = {};
+    this.selectedActionType = null;
+    this.actionTimerSeconds = 30;
+  }
+
+  preload() {
+    this.createCombatantTextures();
   }
 
   create() {
     const { width, height } = this.scale;
 
-    // Dark semi-transparent combat arena backdrop
-    this.add.rectangle(width / 2, height / 2, width, height, 0x050b14, 0.95);
+    // 1. Dark Atmospheric Combat Arena Backdrop
+    this.add.rectangle(width / 2, height / 2, width, height, 0x050a14, 0.96);
 
-    // Battle Title
-    this.add.text(width / 2, 60, '⚔️ TS ONLINE TACTICAL BATTLE INSTANCE ⚔️', {
+    // 2. Arena Title
+    this.add.text(width / 2, 38, '⚔️ POKTSONLINE BATTLE ARENA ⚔️', {
       fontFamily: 'Segoe UI, Tahoma',
-      fontSize: '24px',
+      fontSize: '22px',
       color: '#fbbf24',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    // Subtitle
-    this.add.text(width / 2, 95, 'Zone: Whispering Meadow | 2x5 Formation Grid Combat', {
+    this.statusBannerText = this.add.text(width / 2, 70, 'Action Phase: Select tactical command for your units', {
       fontFamily: 'Segoe UI, Tahoma',
       fontSize: '14px',
-      color: '#94a3b8'
+      color: '#60a5fa'
     }).setOrigin(0.5, 0.5);
 
-    // Draw 2x5 Formation Grid for Player (Allies) and Enemies
-    this.drawFormationGrid(width / 2 - 250, height / 2, 'ALLIES (Player + Beast)', 0x1d4ed8);
-    this.drawFormationGrid(width / 2 + 250, height / 2, 'ENEMIES (Wild Beasts)', 0xb91c1c);
+    // 3. Initialize Battle State
+    this.initBattleState();
 
-    // Display wild enemy information if available
-    const enemies = this.encounterData?.encounter?.wildEnemies || [{ name: 'Wild Beast', level: 3, element: 'Earth' }];
-    const enemy = enemies[0];
+    // 4. Render Formation Grids & Combatant Sprites
+    this.renderGridsAndUnits();
 
-    this.add.text(width / 2 + 250, height / 2 - 40, `👾 ${enemy.name} (Lv.${enemy.level || 3})`, {
-      fontSize: '16px',
-      color: '#f87171',
+    // 5. Render Action HUD (Bottom Panel)
+    this.createActionHUD();
+
+    // 6. Connect or listen to BattleRoom events
+    this.setupNetworkHandlers();
+
+    // 7. Timer countdown loop
+    this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => this.tickActionTimer()
+    });
+
+    // Fade in
+    this.cameras.main.fadeIn(300, 255, 255, 255);
+  }
+
+  private createCombatantTextures() {
+    // Hero Battle Sprite (Blue robe with sword)
+    if (!this.textures.exists('combat_hero')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x1d4ed8, 1);
+      g.fillRoundedRect(10, 16, 28, 34, 6);
+      g.fillStyle(0xfde047, 1);
+      g.fillCircle(24, 12, 10);
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(16, 8, 16, 4);
+      // Sword
+      g.fillStyle(0xe2e8f0, 1);
+      g.fillRect(36, 10, 4, 30);
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(32, 32, 12, 4);
+      g.generateTexture('combat_hero', 48, 56);
+      g.destroy();
+    }
+
+    // Active Beast (Aqua Sprite / River Turtle)
+    if (!this.textures.exists('combat_beast')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x0284c7, 1);
+      g.fillCircle(24, 28, 18);
+      g.fillStyle(0x38bdf8, 1);
+      g.fillCircle(20, 22, 8);
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(18, 20, 3);
+      g.generateTexture('combat_beast', 48, 56);
+      g.destroy();
+    }
+
+    // Wild Enemy (Flame Imp / Leaf Sprite / Boar)
+    if (!this.textures.exists('combat_wild')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xb91c1c, 1);
+      g.fillRoundedRect(10, 16, 28, 30, 8);
+      g.fillStyle(0xf87171, 1);
+      g.fillTriangle(14, 16, 24, 4, 34, 16);
+      // Eyes
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(19, 24, 3);
+      g.fillCircle(29, 24, 3);
+      g.generateTexture('combat_wild', 48, 56);
+      g.destroy();
+    }
+  }
+
+  private initBattleState() {
+    const wildEnemies: Combatant[] = this.encounterData?.encounter?.wildEnemies || [
+      {
+        id: 'wild_enemy_1',
+        name: 'Leaf Sprite',
+        isHero: false,
+        level: 3,
+        element: Element.Wind,
+        hp: 35,
+        maxHp: 35,
+        sp: 15,
+        maxSp: 15,
+        atk: 14,
+        def: 8,
+        int: 10,
+        agi: 14
+      }
+    ];
+
+    const hero: Combatant = {
+      id: 'hero_1',
+      name: 'Hero',
+      isHero: true,
+      level: 5,
+      element: Element.Water,
+      hp: 120,
+      maxHp: 120,
+      sp: 50,
+      maxSp: 50,
+      atk: 28,
+      def: 18,
+      int: 12,
+      agi: 22
+    };
+
+    const beast: Combatant = {
+      id: 'beast_1',
+      name: 'Aqua Fin',
+      isHero: false,
+      level: 4,
+      element: Element.Water,
+      hp: 75,
+      maxHp: 75,
+      sp: 25,
+      maxSp: 25,
+      atk: 20,
+      def: 15,
+      int: 10,
+      agi: 18
+    };
+
+    this.battleState = {
+      round: 1,
+      outcome: 'ongoing',
+      allies: {
+        front: [null, null, hero, null, null],
+        back: [null, null, beast, null, null]
+      },
+      enemies: {
+        front: [null, null, wildEnemies[0] || null, null, null],
+        back: [null, null, wildEnemies[1] || null, null, null]
+      },
+      capturedBeastIds: []
+    };
+  }
+
+  private renderGridsAndUnits() {
+    const { width } = this.scale;
+    const gridY = 240;
+
+    // Clear existing
+    this.combatantVisuals.forEach(v => v.container.destroy());
+    this.combatantVisuals.clear();
+
+    // 1. Allies Grid (Left side)
+    this.renderSideFormation(width / 2 - 260, gridY, 'allies');
+
+    // 2. Enemies Grid (Right side)
+    this.renderSideFormation(width / 2 + 260, gridY, 'enemies');
+  }
+
+  private renderSideFormation(centerX: number, centerY: number, team: 'allies' | 'enemies') {
+    const formation = this.battleState[team];
+    const isAllies = team === 'allies';
+
+    const cols = 5;
+    const slotW = 68;
+    const slotH = 76;
+    const rowOffset = 90;
+
+    // Label
+    this.add.text(centerX, centerY - 100, isAllies ? '🛡️ ALLIES (Player Team)' : '⚔️ FOES (Wild Encounter)', {
+      fontSize: '14px',
+      color: isAllies ? '#60a5fa' : '#f87171',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    // Friendly Hero
-    this.add.text(width / 2 - 250, height / 2 - 40, '🧙 Hero (Lv.5 Water)', {
-      fontSize: '16px',
-      color: '#60a5fa',
+    // Front row is closer to center of arena:
+    // For allies: back row at -rowOffset/2, front row at +rowOffset/2
+    // For enemies: front row at -rowOffset/2, back row at +rowOffset/2
+    const frontX = isAllies ? centerX + rowOffset / 2 : centerX - rowOffset / 2;
+    const backX = isAllies ? centerX - rowOffset / 2 : centerX + rowOffset / 2;
+
+    ['front', 'back'].forEach(rowKey => {
+      const rowX = rowKey === 'front' ? frontX : backX;
+      const units = formation[rowKey as 'front' | 'back'];
+
+      for (let c = 0; c < cols; c++) {
+        const slotY = centerY + (c - 2) * slotH;
+
+        // Slot bounding box
+        const slotG = this.add.graphics();
+        slotG.lineStyle(1, isAllies ? 0x1e3a8a : 0x7f1d1d, 0.7);
+        slotG.fillStyle(isAllies ? 0x0f172a : 0x180a0a, 0.5);
+        slotG.strokeRoundedRect(rowX - slotW / 2, slotY - slotH / 2, slotW - 4, slotH - 4, 6);
+        slotG.fillRoundedRect(rowX - slotW / 2, slotY - slotH / 2, slotW - 4, slotH - 4, 6);
+
+        const unit = units[c];
+        if (unit && unit.hp > 0) {
+          this.createCombatantVisual(unit, rowX, slotY, isAllies);
+        }
+      }
+    });
+  }
+
+  private createCombatantVisual(unit: Combatant, x: number, y: number, isAllies: boolean) {
+    const container = this.add.container(x, y);
+
+    const textureKey = unit.isHero ? 'combat_hero' : isAllies ? 'combat_beast' : 'combat_wild';
+    const sprite = this.add.image(0, -6, textureKey);
+    if (!isAllies) {
+      sprite.setFlipX(true);
+    }
+
+    // Name & Level
+    const nameText = this.add.text(0, -38, `${unit.name} Lv.${unit.level}`, {
+      fontSize: '10px',
+      color: isAllies ? '#e2e8f0' : '#fca5a5',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    // Action phase prompt
-    this.add.text(width / 2, height - 140, 'Action Phase: 30s Countdown Synchronized by Colyseus BattleRoom', {
-      fontSize: '15px',
-      color: '#34d399'
+    // HP Bar background
+    const barBg = this.add.rectangle(0, 22, 48, 6, 0x1e293b);
+    // HP Bar fill
+    const hpRatio = Math.max(0, unit.hp / unit.maxHp);
+    const hpColor = hpRatio > 0.5 ? 0x22c55e : hpRatio > 0.25 ? 0xeab308 : 0xef4444;
+    const hpBar = this.add.rectangle(-24 + (48 * hpRatio) / 2, 22, 48 * hpRatio, 6, hpColor);
+
+    // SP Bar background & fill
+    const spRatio = Math.max(0, unit.sp / unit.maxSp);
+    const spBar = this.add.rectangle(-24 + (48 * spRatio) / 2, 29, 48 * spRatio, 3, 0x38bdf8);
+
+    // HP Text
+    const hpText = this.add.text(0, 22, `${unit.hp}/${unit.maxHp}`, {
+      fontSize: '8px',
+      color: '#ffffff'
     }).setOrigin(0.5, 0.5);
 
-    // Return to Overworld Button (Simulate battle completion)
-    const returnBtn = this.add.rectangle(width / 2, height - 80, 260, 44, 0xd97706)
-      .setInteractive({ useHandCursor: true });
+    container.add([sprite, nameText, barBg, hpBar, spBar, hpText]);
 
-    const btnText = this.add.text(width / 2, height - 80, 'Complete Fight & Return to Overworld', {
+    // Make unit clickable for targeting
+    container.setSize(56, 68);
+    container.setInteractive({ useHandCursor: true });
+    container.on('pointerdown', () => this.handleTargetSelected(unit.id));
+
+    this.combatantVisuals.set(unit.id, {
+      container,
+      hpBar,
+      spBar,
+      hpText,
+      sprite,
+      unit,
+      x,
+      y
+    });
+  }
+
+  private createActionHUD() {
+    const { width, height } = this.scale;
+    const hudY = height - 100;
+
+    // HUD Panel Box
+    const panelBg = this.add.rectangle(width / 2, hudY, 940, 140, 0x0f172a, 0.95);
+    panelBg.setStrokeStyle(2, 0xd4af37, 0.8);
+
+    // Active Actor Tag
+    this.add.text(width / 2 - 380, hudY - 50, '👉 SELECTING ACTION FOR:', {
+      fontSize: '12px',
+      color: '#94a3b8',
+      fontStyle: 'bold'
+    });
+
+    const activeActorText = this.add.text(width / 2 - 200, hudY - 50, '🧙 Hero (Lv.5 Water)', {
       fontSize: '13px',
+      color: '#38bdf8',
+      fontStyle: 'bold'
+    });
+
+    // 30s Countdown Timer Bar
+    this.add.text(width / 2 + 100, hudY - 50, '⏳ TIME REMAINING:', {
+      fontSize: '12px',
+      color: '#94a3b8',
+      fontStyle: 'bold'
+    });
+
+    const timerBg = this.add.rectangle(width / 2 + 280, hudY - 48, 140, 10, 0x1e293b);
+    this.timerProgressBar = this.add.rectangle(width / 2 + 280, hudY - 48, 140, 10, 0x22c55e);
+
+    this.timerText = this.add.text(width / 2 + 370, hudY - 48, '30s', {
+      fontSize: '12px',
+      color: '#facc15',
+      fontStyle: 'bold'
+    }).setOrigin(0, 0.5);
+
+    // Action Buttons
+    const actions: { type: CombatActionType; label: string; icon: string; color: number }[] = [
+      { type: 'attack', label: 'Attack', icon: '🗡️', color: 0xd97706 },
+      { type: 'skill', label: 'Skill (Water)', icon: '✨', color: 0x2563eb },
+      { type: 'defend', label: 'Defend (-50%)', icon: '🛡️', color: 0x059669 },
+      { type: 'capture', label: 'Capture Beast', icon: '🕸️', color: 0x7c3aed },
+      { type: 'item', label: 'Item', icon: '🎒', color: 0x475569 },
+      { type: 'flee', label: 'Flee Run', icon: '🏃', color: 0xdc2626 }
+    ];
+
+    const startX = width / 2 - 380;
+    const btnW = 120;
+    const btnH = 44;
+    const btnY = hudY + 14;
+
+    actions.forEach((act, idx) => {
+      const btnX = startX + idx * (btnW + 8);
+      const btnContainer = this.add.container(btnX, btnY);
+
+      const bg = this.add.rectangle(0, 0, btnW, btnH, act.color, 0.85);
+      bg.setStrokeStyle(1, 0xfde047, 0.6);
+
+      const label = this.add.text(0, 0, `${act.icon} ${act.label}`, {
+        fontSize: '11px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }).setOrigin(0.5, 0.5);
+
+      btnContainer.add([bg, label]);
+      btnContainer.setSize(btnW, btnH);
+      btnContainer.setInteractive({ useHandCursor: true });
+
+      btnContainer.on('pointerover', () => bg.setFillStyle(act.color, 1.0));
+      btnContainer.on('pointerout', () => bg.setFillStyle(act.color, 0.85));
+      btnContainer.on('pointerdown', () => this.handleActionClick(act.type));
+
+      this.actionButtons.push(btnContainer);
+    });
+  }
+
+  private handleActionClick(actionType: CombatActionType) {
+    this.selectedActionType = actionType;
+
+    if (actionType === 'defend' || actionType === 'flee') {
+      // Immediate actions that do not require targeting an enemy
+      this.stagedActions[this.currentTurnActorId] = { type: actionType };
+      this.advanceTurnInput();
+    } else {
+      // Actions requiring target selection (attack, skill, capture)
+      const validTargetIds = getValidTargets(actionType, 'allies', this.battleState);
+      this.highlightValidTargets(validTargetIds);
+
+      this.statusBannerText.setText(`Select target for ${actionType.toUpperCase()}! (Highlighted)`);
+      this.statusBannerText.setColor('#facc15');
+    }
+  }
+
+  private highlightValidTargets(targetIds: string[]) {
+    // Clear old highlights
+    this.slotHighlightBoxes.forEach(b => b.destroy());
+    this.slotHighlightBoxes = [];
+
+    targetIds.forEach(id => {
+      const vis = this.combatantVisuals.get(id);
+      if (vis) {
+        const highlight = this.add.rectangle(vis.x, vis.y, 60, 72);
+        highlight.setStrokeStyle(2, 0xfde047, 0.9);
+        highlight.setFillStyle(0xfde047, 0.15);
+
+        this.tweens.add({
+          targets: highlight,
+          alpha: { from: 0.3, to: 0.8 },
+          duration: 400,
+          yoyo: true,
+          loop: -1
+        });
+
+        this.slotHighlightBoxes.push(highlight);
+      }
+    });
+  }
+
+  private handleTargetSelected(targetId: string) {
+    if (!this.selectedActionType) return;
+
+    const validTargets = getValidTargets(this.selectedActionType, 'allies', this.battleState);
+    if (!validTargets.includes(targetId)) {
+      // Invalid target (e.g. Back row guarded)
+      this.cameras.main.shake(100, 0.005);
+      this.statusBannerText.setText('Target blocked by Front Row unit!');
+      this.statusBannerText.setColor('#ef4444');
+      return;
+    }
+
+    // Target locked
+    this.stagedActions[this.currentTurnActorId] = {
+      type: this.selectedActionType,
+      targetId
+    };
+
+    this.slotHighlightBoxes.forEach(b => b.destroy());
+    this.slotHighlightBoxes = [];
+
+    this.advanceTurnInput();
+  }
+
+  private advanceTurnInput() {
+    if (this.currentTurnActorId === 'hero_1') {
+      // Check if beast exists and is alive
+      const beast = this.combatantVisuals.get('beast_1');
+      if (beast && beast.unit.hp > 0) {
+        this.currentTurnActorId = 'beast_1';
+        this.statusBannerText.setText('Hero command locked! Select command for Active Beast:');
+        this.statusBannerText.setColor('#38bdf8');
+        this.selectedActionType = null;
+        return;
+      }
+    }
+
+    // Both units submitted -> lock actions and resolve!
+    this.statusBannerText.setText('All commands locked in! Executing Resolution Phase...');
+    this.statusBannerText.setColor('#a7f3d0');
+
+    this.submitAllActions();
+  }
+
+  private submitAllActions() {
+    // If connected to Colyseus server:
+    Object.entries(this.stagedActions).forEach(([combatantId, action]) => {
+      this.network.sendSelectAction(combatantId, action);
+    });
+
+    // In case running standalone or testing, simulate resolution locally if no room response
+    this.time.delayedCall(400, () => {
+      this.executeLocalResolution();
+    });
+  }
+
+  private tickActionTimer() {
+    if (this.battleState.outcome !== 'ongoing') return;
+
+    this.actionTimerSeconds = Math.max(0, this.actionTimerSeconds - 1);
+    this.timerText.setText(`${this.actionTimerSeconds}s`);
+
+    const ratio = this.actionTimerSeconds / 30;
+    this.timerProgressBar.setSize(140 * ratio, 10);
+    this.timerProgressBar.setFillStyle(ratio > 0.5 ? 0x22c55e : ratio > 0.25 ? 0xeab308 : 0xef4444);
+
+    if (this.actionTimerSeconds <= 0 && this.battleState.outcome === 'ongoing') {
+      // Timer expired, auto-submit
+      this.advanceTurnInput();
+    }
+  }
+
+  private setupNetworkHandlers() {
+    this.network.onTurnResolution((payload) => {
+      this.playResolutionSequence(payload.events, payload.outcome);
+    });
+
+    this.network.onBattleEnd((payload) => {
+      this.showBattleEndBanner(payload.outcome, payload.capturedBeastIds);
+    });
+  }
+
+  private executeLocalResolution() {
+    // Simulated events for smooth client demonstration
+    const events: BattleEvent[] = [];
+
+    const heroAction = this.stagedActions['hero_1'];
+    const beastAction = this.stagedActions['beast_1'];
+
+    if (heroAction && heroAction.type === 'attack') {
+      events.push({
+        type: 'attack',
+        actorId: 'hero_1',
+        targetId: heroAction.targetId,
+        value: 32,
+        message: 'Hero strikes with Water blade!'
+      });
+    }
+
+    if (beastAction && beastAction.type === 'attack') {
+      events.push({
+        type: 'combo',
+        actorId: 'beast_1',
+        targetId: beastAction.targetId,
+        value: 28,
+        message: 'Aqua Fin executes SYNCHRONIZED COMBO ATTACK! (2.0x)'
+      });
+    }
+
+    if (heroAction?.type === 'capture') {
+      events.push({
+        type: 'capture_success',
+        actorId: 'hero_1',
+        targetId: heroAction.targetId,
+        message: 'Capture Net succeeded! Wild Beast tamed!'
+      });
+    }
+
+    // Play resolution
+    this.playResolutionSequence(events, 'victory');
+  }
+
+  private playResolutionSequence(events: BattleEvent[], finalOutcome: string) {
+    if (!events || events.length === 0) {
+      if (finalOutcome !== 'ongoing') {
+        this.showBattleEndBanner(finalOutcome, []);
+      }
+      return;
+    }
+
+    let delay = 0;
+
+    events.forEach(evt => {
+      this.time.delayedCall(delay, () => {
+        this.playSingleEventAnimation(evt);
+      });
+      delay += 800;
+    });
+
+    this.time.delayedCall(delay + 600, () => {
+      if (finalOutcome !== 'ongoing') {
+        this.showBattleEndBanner(finalOutcome, []);
+      } else {
+        // Next round
+        this.actionTimerSeconds = 30;
+        this.currentTurnActorId = 'hero_1';
+        this.stagedActions = {};
+        this.statusBannerText.setText('Action Phase: Round 2 started. Select commands!');
+      }
+    });
+  }
+
+  private playSingleEventAnimation(evt: BattleEvent) {
+    const actor = this.combatantVisuals.get(evt.actorId);
+    const target = evt.targetId ? this.combatantVisuals.get(evt.targetId) : undefined;
+
+    this.statusBannerText.setText(evt.message);
+    this.statusBannerText.setColor('#fde047');
+
+    if (actor && target) {
+      // Leap forward animation
+      const startX = actor.container.x;
+      const targetX = target.container.x;
+      const leapDistance = (targetX - startX) * 0.35;
+
+      this.tweens.add({
+        targets: actor.container,
+        x: startX + leapDistance,
+        duration: 180,
+        yoyo: true,
+        ease: 'Power2',
+        onYoyo: () => {
+          // Impact shake and floating combat text
+          this.cameras.main.shake(120, 0.008);
+          if (evt.value) {
+            this.showFloatingCombatText(target.container.x, target.container.y - 20, `-${evt.value}`, '#ef4444');
+            // Deduct HP
+            target.unit.hp = Math.max(0, target.unit.hp - evt.value);
+            this.updateHealthBar(target);
+          }
+        }
+      });
+    } else if (evt.type === 'capture_success' && target) {
+      this.showFloatingCombatText(target.container.x, target.container.y - 20, 'CAPTURED! ⭐', '#a855f7');
+      this.tweens.add({
+        targets: target.container,
+        alpha: 0,
+        scale: 0.2,
+        duration: 500
+      });
+    }
+  }
+
+  private updateHealthBar(vis: any) {
+    const ratio = Math.max(0, vis.unit.hp / vis.unit.maxHp);
+    const hpColor = ratio > 0.5 ? 0x22c55e : ratio > 0.25 ? 0xeab308 : 0xef4444;
+
+    this.tweens.add({
+      targets: vis.hpBar,
+      width: 48 * ratio,
+      duration: 250,
+      ease: 'Power1'
+    });
+    vis.hpBar.setFillStyle(hpColor);
+    vis.hpText.setText(`${vis.unit.hp}/${vis.unit.maxHp}`);
+
+    if (vis.unit.hp <= 0) {
+      this.tweens.add({
+        targets: vis.container,
+        alpha: 0.3,
+        duration: 400
+      });
+    }
+  }
+
+  private showFloatingCombatText(x: number, y: number, text: string, color: string) {
+    const txt = this.add.text(x, y, text, {
+      fontSize: '18px',
+      color: color,
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3
+    }).setOrigin(0.5, 0.5);
+
+    this.tweens.add({
+      targets: txt,
+      y: y - 40,
+      alpha: 0,
+      duration: 750,
+      ease: 'Power1',
+      onComplete: () => txt.destroy()
+    });
+  }
+
+  private showBattleEndBanner(outcome: string, capturedBeastIds: string[]) {
+    this.battleState.outcome = outcome as any;
+    const { width, height } = this.scale;
+
+    const bannerContainer = this.add.container(width / 2, height / 2);
+    bannerContainer.setDepth(1000);
+
+    const bannerBg = this.add.rectangle(0, 0, 520, 220, 0x0f172a, 0.98);
+    bannerBg.setStrokeStyle(3, 0xd4af37, 1);
+
+    const isWin = outcome === 'victory';
+    const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN BATTLE';
+    const titleColor = isWin ? '#fbbf24' : outcome === 'escaped' ? '#38bdf8' : '#ef4444';
+
+    const titleText = this.add.text(0, -60, title, {
+      fontSize: '22px',
+      color: titleColor,
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    const rewardsText = this.add.text(0, -10, isWin ? '+45 EXP & +12 Gold acquired!' : 'Returned safely to overworld.', {
+      fontSize: '14px',
+      color: '#e2e8f0'
+    }).setOrigin(0.5, 0.5);
+
+    const captureNote = capturedBeastIds.length > 0
+      ? `🎉 Captured Beast added to team roster!`
+      : '';
+    const captureText = this.add.text(0, 16, captureNote, {
+      fontSize: '13px',
+      color: '#a855f7',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    // Return to Overworld Button
+    const returnBtn = this.add.rectangle(0, 65, 240, 42, 0xd97706).setInteractive({ useHandCursor: true });
+    const returnBtnText = this.add.text(0, 65, 'Return to Overworld', {
+      fontSize: '14px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
     returnBtn.on('pointerover', () => returnBtn.setFillStyle(0xf59e0b));
     returnBtn.on('pointerout', () => returnBtn.setFillStyle(0xd97706));
-
     returnBtn.on('pointerdown', () => {
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
@@ -80,32 +730,13 @@ export class BattleScene extends Phaser.Scene {
       });
     });
 
-    // Fade in
-    this.cameras.main.fadeIn(300, 255, 255, 255);
-  }
-
-  private drawFormationGrid(centerX: number, centerY: number, label: string, color: number) {
-    this.add.text(centerX, centerY - 110, label, {
-      fontSize: '14px',
-      color: '#e2e8f0',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-
-    const g = this.add.graphics();
-    g.lineStyle(2, color, 0.8);
-
-    // 2 rows, 5 columns grid
-    const cols = 5;
-    const rows = 2;
-    const slotW = 50;
-    const slotH = 50;
-    const startX = centerX - (cols * slotW) / 2;
-    const startY = centerY - (rows * slotH) / 2;
-
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        g.strokeRect(startX + c * slotW, startY + r * slotH, slotW - 4, slotH - 4);
-      }
-    }
+    bannerContainer.add([bannerBg, titleText, rewardsText, captureText, returnBtn, returnBtnText]);
+    bannerContainer.setScale(0.7);
+    this.tweens.add({
+      targets: bannerContainer,
+      scale: 1.0,
+      duration: 250,
+      ease: 'Back.out'
+    });
   }
 }
