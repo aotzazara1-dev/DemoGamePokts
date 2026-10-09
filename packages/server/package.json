@@ -14,10 +14,16 @@
     "@colyseus/ws-transport": "^0.15.3",
     "@poktsonline/shared": "*",
     "colyseus": "^0.15.57",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
     "sql.js": "^1.14.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^20.17.0",
-    "@types/sql.js": "^1.4.11"
+    "@types/sql.js": "^1.4.11",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1"
   }
 }

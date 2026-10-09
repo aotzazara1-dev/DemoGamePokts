@@ -24,6 +24,8 @@
       <span class="ctrl-sep">&bull;</span>
       <button id="header-btn-sound" class="header-btn" title="Toggle 8-bit Audio (Mute/Unmute)">🔊 Sound: ON</button>
       <span class="ctrl-sep">&bull;</span>
+      <button id="header-btn-auth" class="header-btn" title="Account / Link Account">🔑 <kbd>Login</kbd></button>
+      <span class="ctrl-sep">&bull;</span>
       <span>🛠️ <kbd>~</kbd> QA Debug</span>
     </div>
   </header>
@@ -47,6 +49,49 @@
     <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
       🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
     </button>
+
+    <!-- Authentication Modal Overlay -->
+    <div id="auth-modal">
+      <div class="auth-card">
+        <div class="roster-header">
+          <div class="roster-header-titles">
+            <h2 id="auth-modal-title">🔑 WELCOME TO POKTSONLINE</h2>
+            <p id="auth-modal-desc">Sign in or play instantly as Guest to save your progression</p>
+          </div>
+          <button id="btn-close-auth-modal" class="btn-close-modal" title="Close" style="display: none;">✕ Close</button>
+        </div>
+
+        <div id="auth-guest-section" style="margin-bottom: 16px; padding: 12px; background: rgba(30, 41, 59, 0.7); border: 1px dashed #38bdf8; border-radius: 8px; text-align: center;">
+          <div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px;">Want to jump in immediately without a password?</div>
+          <button id="btn-auth-guest" class="btn-auth-guest-play" type="button">
+            🎮 PLAY INSTANTLY AS GUEST
+          </button>
+        </div>
+
+        <div id="auth-tabs" class="auth-tab-bar">
+          <button id="auth-tab-login" class="auth-tab-btn active" type="button">🔑 Sign In (เข้าสู่ระบบ)</button>
+          <button id="auth-tab-register" class="auth-tab-btn" type="button">📝 Register (สมัครสมาชิก)</button>
+        </div>
+
+        <div id="auth-error-msg" class="auth-error-banner" style="display: none;"></div>
+
+        <form id="auth-form" class="auth-form-fields">
+          <div class="auth-input-group">
+            <label for="auth-input-username">Username (ชื่อผู้ใช้)</label>
+            <input id="auth-input-username" type="text" autocomplete="username" placeholder="3-20 characters" required />
+          </div>
+
+          <div class="auth-input-group">
+            <label for="auth-input-password">Password (รหัสผ่าน)</label>
+            <input id="auth-input-password" type="password" autocomplete="current-password" placeholder="At least 6 characters" required />
+          </div>
+
+          <button id="btn-auth-submit" class="btn-auth-submit-action" type="submit">
+            Enter Game (Sign In)
+          </button>
+        </form>
+      </div>
+    </div>
 
     <!-- Character Status & Stat Points Modal Overlay -->
     <div id="character-modal">

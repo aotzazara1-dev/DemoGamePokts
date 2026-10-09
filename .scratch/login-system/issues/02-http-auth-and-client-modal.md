@@ -5,12 +5,12 @@ A complete end-to-end authentication system featuring secure HTTP REST endpoints
 
 **Blocked by:** 01: SQLite Database Engine and Persistence Schemas
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] HTTP REST endpoints mounted on port 2567: `POST /api/auth/guest`, `POST /api/auth/register`, `POST /api/auth/login`, and `POST /api/auth/link-account`.
-- [ ] Passwords hashed with cryptographic salts using native `crypto.scrypt` (or standard secure hash).
-- [ ] Guest token generated and stored in client `localStorage` for automatic reconnection.
-- [ ] `AuthModalController` renders clean DOM UI overlay before entering the game, supporting Guest play, Login, Register, and Account Linking.
-- [ ] Meaningful error messages displayed to the player for invalid passwords, duplicate usernames, or malformed credentials.
-- [ ] Header bar contains a "Link Account" button when logged in as a Guest.
-- [ ] Automated tests cover all auth endpoints (registration, duplicate checks, login success/failure, guest linking).
+- [x] HTTP REST endpoints mounted on port 2567: `POST /api/auth/guest`, `POST /api/auth/register`, `POST /api/auth/login`, and `POST /api/auth/link-account`.
+- [x] Passwords hashed with cryptographic salts using native `crypto.scrypt` (or standard secure hash).
+- [x] Guest token generated and stored in client `localStorage` for automatic reconnection.
+- [x] `AuthModalController` renders clean DOM UI overlay before entering the game, supporting Guest play, Login, Register, and Account Linking.
+- [x] Meaningful error messages displayed to the player for invalid passwords, duplicate usernames, or malformed credentials.
+- [x] Header bar contains a "Link Account" button when logged in as a Guest.
+- [x] Automated tests cover all auth endpoints (registration, duplicate checks, login success/failure, guest linking).

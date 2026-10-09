@@ -28,8 +28,10 @@ import {
   InventoryModalController,
   DebugToolbarController,
   DialogueModalController,
-  ShopModalController
+  ShopModalController,
+  AuthModalController
 } from '../ui/index.js';
+import { AuthService } from '../auth/AuthService.js';
 
 export class OverworldScene extends Phaser.Scene {
   private network!: OverworldNetwork;
@@ -71,6 +73,7 @@ export class OverworldScene extends Phaser.Scene {
   private debugToolbar!: DebugToolbarController;
   private dialogueModal!: DialogueModalController;
   private shopModal!: ShopModalController;
+  private authModal!: AuthModalController;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
@@ -320,6 +323,7 @@ export class OverworldScene extends Phaser.Scene {
         this.debugToolbar.close();
         this.dialogueModal?.close();
         this.shopModal?.close();
+        this.authModal?.close();
       });
     }
   }
@@ -331,7 +335,8 @@ export class OverworldScene extends Phaser.Scene {
       this.inventoryModal?.isOpen() ||
       this.debugToolbar?.isOpen() ||
       this.dialogueModal?.isOpen() ||
-      this.shopModal?.isOpen()
+      this.shopModal?.isOpen() ||
+      this.authModal?.isOpen()
     );
   }
 
@@ -2055,6 +2060,13 @@ export class OverworldScene extends Phaser.Scene {
       },
       () => this.inventory
     );
+
+    this.authModal = new AuthModalController(AuthService.getInstance(), {
+      onAuthenticated: (account) => {
+        this.showToast(`🎉 Logged in as ${account.username || 'Guest'}!`, '#38bdf8');
+      },
+      onClose: () => {}
+    });
   }
 
   private showToast(msg: string, color: string = '#6ee7b7'): void {
