@@ -139,6 +139,15 @@ export class BattleEngine {
         continue;
       }
 
+      if (actor.action.type === 'pass') {
+        events.push({
+          type: 'pass',
+          actorId: actor.id,
+          message: `${actor.name} waits and takes no action this round.`
+        });
+        continue;
+      }
+
       if (actor.action.type === 'item') {
         actor.hp = Math.min(actor.maxHp, actor.hp + 80);
         events.push({

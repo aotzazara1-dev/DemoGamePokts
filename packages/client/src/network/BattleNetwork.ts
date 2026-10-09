@@ -49,6 +49,10 @@ export class BattleNetwork {
     return this.room;
   }
 
+  public isConnected(): boolean {
+    return !!this.room;
+  }
+
   public disconnect() {
     if (this.room) {
       this.room.leave();

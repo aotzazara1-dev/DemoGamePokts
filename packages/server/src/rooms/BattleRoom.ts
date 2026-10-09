@@ -132,10 +132,10 @@ export class BattleRoom extends Room<BattleRoomState> {
 
     this.state.actionTimer = Math.max(0, this.state.actionTimer - seconds);
     if (this.state.actionTimer <= 0) {
-      // Auto-assign default attack actions for unsubmitted living allies
+      // Auto-assign default defend actions for unsubmitted living allies
       for (const [id, c] of this.state.combatants.entries()) {
         if (c.team === 'allies' && c.isAlive && !this.pendingActions.has(id)) {
-          this.pendingActions.set(id, { type: 'attack' });
+          this.pendingActions.set(id, { type: 'defend' });
         }
       }
       this.resolveTurn();

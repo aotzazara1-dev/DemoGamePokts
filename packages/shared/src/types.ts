@@ -10,7 +10,7 @@ export enum Element {
   Wind = 'Wind'
 }
 
-export type CombatActionType = 'attack' | 'skill' | 'defend' | 'capture' | 'item' | 'flee';
+export type CombatActionType = 'attack' | 'skill' | 'defend' | 'pass' | 'capture' | 'item' | 'flee';
 
 export interface CombatAction {
   type: CombatActionType;
@@ -64,6 +64,7 @@ export type BattleEventType =
   | 'blocked'
   | 'combo'
   | 'defend'
+  | 'pass'
   | 'heal'
   | 'capture_success'
   | 'capture_fail'

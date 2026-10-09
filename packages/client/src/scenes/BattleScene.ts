@@ -29,6 +29,8 @@ export class BattleScene extends Phaser.Scene {
   private timerProgressBar!: Phaser.GameObjects.Rectangle;
   private timerText!: Phaser.GameObjects.Text;
   private statusBannerText!: Phaser.GameObjects.Text;
+  private activeActorText!: Phaser.GameObjects.Text;
+  private skillButtonText!: Phaser.GameObjects.Text;
 
   // Interactive containers
   private combatantVisuals: Map<string, {
@@ -37,6 +39,7 @@ export class BattleScene extends Phaser.Scene {
     spBar: Phaser.GameObjects.Rectangle;
     hpText: Phaser.GameObjects.Text;
     sprite: Phaser.GameObjects.Image;
+    badge: Phaser.GameObjects.Text;
     unit: Combatant;
     x: number;
     y: number;
@@ -310,7 +313,14 @@ export class BattleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5, 0.5);
 
-    container.add([sprite, nameText, barBg, hpBar, spBar, hpText]);
+    // Action Staging Badge (Icon on top of combatant)
+    const badge = this.add.text(18, -34, '', {
+      fontSize: '14px',
+      stroke: '#000000',
+      strokeThickness: 3
+    }).setOrigin(0.5, 0.5).setVisible(false);
+
+    container.add([sprite, nameText, barBg, hpBar, spBar, hpText, badge]);
 
     // Make unit clickable for targeting
     container.setSize(56, 68);
@@ -323,9 +333,32 @@ export class BattleScene extends Phaser.Scene {
       spBar,
       hpText,
       sprite,
+      badge,
       unit,
       x,
       y
+    });
+  }
+
+  private updateActorStagingBadge(actorId: string, actionType: CombatActionType) {
+    const vis = this.combatantVisuals.get(actorId);
+    if (!vis) return;
+    const iconMap: Record<CombatActionType, string> = {
+      attack: '🗡️',
+      skill: '✨',
+      defend: '🛡️',
+      pass: '⏸️',
+      capture: '🕸️',
+      item: '🎒',
+      flee: '🏃'
+    };
+    vis.badge.setText(iconMap[actionType] || '✔️');
+    vis.badge.setVisible(true);
+  }
+
+  private clearAllStagingBadges() {
+    this.combatantVisuals.forEach(vis => {
+      vis.badge.setVisible(false);
     });
   }
 
@@ -344,7 +377,7 @@ export class BattleScene extends Phaser.Scene {
       fontStyle: 'bold'
     });
 
-    const activeActorText = this.add.text(width / 2 - 200, hudY - 50, '🧙 Hero (Lv.5 Water)', {
+    this.activeActorText = this.add.text(width / 2 - 200, hudY - 50, '🧙 Hero (Lv.5 Water)', {
       fontSize: '13px',
       color: '#38bdf8',
       fontStyle: 'bold'
@@ -366,19 +399,21 @@ export class BattleScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0, 0.5);
 
-    // Action Buttons
+    // Action Buttons (7 buttons including Pass)
     const actions: { type: CombatActionType; label: string; icon: string; color: number }[] = [
       { type: 'attack', label: 'Attack', icon: '🗡️', color: 0xd97706 },
       { type: 'skill', label: 'Skill (Water)', icon: '✨', color: 0x2563eb },
       { type: 'defend', label: 'Defend (-50%)', icon: '🛡️', color: 0x059669 },
-      { type: 'capture', label: 'Capture Beast', icon: '🕸️', color: 0x7c3aed },
-      { type: 'item', label: 'Item', icon: '🎒', color: 0x475569 },
+      { type: 'pass', label: 'Pass (Wait)', icon: '⏸️', color: 0x475569 },
+      { type: 'capture', label: 'Capture', icon: '🕸️', color: 0x7c3aed },
+      { type: 'item', label: 'Item', icon: '🎒', color: 0x334155 },
       { type: 'flee', label: 'Flee Run', icon: '🏃', color: 0xdc2626 }
     ];
 
-    const startX = width / 2 - 380;
-    const btnW = 120;
+    const btnW = 118;
     const btnH = 44;
+    const totalW = actions.length * btnW + (actions.length - 1) * 8;
+    const startX = width / 2 - totalW / 2 + btnW / 2;
     const btnY = hudY + 14;
 
     actions.forEach((act, idx) => {
@@ -394,6 +429,10 @@ export class BattleScene extends Phaser.Scene {
         fontStyle: 'bold'
       }).setOrigin(0.5, 0.5);
 
+      if (act.type === 'skill') {
+        this.skillButtonText = label;
+      }
+
       btnContainer.add([bg, label]);
       btnContainer.setSize(btnW, btnH);
       btnContainer.setInteractive({ useHandCursor: true });
@@ -404,15 +443,32 @@ export class BattleScene extends Phaser.Scene {
 
       this.actionButtons.push(btnContainer);
     });
+
+    this.updateActiveActorHUD();
+  }
+
+  private updateActiveActorHUD() {
+    if (!this.activeActorText) return;
+    const actorVis = this.combatantVisuals.get(this.currentTurnActorId);
+    if (!actorVis) return;
+    const actor = actorVis.unit;
+
+    this.activeActorText.setText(`🧙 ${actor.name} (Lv.${actor.level} ${actor.element})`);
+    this.activeActorText.setColor(actor.isHero ? '#38bdf8' : '#a7f3d0');
+
+    if (this.skillButtonText) {
+      this.skillButtonText.setText(`✨ Skill (${actor.element})`);
+    }
   }
 
   private handleActionClick(actionType: CombatActionType) {
     this.selectedActionType = actionType;
     this.selectedSkillId = null;
 
-    if (actionType === 'defend' || actionType === 'flee') {
+    if (actionType === 'defend' || actionType === 'flee' || actionType === 'pass') {
       // Immediate actions that do not require targeting an enemy
       this.stagedActions[this.currentTurnActorId] = { type: actionType };
+      this.updateActorStagingBadge(this.currentTurnActorId, actionType);
       this.advanceTurnInput();
     } else if (actionType === 'skill') {
       const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
@@ -491,6 +547,7 @@ export class BattleScene extends Phaser.Scene {
       targetId,
       skillId: this.selectedActionType === 'skill' ? this.selectedSkillId || undefined : undefined
     };
+    this.updateActorStagingBadge(this.currentTurnActorId, this.selectedActionType);
 
     this.slotHighlightBoxes.forEach(b => b.destroy());
     this.slotHighlightBoxes = [];
@@ -502,8 +559,9 @@ export class BattleScene extends Phaser.Scene {
     if (this.currentTurnActorId === 'hero_1') {
       // Check if beast exists and is alive
       const beast = this.combatantVisuals.get('beast_1');
-      if (beast && beast.unit.hp > 0) {
+      if (beast && beast.unit.hp > 0 && !this.stagedActions['beast_1']) {
         this.currentTurnActorId = 'beast_1';
+        this.updateActiveActorHUD();
         this.statusBannerText.setText('Hero command locked! Select command for Active Beast:');
         this.statusBannerText.setColor('#38bdf8');
         this.selectedActionType = null;
@@ -512,22 +570,28 @@ export class BattleScene extends Phaser.Scene {
     }
 
     // Both units submitted -> lock actions and resolve!
+    if (this.activeActorText) {
+      this.activeActorText.setText('Waiting for Resolution Phase...');
+      this.activeActorText.setColor('#94a3b8');
+    }
     this.statusBannerText.setText('All commands locked in! Executing Resolution Phase...');
+    this.statusBannerText.setColor('#a7f3d0');
     this.statusBannerText.setColor('#a7f3d0');
 
     this.submitAllActions();
   }
 
   private submitAllActions() {
-    // If connected to Colyseus server:
-    Object.entries(this.stagedActions).forEach(([combatantId, action]) => {
-      this.network.sendSelectAction(combatantId, action);
-    });
-
-    // In case running standalone or testing, simulate resolution locally if no room response
-    this.time.delayedCall(400, () => {
-      this.executeLocalResolution();
-    });
+    if (this.network && this.network.isConnected()) {
+      Object.entries(this.stagedActions).forEach(([combatantId, action]) => {
+        this.network.sendSelectAction(combatantId, action);
+      });
+    } else {
+      // In case running standalone or testing, simulate resolution locally
+      this.time.delayedCall(300, () => {
+        this.executeLocalResolution();
+      });
+    }
   }
 
   private tickActionTimer() {
@@ -541,7 +605,16 @@ export class BattleScene extends Phaser.Scene {
     this.timerProgressBar.setFillStyle(ratio > 0.5 ? 0x22c55e : ratio > 0.25 ? 0xeab308 : 0xef4444);
 
     if (this.actionTimerSeconds <= 0 && this.battleState.outcome === 'ongoing') {
-      // Timer expired, auto-submit
+      // Timer expired, auto-submit: default to defend for unsubmitted living units
+      ['hero_1', 'beast_1'].forEach(id => {
+        if (!this.stagedActions[id]) {
+          const vis = this.combatantVisuals.get(id);
+          if (vis && vis.unit.hp > 0) {
+            this.stagedActions[id] = { type: 'defend' };
+            this.updateActorStagingBadge(id, 'defend');
+          }
+        }
+      });
       this.advanceTurnInput();
     }
   }
@@ -623,17 +696,74 @@ export class BattleScene extends Phaser.Scene {
         this.actionTimerSeconds = 30;
         this.currentTurnActorId = 'hero_1';
         this.stagedActions = {};
+        this.clearAllStagingBadges();
+        this.updateActiveActorHUD();
         this.statusBannerText.setText('Action Phase: Next round started. Select commands!');
       }
     });
   }
 
   private playSingleEventAnimation(evt: BattleEvent) {
-    const actor = this.combatantVisuals.get(evt.actorId);
-    const target = evt.targetId ? this.combatantVisuals.get(evt.targetId) : undefined;
-
     this.statusBannerText.setText(evt.message);
     this.statusBannerText.setColor('#fde047');
+
+    const target = evt.targetId ? this.combatantVisuals.get(evt.targetId) : undefined;
+
+    if (evt.type === 'pass') {
+      const actor = this.combatantVisuals.get(evt.actorId);
+      if (actor) {
+        this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'PASS ⏸️', '#94a3b8');
+      }
+      return;
+    }
+
+    if (evt.type === 'defend') {
+      const actor = this.combatantVisuals.get(evt.actorId);
+      if (actor) {
+        this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'GUARD 🛡️', '#34d399');
+      }
+      return;
+    }
+
+    if (evt.type === 'flee') {
+      const actor = this.combatantVisuals.get(evt.actorId);
+      if (actor) {
+        this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'FLEE 🏃', '#f87171');
+      }
+      return;
+    }
+
+    if (evt.type === 'combo' && target) {
+      // Find ally combatants participating in combo (uA + beast)
+      const uAVis = this.combatantVisuals.get(evt.actorId);
+      const beastVis = this.combatantVisuals.get('beast_1');
+      const actorsToAnimate = [uAVis, beastVis].filter((v): v is NonNullable<typeof v> => !!v);
+
+      actorsToAnimate.forEach(a => {
+        const startX = a.container.x;
+        const targetX = target.container.x;
+        const leapDist = (targetX - startX) * 0.35;
+        this.tweens.add({
+          targets: a.container,
+          x: startX + leapDist,
+          duration: 180,
+          yoyo: true,
+          ease: 'Power2'
+        });
+      });
+
+      this.time.delayedCall(180, () => {
+        this.cameras.main.shake(160, 0.012);
+        if (evt.value) {
+          this.showFloatingCombatText(target.container.x, target.container.y - 20, `COMBO! -${evt.value}`, '#fbbf24');
+          target.unit.hp = Math.max(0, target.unit.hp - evt.value);
+          this.updateHealthBar(target);
+        }
+      });
+      return;
+    }
+
+    const actor = this.combatantVisuals.get(evt.actorId);
 
     if (actor && target) {
       // Leap forward animation
@@ -651,7 +781,10 @@ export class BattleScene extends Phaser.Scene {
           // Impact shake and floating combat text
           this.cameras.main.shake(120, 0.008);
           if (evt.value) {
-            this.showFloatingCombatText(target.container.x, target.container.y - 20, `-${evt.value}`, '#ef4444');
+            const isSkill = evt.type === 'skill';
+            const color = isSkill ? '#38bdf8' : '#ef4444';
+            const prefix = isSkill ? '✨ -' : '-';
+            this.showFloatingCombatText(target.container.x, target.container.y - 20, `${prefix}${evt.value}`, color);
             // Deduct HP
             target.unit.hp = Math.max(0, target.unit.hp - evt.value);
             this.updateHealthBar(target);
@@ -666,6 +799,8 @@ export class BattleScene extends Phaser.Scene {
         scale: 0.2,
         duration: 500
       });
+    } else if (evt.type === 'capture_fail' && target) {
+      this.showFloatingCombatText(target.container.x, target.container.y - 20, 'FAILED! ❌', '#ef4444');
     }
   }
 

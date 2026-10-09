@@ -306,4 +306,74 @@ describe('BattleEngine Turn Resolution (Ticket 02)', () => {
       expect(result.nextState.enemies.front[2]?.hp).toBeLessThan(100);
     });
   });
+
+  describe('Pass Combat Action', () => {
+    it('emits pass event and takes no offensive action', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', atk: 30 });
+      const enemy = makeUnit({ id: 'enemy', name: 'Enemy', hp: 100, maxHp: 100 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, null, null, null],
+        [null, null, enemy, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'pass' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      const passEvent = result.events.find(e => e.type === 'pass');
+      expect(passEvent).toBeDefined();
+      expect(passEvent?.actorId).toBe('hero');
+      expect(result.nextState.enemies.front[2]?.hp).toBe(100); // Unharmed
+    });
+
+    it('takes 100% normal damage when targeted while passing', () => {
+      const enemy = makeUnit({ id: 'enemy', name: 'Enemy', atk: 30, agi: 40 });
+      const hero = makeUnit({ id: 'hero', name: 'Hero', hp: 100, maxHp: 100, def: 10, agi: 10 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, null, null, null],
+        [null, null, enemy, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'pass' },
+        enemy: { type: 'attack', targetId: 'hero' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      // Normal damage = 30 * 2 - 10 = 50. Since pass is NOT defend, takes full 50 damage!
+      expect(result.nextState.allies.front[2]?.hp).toBe(50);
+    });
+
+    it('allows beast to pass while hero captures wild beast safely', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', isHero: true, level: 10 });
+      const beast = makeUnit({ id: 'beast', name: 'Beast', isHero: false, atk: 40 });
+      const wild = makeUnit({ id: 'wild', name: 'Wild Beast', hp: 10, maxHp: 100, level: 3 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, beast, null, null],
+        [null, null, wild, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'capture', targetId: 'wild' },
+        beast: { type: 'pass' }
+      };
+
+      // Guaranteed capture with roll 0.1 (< capture chance)
+      const result = BattleEngine.resolveTurn(state, actions, () => 0.1);
+      expect(result.nextState.capturedBeastIds).toContain('wild');
+      expect(result.events.some(e => e.type === 'capture_success')).toBe(true);
+      expect(result.events.some(e => e.type === 'pass' && e.actorId === 'beast')).toBe(true);
+      expect(result.events.some(e => e.type === 'combo')).toBe(false);
+    });
+  });
 });
