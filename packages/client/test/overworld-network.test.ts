@@ -17,8 +17,8 @@ describe('OverworldNetwork', () => {
     const network = new OverworldNetwork();
     network.setRoom(mockRoom);
 
-    network.sendMove(15, 20);
-    expect(mockRoom.send).toHaveBeenCalledWith('move', { targetX: 15, targetY: 20 });
+    network.sendMove(15, 20, 'pebble_cave');
+    expect(mockRoom.send).toHaveBeenCalledWith('move', { targetX: 15, targetY: 20, mapId: 'pebble_cave' });
   });
 
   it('notifies encounter listener when server dispatches encounter message', () => {

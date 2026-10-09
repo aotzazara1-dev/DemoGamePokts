@@ -36,11 +36,20 @@ export class OverworldRoom extends Room<OverworldState> {
     }
     this.setState(new OverworldState());
 
-    this.onMessage('move', (client: Client, message: { targetX: number; targetY: number }) => {
+    this.onMessage('move', (client: Client, message: { targetX: number; targetY: number; mapId?: string }) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
       if (player.inBattle) {
         player.inBattle = false;
+      }
+
+      // 1. Resynchronize mapId if client declared its active map and it differs from server state
+      if (message.mapId && player.mapId !== message.mapId) {
+        player.mapId = message.mapId;
+        player.x = message.targetX;
+        player.y = message.targetY;
+        this.playerStepCounters.set(client.sessionId, 0);
+        return;
       }
 
       const currentPos: TileCoord = { x: player.x, y: player.y };

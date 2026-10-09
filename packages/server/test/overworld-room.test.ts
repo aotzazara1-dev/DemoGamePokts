@@ -287,4 +287,88 @@ describe('OverworldRoom', () => {
     expect(portalMsg).toBeDefined();
     expect(portalMsg?.payload.targetMapId).toBe('bamboo_forest');
   });
+
+  it('triggers encounters after battle, changing maps, and returning to original map', () => {
+    // Test with production DEFAULT_OVERWORLD_MAP
+    const prodRoom = new OverworldRoom();
+    prodRoom.onCreate(); // uses DEFAULT_OVERWORLD_MAP (50x50)
+
+    const client = createMockClient('client_prod');
+    prodRoom.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 30, y: 20 } });
+    const player = prodRoom.state.players.get('client_prod')!;
+
+    // 1. Trigger encounter in meadow
+    prodRoom.rng = () => 0.0; // force encounter
+    (prodRoom as any).onMessageHandlers['move'](client, { targetX: 31, targetY: 20 });
+    expect(player.inBattle).toBe(true);
+    expect(client.messages.some(m => m.type === 'encounter')).toBe(true);
+
+    // 2. Battle concludes
+    (prodRoom as any).onMessageHandlers['battleConcluded'](client);
+    expect(player.inBattle).toBe(false);
+
+    // 3. Move to portal at (35, 2) in novice_town_and_meadow
+    player.x = 35;
+    player.y = 1;
+    (prodRoom as any).onMessageHandlers['move'](client, { targetX: 35, targetY: 2 });
+    expect(player.mapId).toBe('pebble_cave');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+
+    // 4. In pebble_cave, step on return portal at (1, 15)
+    (prodRoom as any).onMessageHandlers['move'](client, { targetX: 1, targetY: 15 });
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(35);
+    expect(player.y).toBe(3);
+
+    // Clear client messages
+    client.messages.length = 0;
+
+    // 5. Walk in meadow (wild zone) - should trigger encounters!
+    prodRoom.rng = () => 0.0; // force encounter
+    (prodRoom as any).onMessageHandlers['move'](client, { targetX: 35, targetY: 4 });
+    expect(player.x).toBe(35);
+    expect(player.y).toBe(4);
+    expect(player.inBattle).toBe(true);
+    const encounterMsg = client.messages.find(m => m.type === 'encounter');
+    expect(encounterMsg).toBeDefined();
+    expect(encounterMsg?.payload.encounter.zoneId).toBe('whispering_meadow');
+  });
+
+  it('resynchronizes mapId and triggers encounters when client sends move with declared mapId', () => {
+    const prodRoom = new OverworldRoom();
+    prodRoom.onCreate();
+
+    const client = createMockClient('client_map_sync');
+    // Player on server is recorded on pebble_cave
+    prodRoom.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 2, y: 15 }, mapId: 'pebble_cave' });
+    const player = prodRoom.state.players.get('client_map_sync')!;
+    expect(player.mapId).toBe('pebble_cave');
+
+    // 1. Client declares it is now on novice_town_and_meadow at (35, 3)
+    (prodRoom as any).onMessageHandlers['move'](client, {
+      targetX: 35,
+      targetY: 3,
+      mapId: 'novice_town_and_meadow'
+    });
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(35);
+    expect(player.y).toBe(3);
+
+    // 2. Subsequent move on novice_town_and_meadow to (35, 4) rolls encounters
+    prodRoom.rng = () => 0.0;
+    (prodRoom as any).onMessageHandlers['move'](client, {
+      targetX: 35,
+      targetY: 4,
+      mapId: 'novice_town_and_meadow'
+    });
+
+    expect(player.x).toBe(35);
+    expect(player.y).toBe(4);
+    expect(player.inBattle).toBe(true);
+
+    const encounterMsg = client.messages.find(m => m.type === 'encounter');
+    expect(encounterMsg).toBeDefined();
+    expect(encounterMsg?.payload.encounter.zoneId).toBe('whispering_meadow');
+  });
 });

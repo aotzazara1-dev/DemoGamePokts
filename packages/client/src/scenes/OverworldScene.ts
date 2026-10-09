@@ -6,11 +6,13 @@ import {
   getMapConfig,
   MAP_DATABASE,
   findPath,
+  OverworldEngine,
   RosterManager,
   ProgressionEngine,
   InventoryManager,
   type MapConfig,
   type TileCoord,
+  type Direction,
   type Combatant,
   type PlayerRosterState,
   type InventoryState,
@@ -1165,8 +1167,24 @@ export class OverworldScene extends Phaser.Scene {
 
     const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
 
-    // Send to authoritative server
-    this.network.sendMove(targetX, targetY);
+    // Send to authoritative server with active mapId for robust synchronization
+    this.network.sendMove(targetX, targetY, this.mapConfig.id);
+
+    // If offline exploration mode without active server, roll encounters locally
+    if (!this.network.getRoom() && !portal) {
+      const offlinePlayerState = {
+        playerId: 'local_hero',
+        position: { x: this.playerTile.x, y: this.playerTile.y },
+        facingDirection: 'down' as Direction,
+        stepsInCurrentZone: 0
+      };
+      const offlineResult = OverworldEngine.movePlayer(offlinePlayerState, { x: targetX, y: targetY }, this.mapConfig);
+      if (offlineResult.encounterTriggered && offlineResult.encounter) {
+        this.time.delayedCall(190, () => {
+          this.triggerBattleTransition(offlineResult);
+        });
+      }
+    }
 
     // Smooth movement tween
     this.tweens.add({
@@ -1180,14 +1198,10 @@ export class OverworldScene extends Phaser.Scene {
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
 
         if (portal) {
-          this.time.delayedCall(250, () => {
-            if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y && !this.isTransitioning) {
-              this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
-              if (this.network.getRoom()) {
-                this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
-              }
-            }
-          });
+          this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
+          if (this.network.getRoom()) {
+            this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
+          }
           return;
         }
 

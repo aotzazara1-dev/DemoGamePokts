@@ -50,9 +50,9 @@ export class OverworldNetwork {
     });
   }
 
-  public sendMove(targetX: number, targetY: number) {
+  public sendMove(targetX: number, targetY: number, mapId?: string) {
     if (!this.room) return;
-    this.room.send('move', { targetX, targetY });
+    this.room.send('move', { targetX, targetY, mapId });
   }
 
   public sendBattleConcluded() {
