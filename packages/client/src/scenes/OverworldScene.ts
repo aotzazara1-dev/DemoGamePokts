@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { OverworldNetwork, type PlayerNetData } from '../network/OverworldNetwork.js';
 import { isoToScreen, screenToIso, getIsometricDepth } from '../utils/isometric.js';
-import { DEFAULT_OVERWORLD_MAP, type MapConfig, type TileCoord } from '@poktsonline/shared';
+import { DEFAULT_OVERWORLD_MAP, findPath, type MapConfig, type TileCoord } from '@poktsonline/shared';
 
 export class OverworldScene extends Phaser.Scene {
   private network!: OverworldNetwork;
@@ -16,6 +16,11 @@ export class OverworldScene extends Phaser.Scene {
   private playerShadow!: Phaser.GameObjects.Ellipse;
   private isMoving = false;
   private moveCooldown = 0;
+
+  // Dual-mode movement state
+  private currentPath: TileCoord[] = [];
+  private destinationMarker?: Phaser.GameObjects.Graphics;
+  private pointerDownTime: number = 0;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -57,18 +62,25 @@ export class OverworldScene extends Phaser.Scene {
       }) as any;
     }
 
-    // Click to move
+    // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.isMoving) return;
+      this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
       const targetX = Math.round(isoCoord.tileX);
       const targetY = Math.round(isoCoord.tileY);
 
-      const dx = Math.sign(targetX - this.playerTile.x);
-      const dy = Math.sign(targetY - this.playerTile.y);
-      if (dx !== 0 || dy !== 0) {
-        this.attemptMove(this.playerTile.x + dx, this.playerTile.y + dy);
+      if (targetX === this.playerTile.x && targetY === this.playerTile.y) return;
+
+      // Compute A* Path
+      const path = findPath(this.playerTile, { x: targetX, y: targetY }, this.mapConfig);
+      if (path && path.length > 1) {
+        this.currentPath = path.slice(1);
+        this.showDestinationMarker(targetX, targetY);
+        if (!this.isMoving) {
+          const next = this.currentPath.shift()!;
+          this.attemptMove(next.x, next.y);
+        }
       }
     });
 
@@ -77,6 +89,8 @@ export class OverworldScene extends Phaser.Scene {
 
     // 6. Handle returning from battle (including defeat respawn)
     this.events.on('resume', (_sys: any, data?: { respawnTile?: TileCoord }) => {
+      this.currentPath = [];
+      this.clearDestinationMarker();
       this.network.sendBattleConcluded();
       const zoneDisplay = document.getElementById('zone-display');
 
@@ -305,43 +319,130 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
-  override update(time: number, delta: number) {
-    if (this.isMoving) return;
+  override update(_time: number, delta: number) {
+    // 1. Mouse Hold-to-Move
+    const pointer = this.input.activePointer;
+    if (pointer.isDown && this.time.now - this.pointerDownTime > 200) {
+      // User is holding down the mouse button!
+      this.currentPath = [];
+      this.clearDestinationMarker();
 
-    if (this.moveCooldown > 0) {
-      this.moveCooldown -= delta;
+      if (!this.isMoving) {
+        this.stepTowardsPointer(pointer);
+      }
       return;
     }
 
-    let dx = 0;
-    let dy = 0;
-
-    if (this.cursors.left?.isDown || this.wasdKeys?.left?.isDown) {
-      dx -= 1;
-    } else if (this.cursors.right?.isDown || this.wasdKeys?.right?.isDown) {
-      dx += 1;
+    // 2. Click-to-Destination Path Queue
+    if (!this.isMoving && this.currentPath.length > 0) {
+      const nextTile = this.currentPath.shift()!;
+      this.attemptMove(nextTile.x, nextTile.y);
+      if (this.currentPath.length === 0) {
+        this.clearDestinationMarker();
+      }
+      return;
     }
 
-    if (this.cursors.up?.isDown || this.wasdKeys?.up?.isDown) {
-      dy -= 1;
-    } else if (this.cursors.down?.isDown || this.wasdKeys?.down?.isDown) {
-      dy += 1;
+    // 3. Keyboard WASD / Cursors
+    if (!this.isMoving) {
+      if (this.moveCooldown > 0) {
+        this.moveCooldown -= delta;
+        return;
+      }
+
+      let dx = 0;
+      let dy = 0;
+
+      if (this.cursors?.left?.isDown || this.wasdKeys?.left?.isDown) {
+        dx -= 1;
+      } else if (this.cursors?.right?.isDown || this.wasdKeys?.right?.isDown) {
+        dx += 1;
+      }
+
+      if (this.cursors?.up?.isDown || this.wasdKeys?.up?.isDown) {
+        dy -= 1;
+      } else if (this.cursors?.down?.isDown || this.wasdKeys?.down?.isDown) {
+        dy += 1;
+      }
+
+      if (dx !== 0 || dy !== 0) {
+        this.currentPath = [];
+        this.clearDestinationMarker();
+        this.attemptMove(this.playerTile.x + dx, this.playerTile.y + dy);
+        this.moveCooldown = 180;
+      }
     }
+  }
+
+  private stepTowardsPointer(pointer: Phaser.Input.Pointer) {
+    const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+    const targetX = Math.round(isoCoord.tileX);
+    const targetY = Math.round(isoCoord.tileY);
+
+    const dx = Math.sign(targetX - this.playerTile.x);
+    const dy = Math.sign(targetY - this.playerTile.y);
 
     if (dx !== 0 || dy !== 0) {
       this.attemptMove(this.playerTile.x + dx, this.playerTile.y + dy);
-      this.moveCooldown = 180;
+    }
+  }
+
+  private showDestinationMarker(tileX: number, tileY: number) {
+    if (!this.destinationMarker) {
+      this.destinationMarker = this.add.graphics();
+    }
+    this.destinationMarker.clear();
+    const pos = isoToScreen(tileX, tileY, this.tileWidth, this.tileHeight, this.originX, this.originY);
+    this.destinationMarker.setPosition(pos.x, pos.y);
+    this.destinationMarker.setDepth(getIsometricDepth(tileX, tileY, -50));
+    this.destinationMarker.lineStyle(2, 0x38bdf8, 0.9);
+    this.destinationMarker.fillStyle(0x38bdf8, 0.2);
+
+    const hw = this.tileWidth / 2;
+    const hh = this.tileHeight / 2;
+    this.destinationMarker.beginPath();
+    this.destinationMarker.moveTo(0, -hh / 2);
+    this.destinationMarker.lineTo(hw / 2, 0);
+    this.destinationMarker.lineTo(0, hh / 2);
+    this.destinationMarker.lineTo(-hw / 2, 0);
+    this.destinationMarker.closePath();
+    this.destinationMarker.strokePath();
+    this.destinationMarker.fillPath();
+
+    this.destinationMarker.setVisible(true);
+    this.destinationMarker.setAlpha(1);
+
+    this.tweens.killTweensOf(this.destinationMarker);
+    this.tweens.add({
+      targets: this.destinationMarker,
+      alpha: { from: 0.9, to: 0.3 },
+      scale: { from: 1.0, to: 1.15 },
+      duration: 350,
+      yoyo: true,
+      loop: -1
+    });
+  }
+
+  private clearDestinationMarker() {
+    if (this.destinationMarker) {
+      this.destinationMarker.setVisible(false);
+      this.tweens.killTweensOf(this.destinationMarker);
     }
   }
 
   private attemptMove(targetX: number, targetY: number) {
     // Client-side quick boundary check
     if (targetX < 0 || targetX >= this.mapConfig.width || targetY < 0 || targetY >= this.mapConfig.height) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
       return;
     }
 
     // Obstacle check
     if (this.mapConfig.obstacles.some(o => o.x === targetX && o.y === targetY)) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
       return;
     }
 
@@ -373,12 +474,28 @@ export class OverworldScene extends Phaser.Scene {
       onComplete: () => {
         this.isMoving = false;
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
+
+        // Check if pointer is still being held down
+        const pointer = this.input.activePointer;
+        if (pointer.isDown && this.time.now - this.pointerDownTime > 200) {
+          this.stepTowardsPointer(pointer);
+        } else if (this.currentPath.length > 0) {
+          const nextTile = this.currentPath.shift()!;
+          this.attemptMove(nextTile.x, nextTile.y);
+          if (this.currentPath.length === 0) {
+            this.clearDestinationMarker();
+          }
+        } else {
+          this.clearDestinationMarker();
+        }
       }
     });
   }
 
   private triggerBattleTransition(payload: any) {
     this.isMoving = true;
+    this.currentPath = [];
+    this.clearDestinationMarker();
 
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
