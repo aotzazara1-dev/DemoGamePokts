@@ -20,7 +20,60 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      overflow: hidden;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+    #game-header {
+      width: 1024px;
+      max-width: 95vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 7px 16px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    #game-header .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      color: #fbbf24;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    #game-header .header-tag {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid #d4af37;
+      color: #facc15;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    #game-header .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    #game-header .ctrl-sep {
+      color: #475569;
+    }
+    #game-header kbd {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-bottom: 2px solid #334155;
+      border-radius: 3px;
+      color: #e2e8f0;
+      padding: 1px 5px;
+      font-size: 11px;
+      font-family: inherit;
+      font-weight: 600;
     }
     #game-wrapper {
       position: relative;
@@ -38,21 +91,15 @@
       position: absolute;
       top: 12px;
       left: 12px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       border: 1px solid #d4af37;
       border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 13px;
+      padding: 6px 12px;
+      font-size: 12px;
       pointer-events: none;
       z-index: 10;
-    }
-    #ui-overlay .title {
-      font-weight: bold;
-      color: #fbbf24;
-      margin-bottom: 4px;
-    }
-    #ui-overlay .hint {
-      color: #94a3b8;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
     }
     #status-bar {
       margin-top: 10px;
@@ -689,12 +736,27 @@
   </style>
 </head>
 <body>
+  <!-- Outside Game Top Header Bar -->
+  <header id="game-header">
+    <div class="header-brand">
+      <span>⚔️ Poktsonline</span>
+      <span class="header-tag">Overworld Alpha</span>
+    </div>
+    <div class="header-controls">
+      <span>🎮 Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>Arrows</kbd> / Click Tile</span>
+      <span class="ctrl-sep">&bull;</span>
+      <span>🐾 <kbd>B</kbd> Beasts</span>
+      <span class="ctrl-sep">&bull;</span>
+      <span>📊 <kbd>C</kbd> Status</span>
+      <span class="ctrl-sep">&bull;</span>
+      <span>🛠️ <kbd>~</kbd> QA Debug</span>
+    </div>
+  </header>
+
   <div id="game-wrapper">
     <div id="ui-overlay">
-      <div class="title">⚔️ Poktsonline - Overworld Alpha</div>
-      <div class="hint">Move: [WASD] or [Arrow Keys] | Click Tile to Navigate</div>
-      <div id="zone-display" style="color: #6ee7b7; margin-top: 4px;">Zone: Novice Town (Safe)</div>
-      <div id="hero-quick-bar" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+      <div id="zone-display" style="color: #6ee7b7; font-weight: 600; font-size: 12px;">🏡 Zone: Novice Town (Safe Zone)</div>
+      <div id="hero-quick-bar" style="margin-top: 5px; display: flex; align-items: center; gap: 8px;">
         <span id="hero-quick-info" style="color: #facc15; font-size: 12px; font-weight: bold;">🧙 Hero Lv.5 (0/559 EXP)</span>
         <button id="btn-character-status" title="Open Character Status (Hotkey: C)" style="background: #2563eb; color: #fff; border: 1px solid #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
           📊 Status [C]
