@@ -70,7 +70,6 @@ export class OverworldScene extends Phaser.Scene {
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasdKeys!: { [key: string]: Phaser.Input.Keyboard.Key };
 
   constructor() {
     super({ key: 'OverworldScene' });
@@ -98,15 +97,9 @@ export class OverworldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.playerContainer, true, 0.08, 0.08);
     this.cameras.main.setZoom(1.2);
 
-    // 4. Input setup
+    // 4. Input setup (Arrow Keys cursor navigation; WASD liberated for other actions)
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
-      this.wasdKeys = this.input.keyboard.addKeys({
-        up: Phaser.Input.Keyboard.KeyCodes.W,
-        left: Phaser.Input.Keyboard.KeyCodes.A,
-        down: Phaser.Input.Keyboard.KeyCodes.S,
-        right: Phaser.Input.Keyboard.KeyCodes.D
-      }) as any;
     }
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
@@ -1038,7 +1031,7 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
-    // 3. Keyboard WASD / Cursors
+    // 3. Keyboard Arrow Keys
     if (!this.isMoving) {
       if (this.moveCooldown > 0) {
         this.moveCooldown -= delta;
@@ -1048,15 +1041,15 @@ export class OverworldScene extends Phaser.Scene {
       let dx = 0;
       let dy = 0;
 
-      if (this.cursors?.left?.isDown || this.wasdKeys?.left?.isDown) {
+      if (this.cursors?.left?.isDown) {
         dx -= 1;
-      } else if (this.cursors?.right?.isDown || this.wasdKeys?.right?.isDown) {
+      } else if (this.cursors?.right?.isDown) {
         dx += 1;
       }
 
-      if (this.cursors?.up?.isDown || this.wasdKeys?.up?.isDown) {
+      if (this.cursors?.up?.isDown) {
         dy -= 1;
-      } else if (this.cursors?.down?.isDown || this.wasdKeys?.down?.isDown) {
+      } else if (this.cursors?.down?.isDown) {
         dy += 1;
       }
 
