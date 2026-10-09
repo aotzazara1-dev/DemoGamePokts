@@ -4,10 +4,10 @@
 
 **Blocked by:** 01: Scaffold Monorepo and Core Battle Formulas
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `OverworldEngine.movePlayer` accepts current player position, movement direction/target, and map boundaries/collisions, returning validated coordinates.
-- [ ] Zone definition specifies tile bounding regions and wild encounter rates per step.
-- [ ] Walking inside wild Zones increments step counters and evaluates deterministic encounter rolls.
-- [ ] When an encounter triggers, the engine selects wild Beasts and levels from the Zone encounter pool and returns an initial combat configuration.
-- [ ] Unit test suite in `packages/shared` verifies movement bounds, collision avoidance, and encounter probability triggering.
+- [x] `OverworldEngine.movePlayer` accepts current player position, movement direction/target, and map boundaries/collisions, returning validated coordinates.
+- [x] Zone definition specifies tile bounding regions and wild encounter rates per step.
+- [x] Walking inside wild Zones increments step counters and evaluates deterministic encounter rolls.
+- [x] When an encounter triggers, the engine selects wild Beasts and levels from the Zone encounter pool and returns an initial combat configuration.
+- [x] Unit test suite in `packages/shared` verifies movement bounds, collision avoidance, and encounter probability triggering.

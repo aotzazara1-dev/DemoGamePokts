@@ -83,3 +83,79 @@ export interface TurnResolutionResult {
   nextState: BattleState;
   events: BattleEvent[];
 }
+
+// --- OVERWORLD TYPES ---
+
+export interface TileCoord {
+  x: number;
+  y: number;
+}
+
+export type Direction =
+  | 'up'
+  | 'down'
+  | 'left'
+  | 'right'
+  | 'up-left'
+  | 'up-right'
+  | 'down-left'
+  | 'down-right';
+
+export type ZoneType = 'safe' | 'wild';
+
+export interface ZoneBounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+export interface EncounterPoolEntry {
+  beastTemplateId: string;
+  name: string;
+  element: Element;
+  baseLevel: number;
+  levelVariance: number;
+  weight: number;
+  baseAtk: number;
+  baseDef: number;
+  baseAgi: number;
+  baseHp: number;
+  baseSp: number;
+}
+
+export interface ZoneDefinition {
+  id: string;
+  name: string;
+  type: ZoneType;
+  bounds: ZoneBounds;
+  encounterRatePerStep: number;
+  encounterPool: EncounterPoolEntry[];
+}
+
+export interface MapConfig {
+  width: number;
+  height: number;
+  obstacles: TileCoord[];
+  zones: ZoneDefinition[];
+}
+
+export interface PlayerOverworldState {
+  playerId: string;
+  position: TileCoord;
+  facingDirection: Direction;
+  stepsInCurrentZone: number;
+}
+
+export interface MovementResult {
+  success: boolean;
+  newPosition: TileCoord;
+  previousPosition: TileCoord;
+  stepsInZone: number;
+  encounterTriggered: boolean;
+  encounter?: {
+    zoneId: string;
+    wildEnemies: Combatant[];
+  };
+  reason?: 'out_of_bounds' | 'obstacle_blocked' | 'invalid_distance';
+}
