@@ -5,6 +5,7 @@ import {
   DEFAULT_OVERWORLD_MAP,
   findPath,
   RosterManager,
+  Element,
   type MapConfig,
   type TileCoord,
   type Combatant,
@@ -33,8 +34,6 @@ export class OverworldScene extends Phaser.Scene {
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
   private isRosterOpen: boolean = false;
-  private rosterModalContainer?: Phaser.GameObjects.Container;
-  private rosterButtonText?: Phaser.GameObjects.Text;
   private selectedFormationUnitType: 'hero' | 'beast' = 'hero';
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
@@ -147,9 +146,11 @@ export class OverworldScene extends Phaser.Scene {
 
     // 7. Setup Beast Roster & Formation button and keyboard shortcuts
     this.createRosterButton();
+    this.setupRosterModalDOM();
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => this.toggleRosterModal());
       this.input.keyboard.on('keydown-F', () => this.toggleRosterModal());
+      this.input.keyboard.on('keydown-ESC', () => this.toggleRosterModal(false));
     }
   }
 
@@ -565,7 +566,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   // ==========================================
-  // BEAST ROSTER & FORMATION UI
+  // BEAST ROSTER & FORMATION UI (DOM OVERLAY)
   // ==========================================
 
   private createRosterButton() {
@@ -577,6 +578,23 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
+  private setupRosterModalDOM() {
+    const btnClose = document.getElementById('btn-close-modal');
+    if (btnClose) btnClose.onclick = () => this.toggleRosterModal(false);
+
+    const btnConfirm = document.getElementById('btn-confirm-formation');
+    if (btnConfirm) btnConfirm.onclick = () => this.toggleRosterModal(false);
+
+    const modal = document.getElementById('roster-modal');
+    if (modal) {
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          this.toggleRosterModal(false);
+        }
+      };
+    }
+  }
+
   private updateRosterButtonLabel() {
     const htmlBtn = document.getElementById('btn-roster');
     if (htmlBtn) {
@@ -584,265 +602,175 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
-  private toggleRosterModal() {
-    this.isRosterOpen = !this.isRosterOpen;
+  public toggleRosterModal(forceOpen?: boolean) {
+    const modal = document.getElementById('roster-modal');
+    if (!modal) return;
+
+    if (forceOpen !== undefined) {
+      this.isRosterOpen = forceOpen;
+    } else {
+      this.isRosterOpen = !this.isRosterOpen;
+    }
+
     if (this.isRosterOpen) {
       this.currentPath = [];
       this.clearDestinationMarker();
-      this.renderRosterModal();
+      modal.classList.add('open');
+      this.renderRosterModalDOM();
     } else {
-      if (this.rosterModalContainer) {
-        this.rosterModalContainer.destroy();
-        this.rosterModalContainer = undefined;
-      }
+      modal.classList.remove('open');
     }
   }
 
-  private renderRosterModal() {
-    if (this.rosterModalContainer) {
-      this.rosterModalContainer.destroy();
+  private renderRosterModalDOM() {
+    const modal = document.getElementById('roster-modal');
+    if (!modal || !this.isRosterOpen) return;
+
+    // 1. Capacity header
+    const capacityHeader = document.getElementById('roster-capacity-header');
+    if (capacityHeader) {
+      capacityHeader.innerText = `BEAST ROSTER (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY})`;
     }
 
-    const { width, height } = this.scale;
-    const zoom = this.cameras.main.zoom || 1.0;
-
-    const container = this.add.container(width / 2, height / 2);
-    container.setScrollFactor(0);
-    container.setDepth(1_000_000);
-    container.setScale(1 / zoom);
-
-    // Dim background (extra coverage to guarantee full viewport blocking)
-    const dim = this.add.rectangle(0, 0, width * zoom * 2, height * zoom * 2, 0x000000, 0.75).setInteractive();
-    dim.on('pointerdown', () => { /* prevent click through */ });
-
-    // Modal background
-    const modalBg = this.add.rectangle(0, 0, 940, 560, 0x0f172a, 0.98);
-    modalBg.setStrokeStyle(3, 0xd4af37, 1);
-
-    // Title
-    const title = this.add.text(0, -250, '🐾 BEAST ROSTER & FORMATION GRID', {
-      fontSize: '20px',
-      color: '#fbbf24',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-
-    const subtitle = this.add.text(0, -225, 'Manage captured Beasts and configure 2x5 Formation Grid tactics', {
-      fontSize: '12px',
-      color: '#94a3b8'
-    }).setOrigin(0.5, 0.5);
-
-    // Close button
-    const closeBtn = this.add.rectangle(430, -245, 60, 30, 0x991b1b).setInteractive({ useHandCursor: true });
-    const closeBtnText = this.add.text(430, -245, '✕ Close', { fontSize: '11px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5, 0.5);
-    closeBtn.on('pointerdown', () => this.toggleRosterModal());
-
-    container.add([dim, modalBg, title, subtitle, closeBtn, closeBtnText]);
-
-    // ==========================================
-    // LEFT COLUMN: BEAST ROSTER
-    // ==========================================
-    const leftX = -230;
-    const rosterHeader = this.add.text(leftX, -190, `BEAST ROSTER (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY})`, {
-      fontSize: '13px',
-      color: '#38bdf8',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    container.add(rosterHeader);
-
-    const startY = -145;
-    this.roster.beasts.slice(0, 4).forEach((beast, idx) => {
-      const cardY = startY + idx * 82;
-      const isActive = beast.id === this.roster.activeBeastId;
-
-      const cardBg = this.add.rectangle(leftX, cardY, 410, 72, 0x1e293b);
-      cardBg.setStrokeStyle(1.5, isActive ? 0xfbbf24 : 0x334155, 1);
-
-      const elemColors: Record<string, string> = {
-        Water: '#38bdf8',
-        Fire: '#f87171',
-        Earth: '#fb923c',
-        Wind: '#4ade80'
-      };
-      const elemColor = elemColors[beast.element] || '#ffffff';
-
-      const nameText = this.add.text(leftX - 190, cardY - 22, `${beast.name} Lv.${beast.level} [${beast.element}]`, {
-        fontSize: '12px',
-        color: elemColor,
-        fontStyle: 'bold'
-      });
-
-      const statsText = this.add.text(leftX - 190, cardY - 4, `HP: ${beast.hp}/${beast.maxHp}  SP: ${beast.sp}/${beast.maxSp}`, {
-        fontSize: '10px',
-        color: '#e2e8f0'
-      });
-
-      const attrsText = this.add.text(leftX - 190, cardY + 12, `ATK: ${beast.atk}  DEF: ${beast.def}  AGI: ${beast.agi}`, {
-        fontSize: '10px',
-        color: '#94a3b8'
-      });
-
-      container.add([cardBg, nameText, statsText, attrsText]);
-
-      if (isActive) {
-        const activeBadge = this.add.text(leftX + 130, cardY, '⭐ ACTIVE', {
-          fontSize: '11px',
-          color: '#fbbf24',
-          fontStyle: 'bold'
-        }).setOrigin(0.5, 0.5);
-        container.add(activeBadge);
+    // 2. Beast List
+    const beastContainer = document.getElementById('beast-list-container');
+    if (beastContainer) {
+      beastContainer.innerHTML = '';
+      if (this.roster.beasts.length === 0) {
+        beastContainer.innerHTML = `
+          <div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px;">
+            No beasts captured yet.<br>Explore Whispering Meadow to capture wild beasts!
+          </div>
+        `;
       } else {
-        const deployBtn = this.add.rectangle(leftX + 135, cardY, 90, 30, 0x0284c7).setInteractive({ useHandCursor: true });
-        const deployText = this.add.text(leftX + 135, cardY, 'Deploy', {
-          fontSize: '11px',
-          color: '#ffffff',
-          fontStyle: 'bold'
-        }).setOrigin(0.5, 0.5);
-        deployBtn.on('pointerdown', () => {
-          this.roster = RosterManager.setActiveBeast(this.roster, beast.id);
-          this.renderRosterModal();
+        this.roster.beasts.forEach((beast) => {
+          const isActive = beast.id === this.roster.activeBeastId;
+          const card = document.createElement('div');
+          card.className = `beast-item ${isActive ? 'active' : ''}`;
+
+          card.innerHTML = `
+            <div class="beast-info">
+              <div class="beast-name-row">
+                <span style="color: ${this.getElementColor(beast.element)};">${beast.name}</span>
+                <span style="font-size: 11px; color: #94a3b8;">Lv.${beast.level}</span>
+                <span class="badge-element badge-${beast.element}">${this.getElementIcon(beast.element)} ${beast.element}</span>
+              </div>
+              <div class="beast-bars">
+                <span>HP: ${beast.hp}/${beast.maxHp}</span> &bull; <span>SP: ${beast.sp}/${beast.maxSp}</span>
+              </div>
+              <div class="beast-stats-row">
+                <span>ATK: ${beast.atk}</span>
+                <span>DEF: ${beast.def}</span>
+                <span>INT: ${beast.int || 10}</span>
+                <span>AGI: ${beast.agi}</span>
+              </div>
+            </div>
+            <div>
+              ${isActive 
+                ? '<div class="badge-active-beast">⭐ ACTIVE</div>' 
+                : `<button class="btn-deploy-beast" data-id="${beast.id}">⚡ Deploy</button>`
+              }
+            </div>
+          `;
+
+          const deployBtn = card.querySelector<HTMLButtonElement>('.btn-deploy-beast');
+          if (deployBtn) {
+            deployBtn.onclick = (e) => {
+              e.stopPropagation();
+              this.roster = RosterManager.setActiveBeast(this.roster, beast.id);
+              this.updateRosterButtonLabel();
+              this.renderRosterModalDOM();
+            };
+          }
+
+          beastContainer.appendChild(card);
         });
-        container.add([deployBtn, deployText]);
       }
-    });
-
-    if (this.roster.beasts.length === 0) {
-      const emptyText = this.add.text(leftX, -100, 'No beasts captured yet.\nExplore Whispering Meadow to capture wild beasts!', {
-        fontSize: '12px',
-        color: '#64748b',
-        align: 'center'
-      }).setOrigin(0.5, 0.5);
-      container.add(emptyText);
     }
 
-    // ==========================================
-    // RIGHT COLUMN: 2x5 FORMATION GRID
-    // ==========================================
-    const rightX = 230;
-    const formationHeader = this.add.text(rightX, -190, 'TACTICAL FORMATION (2x5 GRID)', {
-      fontSize: '13px',
-      color: '#38bdf8',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-
-    // Unit selector buttons
-    const heroSelected = this.selectedFormationUnitType === 'hero';
-    const selHeroBtn = this.add.rectangle(rightX - 95, -150, 160, 32, heroSelected ? 0x1d4ed8 : 0x334155).setInteractive({ useHandCursor: true });
-    selHeroBtn.setStrokeStyle(1.5, heroSelected ? 0xfde047 : 0x475569);
-    const selHeroText = this.add.text(rightX - 95, -150, '🧙 Move Hero', {
-      fontSize: '11px',
-      color: heroSelected ? '#ffffff' : '#94a3b8',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    selHeroBtn.on('pointerdown', () => {
-      this.selectedFormationUnitType = 'hero';
-      this.renderRosterModal();
-    });
-
+    // 3. Unit Selector Buttons
+    const btnHero = document.getElementById('btn-select-hero');
+    const btnBeast = document.getElementById('btn-select-beast');
     const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
-    const beastSelected = this.selectedFormationUnitType === 'beast';
-    const selBeastBtn = this.add.rectangle(rightX + 95, -150, 160, 32, beastSelected ? 0x059669 : 0x334155).setInteractive({ useHandCursor: true });
-    selBeastBtn.setStrokeStyle(1.5, beastSelected ? 0xfde047 : 0x475569);
-    const selBeastText = this.add.text(rightX + 95, -150, `🦁 Move ${activeBeast?.name || 'Beast'}`, {
-      fontSize: '11px',
-      color: beastSelected ? '#ffffff' : '#94a3b8',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    selBeastBtn.on('pointerdown', () => {
-      this.selectedFormationUnitType = 'beast';
-      this.renderRosterModal();
-    });
 
-    container.add([formationHeader, selHeroBtn, selHeroText, selBeastBtn, selBeastText]);
-
-    // Front Row Label
-    const frontLabel = this.add.text(rightX, -112, '--- FRONT ROW (Intercepts Melee Attacks) ---', {
-      fontSize: '11px',
-      color: '#f87171',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    container.add(frontLabel);
-
-    // Front Row Slots (col 0..4)
-    for (let col = 0; col < 5; col++) {
-      const slotX = rightX - 160 + col * 80;
-      const slotY = -72;
-      this.renderFormationSlotBox(container, slotX, slotY, 'front', col, activeBeast);
+    if (btnHero) {
+      btnHero.className = `btn-unit-select ${this.selectedFormationUnitType === 'hero' ? 'selected-hero' : ''}`;
+      btnHero.onclick = () => {
+        this.selectedFormationUnitType = 'hero';
+        this.renderRosterModalDOM();
+      };
     }
 
-    // Back Row Label
-    const backLabel = this.add.text(rightX, -22, '--- BACK ROW (Shielded by Front Row) ---', {
-      fontSize: '11px',
-      color: '#60a5fa',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    container.add(backLabel);
-
-    // Back Row Slots (col 0..4)
-    for (let col = 0; col < 5; col++) {
-      const slotX = rightX - 160 + col * 80;
-      const slotY = 18;
-      this.renderFormationSlotBox(container, slotX, slotY, 'back', col, activeBeast);
+    if (btnBeast) {
+      btnBeast.className = `btn-unit-select ${this.selectedFormationUnitType === 'beast' ? 'selected-beast' : ''}`;
+      btnBeast.innerText = `🦁 Move ${activeBeast?.name || 'Active Beast'}`;
+      btnBeast.onclick = () => {
+        this.selectedFormationUnitType = 'beast';
+        this.renderRosterModalDOM();
+      };
     }
 
-    // Formation Summary
-    const summaryText = this.add.text(rightX, 85,
-      `Current Formation:\n🧙 Hero: ${this.roster.formation.heroSlot.row.toUpperCase()} Row, Slot ${this.roster.formation.heroSlot.col}\n🦁 ${activeBeast?.name || 'Beast'}: ${this.roster.formation.beastSlot.row.toUpperCase()} Row, Slot ${this.roster.formation.beastSlot.col}`, {
-      fontSize: '11px',
-      color: '#e2e8f0',
-      align: 'center',
-      lineSpacing: 4
-    }).setOrigin(0.5, 0.5);
+    // 4. Formation Grid Slots
+    this.renderGridSlotsRow('front', document.getElementById('grid-front-row'), activeBeast);
+    this.renderGridSlotsRow('back', document.getElementById('grid-back-row'), activeBeast);
 
-    const tipText = this.add.text(rightX, 150, '💡 TS Online Tactics:\nFront Row intercepts melee attacks, protecting the Back Row\nunit in the same column until the front unit is cleared.', {
-      fontSize: '10px',
-      color: '#fbbf24',
-      align: 'center',
-      lineSpacing: 3
-    }).setOrigin(0.5, 0.5);
-
-    // Save & Close Button
-    const saveBtn = this.add.rectangle(0, 235, 260, 40, 0xd97706).setInteractive({ useHandCursor: true });
-    const saveBtnText = this.add.text(0, 235, '✔️ Confirm & Close', {
-      fontSize: '13px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-    saveBtn.on('pointerdown', () => this.toggleRosterModal());
-
-    container.add([summaryText, tipText, saveBtn, saveBtnText]);
-
-    this.rosterModalContainer = container;
+    // 5. Summary Text
+    const summaryText = document.getElementById('formation-summary-text');
+    if (summaryText) {
+      summaryText.innerHTML = `
+        <b>Current Formation:</b> 
+        🧙 Hero: <span style="color: #60a5fa;">${this.roster.formation.heroSlot.row.toUpperCase()} [Col ${this.roster.formation.heroSlot.col}]</span> &bull; 
+        🦁 ${activeBeast?.name || 'Beast'}: <span style="color: #34d399;">${this.roster.formation.beastSlot.row.toUpperCase()} [Col ${this.roster.formation.beastSlot.col}]</span>
+      `;
+    }
   }
 
-  private renderFormationSlotBox(
-    container: Phaser.GameObjects.Container,
-    x: number,
-    y: number,
-    row: 'front' | 'back',
-    col: number,
-    activeBeast?: Combatant
-  ) {
-    const isHeroHere = this.roster.formation.heroSlot.row === row && this.roster.formation.heroSlot.col === col;
-    const isBeastHere = this.roster.formation.beastSlot.row === row && this.roster.formation.beastSlot.col === col;
+  private renderGridSlotsRow(row: 'front' | 'back', rowEl: HTMLElement | null, activeBeast?: Combatant) {
+    if (!rowEl) return;
+    rowEl.innerHTML = '';
 
-    const bgColor = isHeroHere ? 0x1d4ed8 : isBeastHere ? 0x059669 : 0x1e293b;
-    const strokeColor = isHeroHere ? 0x60a5fa : isBeastHere ? 0x34d399 : 0x334155;
+    for (let col = 0; col < 5; col++) {
+      const isHeroHere = this.roster.formation.heroSlot.row === row && this.roster.formation.heroSlot.col === col;
+      const isBeastHere = this.roster.formation.beastSlot.row === row && this.roster.formation.beastSlot.col === col;
 
-    const slotBox = this.add.rectangle(x, y, 74, 52, bgColor).setInteractive({ useHandCursor: true });
-    slotBox.setStrokeStyle(1.5, strokeColor);
+      const slotBox = document.createElement('div');
+      slotBox.className = `slot-box ${isHeroHere ? 'hero-slot' : isBeastHere ? 'beast-slot' : ''}`;
 
-    const label = isHeroHere ? '🧙 Hero' : isBeastHere ? `🦁 ${activeBeast?.name?.split(' ')[0] || 'Beast'}` : `Slot ${col}`;
-    const slotText = this.add.text(x, y, label, {
-      fontSize: '10px',
-      color: isHeroHere || isBeastHere ? '#ffffff' : '#64748b',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
+      if (isHeroHere) {
+        slotBox.innerHTML = '<div>🧙 Hero</div><div style="font-size: 9px; opacity: 0.85;">Lv.5</div>';
+      } else if (isBeastHere) {
+        slotBox.innerHTML = `<div>🦁 ${activeBeast?.name?.split(' ')[0] || 'Beast'}</div><div style="font-size: 9px; opacity: 0.85;">Lv.${activeBeast?.level || 1}</div>`;
+      } else {
+        slotBox.innerHTML = `<div>Slot ${col}</div><div style="font-size: 9px; opacity: 0.5;">Empty</div>`;
+      }
 
-    slotBox.on('pointerdown', () => {
-      this.roster = RosterManager.setFormationSlot(this.roster, this.selectedFormationUnitType, { row, col });
-      this.renderRosterModal();
-    });
+      slotBox.onclick = () => {
+        this.roster = RosterManager.setFormationSlot(this.roster, this.selectedFormationUnitType, { row, col });
+        this.renderRosterModalDOM();
+      };
 
-    container.add([slotBox, slotText]);
+      rowEl.appendChild(slotBox);
+    }
+  }
+
+  private getElementColor(element: Element): string {
+    switch (element) {
+      case Element.Water: return '#38bdf8';
+      case Element.Fire: return '#f87171';
+      case Element.Earth: return '#fb923c';
+      case Element.Wind: return '#4ade80';
+      default: return '#e2e8f0';
+    }
+  }
+
+  private getElementIcon(element: Element): string {
+    switch (element) {
+      case Element.Water: return '💧';
+      case Element.Fire: return '🔥';
+      case Element.Earth: return '🌍';
+      case Element.Wind: return '🌪️';
+      default: return '✨';
+    }
   }
 }
+

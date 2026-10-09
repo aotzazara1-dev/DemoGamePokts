@@ -86,6 +86,314 @@
     #btn-roster:active {
       transform: translateY(1px);
     }
+
+    /* Beast Roster & Formation Grid Modal */
+    #roster-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #roster-modal.open {
+      display: flex;
+    }
+    .roster-card {
+      width: 950px;
+      max-width: 95%;
+      height: 590px;
+      max-height: 92vh;
+      background: #0f172a;
+      border: 2px solid #d4af37;
+      border-radius: 8px;
+      box-shadow: 0 0 35px rgba(212, 175, 55, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .roster-header {
+      padding: 14px 20px;
+      background: #1e293b;
+      border-bottom: 2px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .roster-header-titles h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .roster-header-titles p {
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .btn-close-modal {
+      background: #991b1b;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-close-modal:hover {
+      background: #dc2626;
+    }
+    .roster-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      padding: 16px 20px;
+      overflow: hidden;
+    }
+    .roster-col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+    .roster-col-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .beast-list-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 6px;
+    }
+    .beast-list-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .beast-list-container::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    .beast-item {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .beast-item.active {
+      border-color: #fbbf24;
+      background: rgba(30, 41, 59, 0.95);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+    }
+    .beast-info {
+      flex: 1;
+    }
+    .beast-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .badge-element {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .badge-Water { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; }
+    .badge-Fire { background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid #f87171; }
+    .badge-Earth { background: rgba(251, 146, 60, 0.2); color: #fb923c; border: 1px solid #fb923c; }
+    .badge-Wind { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; }
+    .beast-bars {
+      font-size: 11px;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+    }
+    .beast-stats-row {
+      font-size: 10px;
+      color: #94a3b8;
+      display: flex;
+      gap: 10px;
+    }
+    .badge-active-beast {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 1px solid #fbbf24;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .btn-deploy-beast {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn-deploy-beast:hover {
+      background: #0369a1;
+    }
+    .roster-col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .unit-switch-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-unit-select {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      border: 1.5px solid #475569;
+      background: #334155;
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+    .btn-unit-select.selected-hero {
+      background: #1d4ed8;
+      border-color: #fde047;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(29, 78, 216, 0.5);
+    }
+    .btn-unit-select.selected-beast {
+      background: #059669;
+      border-color: #fde047;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(5, 150, 105, 0.5);
+    }
+    .formation-grid-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .row-header {
+      font-size: 11px;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .row-header.front { color: #f87171; }
+    .row-header.back { color: #60a5fa; }
+    .grid-slots-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .slot-box {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 6px;
+      height: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .slot-box:hover {
+      border-color: #facc15;
+      transform: translateY(-2px);
+    }
+    .slot-box.hero-slot {
+      background: #1d4ed8;
+      border-color: #60a5fa;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+    }
+    .slot-box.beast-slot {
+      background: #059669;
+      border-color: #34d399;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+    .formation-summary-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 11px;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+    .tactics-tip {
+      font-size: 10px;
+      color: #fbbf24;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    .roster-footer {
+      padding: 12px 20px;
+      background: #1e293b;
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-confirm-formation {
+      background: #d97706;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(217, 119, 6, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-confirm-formation:hover {
+      background: #b45309;
+      box-shadow: 0 0 16px rgba(217, 119, 6, 0.7);
+    }
   </style>
 </head>
 <body>
@@ -98,6 +406,78 @@
     <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
       🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
     </button>
+
+    <!-- Beast Roster & Formation Grid Modal Overlay -->
+    <div id="roster-modal">
+      <div class="roster-card">
+        <div class="roster-header">
+          <div class="roster-header-titles">
+            <h2>🐾 BEAST ROSTER & FORMATION GRID</h2>
+            <p>Manage captured Beasts and configure 2x5 Formation Grid tactics</p>
+          </div>
+          <button id="btn-close-modal" class="btn-close-modal" title="Close (Hotkey: Esc or B)">✕ Close</button>
+        </div>
+
+        <div class="roster-body">
+          <!-- Left Column: Beast Roster -->
+          <div class="roster-col-left">
+            <div class="roster-col-title">
+              <span id="roster-capacity-header">BEAST ROSTER (1/10)</span>
+            </div>
+            <div id="beast-list-container" class="beast-list-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Right Column: Formation Grid -->
+          <div class="roster-col-right">
+            <div class="roster-col-title">
+              <span>TACTICAL FORMATION (2x5 GRID)</span>
+            </div>
+
+            <!-- Unit Selection Group -->
+            <div class="unit-switch-group">
+              <button id="btn-select-hero" class="btn-unit-select selected-hero">
+                🧙 Move Hero
+              </button>
+              <button id="btn-select-beast" class="btn-unit-select">
+                🦁 Move Active Beast
+              </button>
+            </div>
+
+            <!-- Formation Grid Rows -->
+            <div class="formation-grid-section">
+              <div class="row-header front">--- FRONT ROW (Intercepts Melee Attacks) ---</div>
+              <div id="grid-front-row" class="grid-slots-row">
+                <!-- 5 slots: Col 0..4 -->
+              </div>
+
+              <div class="row-header back" style="margin-top: 6px;">--- BACK ROW (Shielded by Front Row) ---</div>
+              <div id="grid-back-row" class="grid-slots-row">
+                <!-- 5 slots: Col 0..4 -->
+              </div>
+            </div>
+
+            <!-- Formation Summary & Tips -->
+            <div class="formation-summary-box">
+              <div id="formation-summary-text" style="font-weight: 500; margin-bottom: 6px;">
+                Hero: Front Row [Col 2] | Aqua Fin: Back Row [Col 2]
+              </div>
+              <div class="tactics-tip">
+                💡 <b>TS Online Tactics:</b> Front Row intercepts enemy melee attacks, protecting the Back Row unit in the same column until the front unit is cleared.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roster-footer">
+          <button id="btn-confirm-formation" class="btn-confirm-formation">
+            ✔️ Confirm & Close
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="game-container"></div>
   </div>
   <div id="status-bar">Authoritative Colyseus Server Room &bull; TS Online Isometric Combat Mechanics</div>
