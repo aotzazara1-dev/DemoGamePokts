@@ -21,3 +21,5 @@ Thumbs.db
 !.vscode/settings.json
 .idea/
 swordsman_sprites/
+packages/server/data/*.db
+packages/server/data/

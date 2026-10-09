@@ -12,6 +12,22 @@ _Avoid_: World map, field, stage
 The primary character avatar created and directly controlled by a player.
 _Avoid_: Avatar, player unit, main character
 
+**Account**:
+The persistent credential record (either registered with username/password or provisioned as a Guest) that owns up to three Heroes.
+_Avoid_: User, profile, player account, login
+
+**Guest Account**:
+A provisional Account identified by a persistent client-side token allowing immediate play without credentials, eligible for permanent linking to a username and password.
+_Avoid_: Anonymous user, temp player, trial account
+
+**Character Select**:
+The pre-game interface where an authenticated Account views, creates, selects, or deletes their Heroes before entering the Overworld.
+_Avoid_: Lobby, hero menu, character screen
+
+**Hero Save State**:
+The persistent authoritative database snapshot of a Hero's progression (Attributes, EXP, Stat Points, current Map, Tile position, Inventory, Gold, and Beast Roster).
+_Avoid_: Savefile, character data, player backup
+
 **Beast**:
 A collectible creature in the world that can be captured, leveled up, and summoned to fight alongside the Hero.
 _Avoid_: Pet, monster, general, pokemon
