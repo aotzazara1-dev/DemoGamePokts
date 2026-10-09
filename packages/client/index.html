@@ -59,6 +59,33 @@
       font-size: 13px;
       color: #9ca3af;
     }
+    #btn-roster {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #d4af37;
+      border-radius: 6px;
+      color: #facc15;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 8px 16px;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+      z-index: 100;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #btn-roster:hover {
+      background: #1e293b;
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.7);
+      transform: translateY(-1px);
+    }
+    #btn-roster:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
@@ -68,6 +95,9 @@
       <div class="hint">Move: [WASD] or [Arrow Keys] | Click Tile to Navigate</div>
       <div id="zone-display" style="color: #6ee7b7; margin-top: 4px;">Zone: Novice Town (Safe)</div>
     </div>
+    <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
+      🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
+    </button>
     <div id="game-container"></div>
   </div>
   <div id="status-bar">Authoritative Colyseus Server Room &bull; TS Online Isometric Combat Mechanics</div>

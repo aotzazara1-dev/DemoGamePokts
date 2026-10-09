@@ -108,6 +108,11 @@ export class OverworldScene extends Phaser.Scene {
       this.currentPath = [];
       this.clearDestinationMarker();
       this.network.sendBattleConcluded();
+
+      // Restore Beasts button when returning to Overworld
+      const htmlBtn = document.getElementById('btn-roster');
+      if (htmlBtn) htmlBtn.style.display = 'flex';
+
       const zoneDisplay = document.getElementById('zone-display');
 
       if (data?.capturedBeasts && data.capturedBeasts.length > 0) {
@@ -540,6 +545,10 @@ export class OverworldScene extends Phaser.Scene {
       this.toggleRosterModal();
     }
 
+    // Hide Beasts button during battle
+    const htmlBtn = document.getElementById('btn-roster');
+    if (htmlBtn) htmlBtn.style.display = 'none';
+
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
     this.cameras.main.shake(300, 0.015);
@@ -560,32 +569,18 @@ export class OverworldScene extends Phaser.Scene {
   // ==========================================
 
   private createRosterButton() {
-    const { width } = this.scale;
-    const btnContainer = this.add.container(width - 120, 36);
-    btnContainer.setScrollFactor(0);
-    btnContainer.setDepth(2000);
-
-    const bg = this.add.rectangle(0, 0, 190, 42, 0x0f172a, 0.95);
-    bg.setStrokeStyle(2, 0xd4af37, 0.9);
-
-    this.rosterButtonText = this.add.text(0, 0, `🐾 BEASTS (${this.roster.beasts.length}/10)`, {
-      fontSize: '13px',
-      color: '#facc15',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-
-    btnContainer.add([bg, this.rosterButtonText]);
-    btnContainer.setSize(190, 42);
-    btnContainer.setInteractive({ useHandCursor: true });
-
-    btnContainer.on('pointerover', () => bg.setFillStyle(0x1e293b, 1.0));
-    btnContainer.on('pointerout', () => bg.setFillStyle(0x0f172a, 0.95));
-    btnContainer.on('pointerdown', () => this.toggleRosterModal());
+    const htmlBtn = document.getElementById('btn-roster');
+    if (htmlBtn) {
+      htmlBtn.style.display = 'flex';
+      htmlBtn.onclick = () => this.toggleRosterModal();
+      this.updateRosterButtonLabel();
+    }
   }
 
   private updateRosterButtonLabel() {
-    if (this.rosterButtonText) {
-      this.rosterButtonText.setText(`🐾 BEASTS (${this.roster.beasts.length}/10)`);
+    const htmlBtn = document.getElementById('btn-roster');
+    if (htmlBtn) {
+      htmlBtn.innerHTML = `🐾 BEASTS (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY}) <span style="opacity: 0.75; font-size: 11px;">[B]</span>`;
     }
   }
 
@@ -609,12 +604,15 @@ export class OverworldScene extends Phaser.Scene {
     }
 
     const { width, height } = this.scale;
+    const zoom = this.cameras.main.zoom || 1.0;
+
     const container = this.add.container(width / 2, height / 2);
     container.setScrollFactor(0);
     container.setDepth(3000);
+    container.setScale(1 / zoom);
 
     // Dim background
-    const dim = this.add.rectangle(0, 0, width, height, 0x000000, 0.75).setInteractive();
+    const dim = this.add.rectangle(0, 0, width * zoom, height * zoom, 0x000000, 0.75).setInteractive();
     dim.on('pointerdown', () => { /* prevent click through */ });
 
     // Modal background
