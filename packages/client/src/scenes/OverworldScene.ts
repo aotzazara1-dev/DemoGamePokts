@@ -538,6 +538,116 @@ export class OverworldScene extends Phaser.Scene {
       g.destroy();
     }
 
+    // Hero Back View (Walking up/North - Back of Wuxia Robe)
+    if (!this.textures.exists('hero_back')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // Robe Back (Royal blue martial robe)
+      g.fillStyle(0x1d4ed8, 1);
+      g.fillRect(3, 14, 20, 24);
+      // Dark seam line down center of back
+      g.fillStyle(0x1e3a8a, 1);
+      g.fillRect(12, 14, 2, 24);
+      // Waist sash belt (gold / amber)
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(2, 24, 22, 4);
+      // Trailing sash ends
+      g.fillStyle(0xb45309, 1);
+      g.fillRect(11, 28, 4, 8);
+      // Trousers
+      g.fillStyle(0x1e1b4b, 1);
+      g.fillRect(5, 38, 6, 6);
+      g.fillRect(15, 38, 6, 6);
+      // Boots
+      g.fillStyle(0x78350f, 1);
+      g.fillRect(4, 44, 7, 4);
+      g.fillRect(15, 44, 7, 4);
+      // Head Back (Dark Hair)
+      g.fillStyle(0x0f172a, 1);
+      g.fillCircle(13, 10, 8);
+      // High Ponytail / Topknot
+      g.fillStyle(0x020617, 1);
+      g.fillEllipse(13, 3, 5, 8);
+      // Headband Ribbon (Amber/gold)
+      g.fillStyle(0xf59e0b, 1);
+      g.fillRect(10, 5, 6, 3);
+      g.fillRect(11, 8, 4, 8);
+      g.generateTexture('hero_back', 26, 48);
+      g.destroy();
+    }
+
+    // Hero Back-Diagonal View (Walking North-East / North-West - 3/4 Back View)
+    if (!this.textures.exists('hero_back_diag')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // 3/4 Back Robe
+      g.fillStyle(0x1d4ed8, 1);
+      g.beginPath();
+      g.moveTo(3, 14);
+      g.lineTo(23, 16);
+      g.lineTo(21, 38);
+      g.lineTo(5, 38);
+      g.closePath();
+      g.fill();
+      // Waist sash belt
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(3, 24, 20, 4);
+      // Trailing sash at side
+      g.fillStyle(0xb45309, 1);
+      g.fillRect(7, 28, 4, 7);
+      // Trousers & Boots
+      g.fillStyle(0x1e1b4b, 1);
+      g.fillRect(5, 38, 6, 6);
+      g.fillRect(14, 38, 6, 6);
+      g.fillStyle(0x78350f, 1);
+      g.fillRect(4, 44, 7, 4);
+      g.fillRect(14, 44, 7, 4);
+      // Head 3/4 back
+      g.fillStyle(0x0f172a, 1);
+      g.fillCircle(14, 10, 8);
+      // Edge of cheek
+      g.fillStyle(0xfde047, 1);
+      g.fillRect(20, 10, 2, 4);
+      // Ponytail angled backwards
+      g.fillStyle(0x020617, 1);
+      g.fillEllipse(10, 4, 5, 8);
+      g.fillStyle(0xf59e0b, 1);
+      g.fillRect(8, 6, 4, 7);
+      g.generateTexture('hero_back_diag', 26, 48);
+      g.destroy();
+    }
+
+    // Hero Side Profile View (Walking East / West)
+    if (!this.textures.exists('hero_side')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // Side Robe silhouette
+      g.fillStyle(0x2563eb, 1);
+      g.fillRect(4, 14, 16, 24);
+      // Belt
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(3, 24, 17, 4);
+      // Side arm
+      g.fillStyle(0x1d4ed8, 1);
+      g.fillRect(10, 16, 5, 14);
+      // Trousers & Boot
+      g.fillStyle(0x1e1b4b, 1);
+      g.fillRect(8, 38, 7, 6);
+      g.fillStyle(0x78350f, 1);
+      g.fillRect(7, 44, 10, 4);
+      // Head profile
+      g.fillStyle(0xfde047, 1);
+      g.fillCircle(14, 10, 7);
+      // Hair back
+      g.fillStyle(0x0f172a, 1);
+      g.fillRect(6, 4, 8, 12);
+      // Headband
+      g.fillStyle(0xf59e0b, 1);
+      g.fillRect(7, 7, 13, 3);
+      // Eye
+      g.fillStyle(0x000000, 1);
+      g.fillRect(17, 10, 2, 2);
+      g.generateTexture('hero_side', 26, 48);
+      g.destroy();
+    }
+
     // Remote Hero Sprite
     if (!this.textures.exists('remote_hero_sprite')) {
       const g = this.make.graphics({ x: 0, y: 0 });
@@ -546,6 +656,26 @@ export class OverworldScene extends Phaser.Scene {
       g.fillStyle(0xfef08a, 1);
       g.fillCircle(16, 8, 6);
       g.generateTexture('remote_hero_sprite', 32, 32);
+      g.destroy();
+    }
+
+    if (!this.textures.exists('remote_hero_back')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xb45309, 1);
+      g.fillRect(8, 14, 16, 18);
+      g.fillStyle(0x0f172a, 1);
+      g.fillCircle(16, 8, 6);
+      g.generateTexture('remote_hero_back', 32, 32);
+      g.destroy();
+    }
+
+    if (!this.textures.exists('remote_hero_side')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xd97706, 1);
+      g.fillRect(10, 14, 12, 18);
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(16, 8, 5);
+      g.generateTexture('remote_hero_side', 32, 32);
       g.destroy();
     }
 
@@ -1144,6 +1274,65 @@ export class OverworldScene extends Phaser.Scene {
 
     this.playerContainer.add([this.playerShadow, sprite, nameText]);
     this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
+
+    // Idle breathing animation
+    this.tweens.add({
+      targets: sprite,
+      scaleY: 1.03,
+      duration: 1100,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+  }
+
+  private updateHeroDirectionalSprite(screenDx: number, screenDy: number) {
+    if (!this.playerContainer) return;
+    const heroImg = this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image;
+    if (!heroImg) return;
+
+    // Moving upwards on screen -> Back Views
+    if (screenDy < -6) {
+      if (screenDx > 8) {
+        // Up-Right: Back-Diagonal
+        heroImg.setTexture('hero_back_diag');
+        heroImg.setFlipX(false);
+      } else if (screenDx < -8) {
+        // Up-Left: Back-Diagonal (Flipped)
+        heroImg.setTexture('hero_back_diag');
+        heroImg.setFlipX(true);
+      } else {
+        // Straight Up: Back View
+        heroImg.setTexture('hero_back');
+        heroImg.setFlipX(false);
+      }
+    }
+    // Moving downwards on screen -> Front Views
+    else if (screenDy > 6) {
+      if (screenDx > 8) {
+        // Down-Right: Front-Diagonal
+        heroImg.setTexture('hero_sprite');
+        heroImg.setFlipX(false);
+      } else if (screenDx < -8) {
+        // Down-Left: Front-Diagonal (Flipped)
+        heroImg.setTexture('hero_sprite');
+        heroImg.setFlipX(true);
+      } else {
+        // Straight Down: Front View
+        heroImg.setTexture('hero_sprite');
+        heroImg.setFlipX(false);
+      }
+    }
+    // Moving horizontally -> Side Views
+    else {
+      if (screenDx > 0) {
+        heroImg.setTexture('hero_side');
+        heroImg.setFlipX(false);
+      } else if (screenDx < 0) {
+        heroImg.setTexture('hero_side');
+        heroImg.setFlipX(true);
+      }
+    }
   }
 
   private addOtherPlayer(sessionId: string, player: PlayerNetData) {
@@ -1154,6 +1343,7 @@ export class OverworldScene extends Phaser.Scene {
 
     const shadow = this.add.ellipse(0, 0, 24, 12, 0x000000, 0.4);
     const sprite = this.add.image(0, -18, 'remote_hero_sprite');
+    sprite.setName('remote_hero_sprite');
     const nameText = this.add.text(0, -36, player.name || 'Player', {
       fontSize: '11px',
       color: '#f59e0b',
@@ -1179,6 +1369,24 @@ export class OverworldScene extends Phaser.Scene {
     if (!isSameMap) return;
 
     const screenPos = isoToScreen(player.x, player.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    // Update remote player directional sprite
+    const spr = remote.container.getByName('remote_hero_sprite') as Phaser.GameObjects.Image;
+    if (spr) {
+      if (player.direction === 'up') {
+        spr.setTexture('remote_hero_back');
+        spr.setFlipX(false);
+      } else if (player.direction === 'left') {
+        spr.setTexture('remote_hero_side');
+        spr.setFlipX(true);
+      } else if (player.direction === 'right') {
+        spr.setTexture('remote_hero_side');
+        spr.setFlipX(false);
+      } else {
+        spr.setTexture('remote_hero_sprite');
+        spr.setFlipX(false);
+      }
+    }
 
     // If player arrived from another map or warped across large distance, snap immediately
     const dx = Math.abs(player.x - remote.tile.x);
@@ -1527,12 +1735,40 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
-    const stepDx = targetX - this.playerTile.x;
-    if (stepDx !== 0 && this.playerContainer) {
-      const heroImg = this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image;
-      if (heroImg) {
-        heroImg.setFlipX(stepDx < 0);
-      }
+    const currentScreen = isoToScreen(this.playerTile.x, this.playerTile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+    const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    const screenDx = nextScreenPos.x - currentScreen.x;
+    const screenDy = nextScreenPos.y - currentScreen.y;
+
+    // 1. Ragnarok Online Directional Sprite (Front, Back, Back-Diagonal, Side)
+    this.updateHeroDirectionalSprite(screenDx, screenDy);
+
+    // 2. Ragnarok Online Step Bobbing & Dynamic Foot Shadow
+    const heroImg = this.playerContainer ? this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image : null;
+    if (heroImg) {
+      this.tweens.killTweensOf(heroImg);
+      this.tweens.add({
+        targets: heroImg,
+        y: -26,
+        yoyo: true,
+        duration: 85,
+        repeat: 1,
+        ease: 'Sine.easeInOut'
+      });
+    }
+
+    if (this.playerShadow) {
+      this.tweens.killTweensOf(this.playerShadow);
+      this.tweens.add({
+        targets: this.playerShadow,
+        scaleX: 0.82,
+        scaleY: 0.82,
+        yoyo: true,
+        duration: 85,
+        repeat: 1,
+        ease: 'Sine.easeInOut'
+      });
     }
 
     this.isMoving = true;
@@ -1553,8 +1789,6 @@ export class OverworldScene extends Phaser.Scene {
         return;
       }
     }
-
-    const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
 
     // Send to authoritative server with active mapId for robust synchronization
     this.network.sendMove(targetX, targetY, this.mapConfig.id);
@@ -1585,6 +1819,24 @@ export class OverworldScene extends Phaser.Scene {
       onComplete: () => {
         this.isMoving = false;
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
+
+        if (heroImg) {
+          heroImg.setY(-22);
+          // Restore gentle idle breathing
+          this.tweens.killTweensOf(heroImg);
+          this.tweens.add({
+            targets: heroImg,
+            scaleY: 1.03,
+            duration: 1100,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+        }
+        if (this.playerShadow) {
+          this.tweens.killTweensOf(this.playerShadow);
+          this.playerShadow.setScale(1.0);
+        }
 
         if (portal) {
           this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poktsonline - Ragnarok Online Style 8-Directional Movement Prototype</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131c2e;
+      --border: #233554;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --gold: #facc15;
+      --green: #10b981;
+      --red: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Sarabun", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      max-width: 960px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .question-banner {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      color: #bae6fd;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+      max-width: 1120px;
+      width: 100%;
+    }
+
+    .canvas-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      background: #060910;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      cursor: crosshair;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .canvas-controls-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .mode-switch {
+      display: flex;
+      background: #0b1322;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 2px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #090d16;
+    }
+
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .card h3 {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* State display */
+    .state-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    .state-item {
+      background: #090f1a;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+    }
+
+    .state-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .state-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .state-val.highlight {
+      color: var(--accent);
+    }
+
+    /* 8-Direction Compass / D-Pad */
+    .dpad-8 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-width: 250px;
+      margin: 8px auto;
+    }
+
+    .btn-dir {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .btn-dir.center {
+      background: #0f172a;
+      color: var(--gold);
+      border-color: #3b82f6;
+    }
+
+    .btn-dir:hover:not(.center) {
+      background: var(--accent-hover);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* Walkthrough Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #1e293b;
+      color: var(--accent);
+    }
+
+    .tab-content {
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .step-btn {
+      margin-top: 10px;
+      width: 100%;
+      background: var(--accent);
+      color: #090d16;
+      border: none;
+      padding: 9px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .step-btn:hover {
+      background: #7dd3fc;
+    }
+
+    .btn-reset {
+      margin-top: 8px;
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid #233554;
+      padding: 6px;
+      border-radius: 6px;
+      width: 100%;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .btn-reset:hover {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .sprite-preview {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #090f1a;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+      border: 1px solid #1e293b;
+    }
+
+    .sprite-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Poktsonline - <span>Ragnarok Online</span> Style Movement Prototype</h1>
+    <div class="question-banner">
+      <strong>Core Question:</strong> "การเดินแบบ 8 ทิศทางสไตล์ Ragnarok Online (มีสไปรต์ด้านหลังเวลาเดินขึ้น, มีท่าสับขา Walk Cycle, และเคลื่อนที่แบบ Continuous Path) ให้ความรู้สึกในการเล่นลื่นไหลอย่างไร?"
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Left: Canvas Game View -->
+    <div class="canvas-panel">
+      <canvas id="gameCanvas" width="700" height="520"></canvas>
+      
+      <div class="canvas-controls-bar">
+        <div>💡 <strong>คลิกบนตาราง</strong> เพื่อวิ่งไปยังจุดหมาย หรือกด <strong>ปุ่มลูกศร / แป้นตัวเลข</strong></div>
+        
+        <!-- Toggle Mode -->
+        <div class="mode-switch">
+          <button id="modeBefore" class="mode-btn" onclick="window.game.setMode('before')">แบบเดิม (หน้าตรงลอย)</button>
+          <button id="modeAfter" class="mode-btn active" onclick="window.game.setMode('after')">แบบ RO (8 ทิศ + สับขา)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: State and Controls -->
+    <div class="controls-panel">
+      <!-- State Output Card -->
+      <div class="card">
+        <h3>📊 ข้อมูลการเคลื่อนที่แบบเรียลไทม์</h3>
+        <div class="state-grid">
+          <div class="state-item">
+            <div class="state-label">ทิศทางที่หัน (Facing)</div>
+            <div class="state-val highlight" id="stateFacing">SE (หน้าเฉียงขวา)</div>
+          </div>
+          <div class="state-item">
+            <div class="state-label">มุมมองสไปรต์ (View)</div>
+            <div class="state-val" id="stateSpriteView" style="color: #38bdf8;">Front-Right</div>
+          </div>
+          <div class="state-item">
+            <div class="state-label">ท่าทาง (Action State)</div>
+            <div class="state-val" id="stateAction">Idle (ยืนพัก)</div>
+          </div>
+          <div class="state-item">
+            <div class="state-label">เฟรมก้าวขา (Walk Frame)</div>
+            <div class="state-val" id="stateLegFrame">Frame 0</div>
+          </div>
+          <div class="state-item">
+            <div class="state-label">พิกัดกระเบื้อง (Tile Coord)</div>
+            <div class="state-val" id="stateTile">(10, 10)</div>
+          </div>
+          <div class="state-item">
+            <div class="state-label">ความเร็ว (Walk Speed)</div>
+            <div class="state-val" id="stateSpeed">220 px/s</div>
+          </div>
+        </div>
+
+        <!-- 8-Direction Sprite Preview -->
+        <div class="sprite-preview">
+          <div class="sprite-box">
+            <span style="font-size: 1.3rem;">👤</span>
+            <span>หน้าตรง (S)</span>
+          </div>
+          <div class="sprite-box">
+            <span style="font-size: 1.3rem;">🚶‍♂️</span>
+            <span>หน้าเฉียง (SE)</span>
+          </div>
+          <div class="sprite-box">
+            <span style="font-size: 1.3rem;">🧍</span>
+            <span>หันข้าง (E)</span>
+          </div>
+          <div class="sprite-box">
+            <span style="font-size: 1.3rem; color: #38bdf8;">🏃‍♂️</span>
+            <span style="color: #38bdf8;">หลังเฉียง (NE)</span>
+          </div>
+          <div class="sprite-box">
+            <span style="font-size: 1.3rem; color: #38bdf8;">🧑‍🦲</span>
+            <span style="color: #38bdf8;">หลังตรง (N)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8-Direction Free-Play Controls -->
+      <div class="card">
+        <h3>🧭 แผงปุ่ม 8 ทิศทาง (8-Way D-Pad)</h3>
+        <div class="dpad-8">
+          <button class="btn-dir" onclick="window.game.moveStep('NW')">↖ NW<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 7</span></button>
+          <button class="btn-dir" onclick="window.game.moveStep('N')">↑ N<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 8 / W</span></button>
+          <button class="btn-dir" onclick="window.game.moveStep('NE')">↗ NE<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 9</span></button>
+
+          <button class="btn-dir" onclick="window.game.moveStep('W')">← W<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 4 / A</span></button>
+          <button class="btn-dir center" onclick="window.game.stopMoving()">● STOP</button>
+          <button class="btn-dir" onclick="window.game.moveStep('E')">E →<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 6 / D</span></button>
+
+          <button class="btn-dir" onclick="window.game.moveStep('SW')">↙ SW<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 1</span></button>
+          <button class="btn-dir" onclick="window.game.moveStep('S')">↓ S<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 2 / S</span></button>
+          <button class="btn-dir" onclick="window.game.moveStep('SE')">↘ SE<br><span style="font-size: 0.65rem; color:#94a3b8;">Key 3</span></button>
+        </div>
+      </div>
+
+      <!-- Guided Walkthroughs -->
+      <div class="card">
+        <h3>🎬 จำลองสถานการณ์ (Scenarios)</h3>
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="window.game.setTab(1)">1. เดินขึ้นเห็นแผ่นหลัง</button>
+          <button class="tab-btn" onclick="window.game.setTab(2)">2. เดินเฉียงแบบ RO</button>
+          <button class="tab-btn" onclick="window.game.setTab(3)">3. วิ่งวน 8 ทิศ</button>
+        </div>
+
+        <div id="tabContent1" class="tab-content">
+          <strong>สถานการณ์ 1:</strong> สั่งเดินขึ้นบนตรงๆ (North) สังเกตว่าตัวละครจะสลับไปเป็น **แผ่นหลังตรง** ทันที พร้อมท่าสับขาเดินขึ้น
+          <button class="step-btn" onclick="window.game.runWalkthrough(1)">▶ วิ่งขึ้นบน (North - เห็นแผ่นหลัง)</button>
+        </div>
+
+        <div id="tabContent2" class="tab-content" style="display: none;">
+          <strong>สถานการณ์ 2:</strong> เดินเฉียงขึ้น (North-East) มุมยอดนิยมของ RO จะเห็น **แผ่นหลังมุมเฉียง 45 องศา** ที่เป็นเอกลักษณ์ของเกม
+          <button class="step-btn" onclick="window.game.runWalkthrough(2)">▶ วิ่งเฉียงขึ้นขวา (North-East - หลังเฉียง)</button>
+        </div>
+
+        <div id="tabContent3" class="tab-content" style="display: none;">
+          <strong>สถานการณ์ 3:</strong> ตัวละครจะวิ่งวนเป็นวงกลมผ่านครบทั้ง 8 ทิศทาง ให้สังเกตการหมุนสลับของสไปรต์อย่างเป็นธรรมชาติ
+          <button class="step-btn" onclick="window.game.runWalkthrough(3)">▶ วิ่งหมุนวน 8 ทิศทางรอบเสา</button>
+        </div>
+
+        <button class="btn-reset" onclick="window.game.resetHero()">↺ รีเซ็ตตำแหน่ง Hero สู่จุดเริ่มต้น</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 2.5D ISOMETRIC ENGINE & 8-DIRECTIONAL RO SPRITE RENDERER
+     */
+    class IsometricROEngine {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.tileWidth = 64;
+        this.tileHeight = 32;
+        this.originX = 350;
+        this.originY = 120;
+
+        // Mode: 'after' (RO 8-dir with walk cycle) vs 'before' (single front sprite sliding)
+        this.mode = 'after';
+
+        // Hero state
+        this.hero = {
+          tileX: 8,
+          tileY: 8,
+          pixelX: 0,
+          pixelY: 0,
+          facing: 'SE', // N, NE, E, SE, S, SW, W, NW
+          isMoving: false,
+          walkFrame: 0,
+          walkTimer: 0,
+          speed: 180, // pixels per second
+          path: []
+        };
+
+        const initialScreen = this.isoToScreen(this.hero.tileX, this.hero.tileY);
+        this.hero.pixelX = initialScreen.x;
+        this.hero.pixelY = initialScreen.y;
+
+        // Obstacles
+        this.obstacles = new Set(['6,7', '6,8', '6,9', '10,6', '10,7', '11,11', '12,11']);
+
+        this.lastTime = performance.now();
+        this.setupInput();
+        this.gameLoop();
+      }
+
+      setMode(mode) {
+        this.mode = mode;
+        document.getElementById('modeBefore').classList.toggle('active', mode === 'before');
+        document.getElementById('modeAfter').classList.toggle('active', mode === 'after');
+      }
+
+      isoToScreen(tileX, tileY) {
+        return {
+          x: (tileX - tileY) * (this.tileWidth / 2) + this.originX,
+          y: (tileX + tileY) * (this.tileHeight / 2) + this.originY
+        };
+      }
+
+      screenToIso(screenX, screenY) {
+        const dx = screenX - this.originX;
+        const dy = screenY - this.originY;
+        const tileX = Math.round((dx / (this.tileWidth / 2) + dy / (this.tileHeight / 2)) / 2);
+        const tileY = Math.round((dy / (this.tileHeight / 2) - dx / (this.tileWidth / 2)) / 2);
+        return { tileX, tileY };
+      }
+
+      setupInput() {
+        // Click to move
+        this.canvas.addEventListener('click', (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const clickY = e.clientY - rect.top;
+
+          const target = this.screenToIso(clickX, clickY);
+          if (target.tileX >= 0 && target.tileX < 18 && target.tileY >= 0 && target.tileY < 18) {
+            this.navigateHeroTo(target.tileX, target.tileY);
+          }
+        });
+
+        // Keyboard navigation
+        window.addEventListener('keydown', (e) => {
+          const key = e.key;
+          if (key === 'ArrowUp' || key === '8' || key === 'w' || key === 'W') this.moveStep('N');
+          else if (key === 'ArrowDown' || key === '2' || key === 's' || key === 'S') this.moveStep('S');
+          else if (key === 'ArrowLeft' || key === '4' || key === 'a' || key === 'A') this.moveStep('W');
+          else if (key === 'ArrowRight' || key === '6' || key === 'd' || key === 'D') this.moveStep('E');
+          else if (key === '7') this.moveStep('NW');
+          else if (key === '9') this.moveStep('NE');
+          else if (key === '1') this.moveStep('SW');
+          else if (key === '3') this.moveStep('SE');
+        });
+      }
+
+      moveStep(direction) {
+        const deltas = {
+          'N':  { dx: 0,  dy: -1 },
+          'NE': { dx: 1,  dy: -1 },
+          'E':  { dx: 1,  dy: 0  },
+          'SE': { dx: 1,  dy: 1  },
+          'S':  { dx: 0,  dy: 1  },
+          'SW': { dx: -1, dy: 1  },
+          'W':  { dx: -1, dy: 0  },
+          'NW': { dx: -1, dy: -1 }
+        };
+
+        const d = deltas[direction];
+        if (!d) return;
+
+        const targetX = this.hero.tileX + d.dx;
+        const targetY = this.hero.tileY + d.dy;
+
+        this.hero.facing = direction;
+        this.navigateHeroTo(targetX, targetY);
+      }
+
+      stopMoving() {
+        this.hero.path = [];
+        this.hero.isMoving = false;
+        this.hero.walkFrame = 0;
+      }
+
+      navigateHeroTo(targetX, targetY) {
+        if (this.obstacles.has(`${targetX},${targetY}`)) return;
+
+        // Build continuous path steps
+        const path = this.findAStarPath(
+          { x: this.hero.tileX, y: this.hero.tileY },
+          { x: targetX, y: targetY }
+        );
+
+        if (path.length > 1) {
+          this.hero.path = path.slice(1);
+          this.hero.isMoving = true;
+        }
+      }
+
+      findAStarPath(start, goal) {
+        // 8-neighbor A* for true RO movement
+        const openSet = [{ x: start.x, y: start.y, g: 0, f: 0 }];
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const key = (p) => `${p.x},${p.y}`;
+
+        gScore.set(key(start), 0);
+
+        const neighbors = [
+          { x: 0, y: -1, cost: 1 },    // N
+          { x: 1, y: -1, cost: 1.41 }, // NE
+          { x: 1, y: 0, cost: 1 },     // E
+          { x: 1, y: 1, cost: 1.41 },  // SE
+          { x: 0, y: 1, cost: 1 },     // S
+          { x: -1, y: 1, cost: 1.41 }, // SW
+          { x: -1, y: 0, cost: 1 },    // W
+          { x: -1, y: -1, cost: 1.41 } // NW
+        ];
+
+        while (openSet.length > 0) {
+          openSet.sort((a, b) => a.f - b.f);
+          const current = openSet.shift();
+
+          if (current.x === goal.x && current.y === goal.y) {
+            const path = [goal];
+            let k = key(goal);
+            while (cameFrom.has(k)) {
+              const prev = cameFrom.get(k);
+              path.unshift(prev);
+              k = key(prev);
+            }
+            return path;
+          }
+
+          for (const n of neighbors) {
+            const nx = current.x + n.x;
+            const ny = current.y + n.y;
+
+            if (nx < 0 || nx >= 18 || ny < 0 || ny >= 18) continue;
+            if (this.obstacles.has(`${nx},${ny}`)) continue;
+
+            const nKey = `${nx},${ny}`;
+            const tentativeG = (gScore.get(key(current)) || 0) + n.cost;
+
+            if (!gScore.has(nKey) || tentativeG < gScore.get(nKey)) {
+              cameFrom.set(nKey, current);
+              gScore.set(nKey, tentativeG);
+              const h = Math.hypot(goal.x - nx, goal.y - ny);
+              const f = tentativeG + h;
+
+              const existing = openSet.find(o => o.x === nx && o.y === ny);
+              if (!existing) {
+                openSet.push({ x: nx, y: ny, g: tentativeG, f });
+              } else {
+                existing.g = tentativeG;
+                existing.f = f;
+              }
+            }
+          }
+        }
+        return [];
+      }
+
+      update(dt) {
+        if (this.hero.isMoving && this.hero.path.length > 0) {
+          const nextTile = this.hero.path[0];
+          const targetScreen = this.isoToScreen(nextTile.x, nextTile.y);
+
+          const dx = targetScreen.x - this.hero.pixelX;
+          const dy = targetScreen.y - this.hero.pixelY;
+          const dist = Math.hypot(dx, dy);
+
+          // Update facing direction based on movement angle
+          if (this.mode === 'after') {
+            this.updateFacingAngle(nextTile.x - this.hero.tileX, nextTile.y - this.hero.tileY);
+          }
+
+          const moveDist = this.hero.speed * dt;
+          if (dist <= moveDist) {
+            this.hero.pixelX = targetScreen.x;
+            this.hero.pixelY = targetScreen.y;
+            this.hero.tileX = nextTile.x;
+            this.hero.tileY = nextTile.y;
+            this.hero.path.shift();
+
+            if (this.hero.path.length === 0) {
+              this.hero.isMoving = false;
+              this.hero.walkFrame = 0;
+            }
+          } else {
+            this.hero.pixelX += (dx / dist) * moveDist;
+            this.hero.pixelY += (dy / dist) * moveDist;
+          }
+
+          // Walk cycle animation update (4 frames: 0, 1, 2, 3)
+          this.hero.walkTimer += dt;
+          if (this.hero.walkTimer > 0.12) { // 120ms per frame
+            this.hero.walkFrame = (this.hero.walkFrame + 1) % 4;
+            this.hero.walkTimer = 0;
+          }
+        } else {
+          this.hero.isMoving = false;
+          this.hero.walkFrame = 0;
+        }
+
+        this.updateUI();
+      }
+
+      updateFacingAngle(dtx, dty) {
+        if (dtx === 0 && dty < 0) this.hero.facing = 'N';
+        else if (dtx > 0 && dty < 0) this.hero.facing = 'NE';
+        else if (dtx > 0 && dty === 0) this.hero.facing = 'E';
+        else if (dtx > 0 && dty > 0) this.hero.facing = 'SE';
+        else if (dtx === 0 && dty > 0) this.hero.facing = 'S';
+        else if (dtx < 0 && dty > 0) this.hero.facing = 'SW';
+        else if (dtx < 0 && dty === 0) this.hero.facing = 'W';
+        else if (dtx < 0 && dty < 0) this.hero.facing = 'NW';
+      }
+
+      updateUI() {
+        const facingNames = {
+          'N':  '↑ N (หลังตรง - Back)',
+          'NE': '↗ NE (หลังเฉียงขวา - Back-Right)',
+          'E':  'E → (หันข้างขวา - Side-Right)',
+          'SE': '↘ SE (หน้าเฉียงขวา - Front-Right)',
+          'S':  '↓ S (หน้าตรง - Front)',
+          'SW': '↙ SW (หน้าเฉียงซ้าย - Front-Left)',
+          'W':  '← W (หันข้างซ้าย - Side-Left)',
+          'NW': '↖ NW (หลังเฉียงซ้าย - Back-Left)'
+        };
+
+        const viewNames = {
+          'N': 'Back View (แผ่นหลังตรง)',
+          'NE': 'Back-Diagonal (หลังเฉียงขวา)',
+          'NW': 'Back-Diagonal (หลังเฉียงซ้าย)',
+          'E': 'Side View (หันข้าง)',
+          'W': 'Side View (หันข้าง)',
+          'S': 'Front View (หน้าตรง)',
+          'SE': 'Front-Diagonal (หน้าเฉียงขวา)',
+          'SW': 'Front-Diagonal (หน้าเฉียงซ้าย)'
+        };
+
+        document.getElementById('stateFacing').innerText = facingNames[this.hero.facing] || this.hero.facing;
+        document.getElementById('stateSpriteView').innerText = (this.mode === 'after') ? viewNames[this.hero.facing] : 'Front Only (หน้าตรงรูปเดียว)';
+        document.getElementById('stateAction').innerText = this.hero.isMoving ? '🏃 วิ่งต่อเนื่อง (Walking)' : '🧍 ยืนนิ่ง (Idle)';
+        document.getElementById('stateLegFrame').innerText = this.hero.isMoving ? `ก้าวสลับเท้า เฟรม ${this.hero.walkFrame + 1}/4` : 'Frame 0 (ท่ายืน)';
+        document.getElementById('stateTile').innerText = `(${this.hero.tileX}, ${this.hero.tileY})`;
+      }
+
+      gameLoop() {
+        const now = performance.now();
+        const dt = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+
+        this.update(dt);
+        this.render();
+
+        requestAnimationFrame(() => this.gameLoop());
+      }
+
+      render() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 1. Draw Isometric Terrain (18x18 Grid)
+        for (let y = 0; y < 18; y++) {
+          for (let x = 0; x < 18; x++) {
+            const pt = this.isoToScreen(x, y);
+            const isObstacle = this.obstacles.has(`${x},${y}`);
+
+            // Draw diamond isometric tile
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y - this.tileHeight / 2);
+            ctx.lineTo(pt.x + this.tileWidth / 2, pt.y);
+            ctx.lineTo(pt.x, pt.y + this.tileHeight / 2);
+            ctx.lineTo(pt.x - this.tileWidth / 2, pt.y);
+            ctx.closePath();
+
+            const isPath = this.hero.path.some(p => p.x === x && p.y === y);
+
+            if (isObstacle) {
+              ctx.fillStyle = '#1e293b';
+              ctx.fill();
+              ctx.strokeStyle = '#334155';
+            } else if (isPath) {
+              ctx.fillStyle = '#0284c7';
+              ctx.fill();
+              ctx.strokeStyle = '#38bdf8';
+            } else if ((x + y) % 2 === 0) {
+              ctx.fillStyle = '#0f3a2b';
+              ctx.fill();
+              ctx.strokeStyle = '#1b5e3f';
+            } else {
+              ctx.fillStyle = '#134735';
+              ctx.fill();
+              ctx.strokeStyle = '#1b5e3f';
+            }
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Obstacle Rock
+            if (isObstacle) {
+              ctx.fillStyle = '#64748b';
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y - 8, 12, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.strokeStyle = '#94a3b8';
+              ctx.stroke();
+              ctx.fillStyle = '#cbd5e1';
+              ctx.font = '10px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('Rock', pt.x, pt.y - 6);
+            }
+          }
+        }
+
+        // 2. Draw Target Marker
+        if (this.hero.path.length > 0) {
+          const dest = this.hero.path[this.hero.path.length - 1];
+          const destPos = this.isoToScreen(dest.x, dest.y);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(destPos.x, destPos.y, 14, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // 3. Draw Hero with RO 8-Directional Sprite and Walk Cycle
+        this.drawHeroSprite(ctx, this.hero.pixelX, this.hero.pixelY);
+      }
+
+      drawHeroSprite(ctx, px, py) {
+        ctx.save();
+        ctx.translate(px, py);
+
+        const facing = this.hero.facing;
+        const isMoving = this.hero.isMoving;
+        const walkFrame = this.hero.walkFrame;
+
+        // In 'before' mode: always draw front sprite, no walk cycle, no back
+        if (this.mode === 'before') {
+          // Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Static front body
+          ctx.fillStyle = '#2563eb'; // blue robes
+          ctx.fillRect(-10, -28, 20, 24);
+          ctx.fillStyle = '#fde047'; // skin face
+          ctx.beginPath();
+          ctx.arc(0, -32, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#000'; // eyes
+          ctx.fillRect(-4, -33, 2, 3);
+          ctx.fillRect(2, -33, 2, 3);
+          ctx.fillStyle = '#ea580c'; // headband
+          ctx.fillRect(-8, -37, 16, 4);
+
+          // Name Tag
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Hero (Before)', 0, -50);
+
+          ctx.restore();
+          return;
+        }
+
+        // --- 'AFTER' MODE: RAGNAROK ONLINE 8-DIRECTIONAL SYSTEM ---
+        // Natural Body Bobbing (ขึ้น-ลง ตามจังหวะสับขา)
+        let bobY = 0;
+        let legOffsetLeft = 0;
+        let legOffsetRight = 0;
+
+        if (isMoving) {
+          // 4-frame walk cycle offsets
+          if (walkFrame === 0) { bobY = 0; legOffsetLeft = -5; legOffsetRight = 5; }
+          else if (walkFrame === 1) { bobY = -2; legOffsetLeft = 0; legOffsetRight = 0; }
+          else if (walkFrame === 2) { bobY = 0; legOffsetLeft = 5; legOffsetRight = -5; }
+          else if (walkFrame === 3) { bobY = -2; legOffsetLeft = 0; legOffsetRight = 0; }
+        }
+
+        // Dynamic Shadow (หด/ขยายตามจังหวะยกเท้า)
+        const shadowScale = isMoving && (walkFrame === 1 || walkFrame === 3) ? 0.85 : 1.0;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 16 * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Check if we need horizontal mirror (FlipX)
+        const isLeft = (facing === 'W' || facing === 'NW' || facing === 'SW');
+        if (isLeft) {
+          ctx.scale(-1, 1);
+        }
+
+        // Legs (ก้าวเท้าซ้าย-ขวา)
+        ctx.fillStyle = '#1e1b4b'; // dark trousers
+        ctx.fillRect(-7 + legOffsetLeft * 0.6, -10 + bobY, 5, 10);
+        ctx.fillRect(2 + legOffsetRight * 0.6, -10 + bobY, 5, 10);
+
+        // Shoes
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-8 + legOffsetLeft * 0.6, -2, 6, 3);
+        ctx.fillRect(2 + legOffsetRight * 0.6, -2, 6, 3);
+
+        // Determine which View Sprite to render:
+        // Group A: Back View (N)
+        // Group B: Back-Diagonal View (NE / NW)
+        // Group C: Side View (E / W)
+        // Group D: Front-Diagonal View (SE / SW)
+        // Group E: Front View (S)
+        const isBack = (facing === 'N');
+        const isBackDiagonal = (facing === 'NE' || facing === 'NW');
+        const isSide = (facing === 'E' || facing === 'W');
+        const isFrontDiagonal = (facing === 'SE' || facing === 'SW');
+        const isFront = (facing === 'S');
+
+        if (isBack) {
+          // --- 1. แผ่นหลังตรง (NORTH / UP VIEW) ---
+          // Cloak & Back of Wuxia Robe
+          ctx.fillStyle = '#1d4ed8'; // Blue Robe Back
+          ctx.fillRect(-11, -30 + bobY, 22, 22);
+          // Belt on back
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(-10, -18 + bobY, 20, 3);
+          // Back Cape fold lines
+          ctx.strokeStyle = '#1e40af';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-9, -28 + bobY, 18, 18);
+
+          // Head Back (ผมสีดำมัดมวยด้านหลัง)
+          ctx.fillStyle = '#0f172a'; // Black Hair Back
+          ctx.beginPath();
+          ctx.arc(0, -36 + bobY, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Topknot / Ponytail on Back
+          ctx.fillStyle = '#020617';
+          ctx.beginPath();
+          ctx.ellipse(0, -45 + bobY, 4, 7, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Headband ribbon tails trailing behind
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-3, -42 + bobY, 6, 3);
+          ctx.fillRect(-2, -39 + bobY, 4, 8);
+
+        } else if (isBackDiagonal) {
+          // --- 2. แผ่นหลังเฉียง 45 องศา (NORTH-EAST / NORTH-WEST VIEW) ---
+          // Shoulder & 3/4 Back Robe
+          ctx.fillStyle = '#1d4ed8';
+          ctx.beginPath();
+          ctx.moveTo(-10, -30 + bobY);
+          ctx.lineTo(12, -28 + bobY);
+          ctx.lineTo(10, -8 + bobY);
+          ctx.lineTo(-8, -8 + bobY);
+          ctx.closePath();
+          ctx.fill();
+
+          // Belt 3/4 view
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(-8, -18 + bobY, 19, 3);
+
+          // Head 3/4 Back View
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(2, -36 + bobY, 10, 0, Math.PI * 2);
+          ctx.fill();
+          // Ear tip showing slightly
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(10, -35 + bobY, 2, 4);
+
+          // Ponytail trailing backwards
+          ctx.fillStyle = '#020617';
+          ctx.beginPath();
+          ctx.ellipse(-2, -43 + bobY, 4, 7, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-4, -40 + bobY, 5, 8);
+
+        } else if (isSide) {
+          // --- 3. ด้านข้าง (EAST / WEST VIEW) ---
+          // Side Robe profile
+          ctx.fillStyle = '#2563eb';
+          ctx.fillRect(-7, -30 + bobY, 15, 22);
+          // Belt side
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(-7, -18 + bobY, 15, 3);
+
+          // Arm swinging with walk cycle
+          const armSwing = isMoving ? legOffsetLeft * 0.8 : 0;
+          ctx.fillStyle = '#1d4ed8';
+          ctx.fillRect(-2 + armSwing, -28 + bobY, 5, 14);
+
+          // Head profile
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(1, -36 + bobY, 9, 0, Math.PI * 2);
+          ctx.fill();
+          // Hair back
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(-8, -44 + bobY, 8, 14);
+          // Headband
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-6, -39 + bobY, 13, 3);
+          // Eye side view
+          ctx.fillStyle = '#000';
+          ctx.fillRect(4, -36 + bobY, 2, 3);
+
+        } else if (isFrontDiagonal) {
+          // --- 4. ด้านหน้าเฉียง 45 องศา (SOUTH-EAST / SOUTH-WEST VIEW) ---
+          ctx.fillStyle = '#2563eb';
+          ctx.fillRect(-10, -30 + bobY, 20, 22);
+          // Martial arts sash / lapel diagonal
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(-4, -28 + bobY, 6, 12);
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(-10, -18 + bobY, 20, 3);
+
+          // Front-Diagonal Head
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(2, -36 + bobY, 9, 0, Math.PI * 2);
+          ctx.fill();
+          // Hair top
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(-7, -45 + bobY, 16, 7);
+          // Headband
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-5, -39 + bobY, 16, 3);
+          // Eyes in 3/4 perspective
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-1, -36 + bobY, 2, 3);
+          ctx.fillRect(5, -36 + bobY, 2, 3);
+
+        } else {
+          // --- 5. ด้านหน้าตรง (SOUTH / DOWN VIEW) ---
+          ctx.fillStyle = '#2563eb';
+          ctx.fillRect(-10, -30 + bobY, 20, 22);
+          // White lapel
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(-3, -28 + bobY, 6, 11);
+          // Gold sash belt
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(-10, -18 + bobY, 20, 3);
+
+          // Head Front
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(0, -36 + bobY, 9, 0, Math.PI * 2);
+          ctx.fill();
+          // Hair
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(-8, -45 + bobY, 16, 7);
+          // Headband
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-8, -40 + bobY, 16, 3);
+          // Eyes
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-4, -36 + bobY, 2, 3);
+          ctx.fillRect(2, -36 + bobY, 2, 3);
+        }
+
+        // Name Tag (Flip back if mirrored)
+        if (isLeft) ctx.scale(-1, 1);
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Hero (Ragnarok Style)', 0, -56);
+
+        ctx.restore();
+      }
+
+      setTab(index) {
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById(`tabContent${i}`).style.display = (i === index) ? 'block' : 'none';
+        }
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach((t, idx) => t.classList.toggle('active', idx + 1 === index));
+      }
+
+      runWalkthrough(scenario) {
+        this.setMode('after');
+        if (scenario === 1) {
+          // Walk straight up North (shows Back View)
+          this.hero.tileX = 9;
+          this.hero.tileY = 14;
+          const pt = this.isoToScreen(9, 14);
+          this.hero.pixelX = pt.x;
+          this.hero.pixelY = pt.y;
+          this.navigateHeroTo(9, 4);
+        } else if (scenario === 2) {
+          // Walk diagonal North-East (shows 3/4 Back View)
+          this.hero.tileX = 4;
+          this.hero.tileY = 13;
+          const pt = this.isoToScreen(4, 13);
+          this.hero.pixelX = pt.x;
+          this.hero.pixelY = pt.y;
+          this.navigateHeroTo(13, 4);
+        } else if (scenario === 3) {
+          // Circle around the pillar in all 8 directions
+          const circle = [
+            { x: 10, y: 7 },
+            { x: 12, y: 7 },
+            { x: 12, y: 9 },
+            { x: 10, y: 9 },
+            { x: 8, y: 8 },
+            { x: 10, y: 7 }
+          ];
+          this.hero.path = circle;
+          this.hero.isMoving = true;
+        }
+      }
+
+      resetHero() {
+        this.hero.tileX = 8;
+        this.hero.tileY = 8;
+        const pt = this.isoToScreen(8, 8);
+        this.hero.pixelX = pt.x;
+        this.hero.pixelY = pt.y;
+        this.hero.facing = 'SE';
+        this.hero.path = [];
+        this.hero.isMoving = false;
+        this.hero.walkFrame = 0;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new IsometricROEngine();
+    });
+  </script>
+</body>
+</html>
