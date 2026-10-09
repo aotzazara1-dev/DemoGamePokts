@@ -11,8 +11,10 @@ import {
   type TileCoord,
   type MoveMessagePayload,
   type PortalTransitionPayload,
+  type HeroFullSaveState,
   Element
 } from '@poktsonline/shared';
+import { AccountRepository, HeroRepository } from '../db/index.js';
 
 export { DEFAULT_OVERWORLD_MAP };
 
@@ -34,10 +36,19 @@ export class OverworldRoom extends Room<OverworldState> {
   public rng: () => number = Math.random;
   private playerStepCounters: Map<string, number> = new Map();
   private connectedClients: Map<string, Client> = new Map();
+  private accountRepo?: AccountRepository;
+  private heroRepo?: HeroRepository;
+  private clientHeroMap: Map<string, { heroId: string; accountId: string; fullState: HeroFullSaveState }> = new Map();
 
-  onCreate(options: { mapConfig?: MapConfig } = {}) {
+  onCreate(options: { mapConfig?: MapConfig; accountRepo?: AccountRepository; heroRepo?: HeroRepository } = {}) {
     if (options.mapConfig) {
       this.mapConfig = options.mapConfig;
+    }
+    if (options.accountRepo) {
+      this.accountRepo = options.accountRepo;
+    }
+    if (options.heroRepo) {
+      this.heroRepo = options.heroRepo;
     }
     this.setState(new OverworldState());
 
@@ -45,6 +56,10 @@ export class OverworldRoom extends Room<OverworldState> {
 
     // Run simulation tick for roaming beasts every 1500ms
     this.setSimulationInterval(() => this.tickRoamingBeasts(), 1500);
+
+    this.onMessage('syncHeroState', (client: Client, message: any) => {
+      this.handleSaveHeroState(client, message);
+    });
 
     this.onMessage('move', (client: Client, message: MoveMessagePayload) => {
       const player = this.state.players.get(client.sessionId);
@@ -294,8 +309,81 @@ export class OverworldRoom extends Room<OverworldState> {
     });
   }
 
-  onJoin(client: Client, options: { name?: string; spawnTile?: TileCoord; mapId?: string } = {}) {
+  public handleSaveHeroState(client: Client, payload: Partial<HeroFullSaveState> & { gold?: number } = {}) {
+    const info = this.clientHeroMap.get(client.sessionId);
+    if (!info || !this.heroRepo) return;
+
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+      info.fullState.x = player.x;
+      info.fullState.y = player.y;
+      info.fullState.direction = player.direction as Direction;
+      info.fullState.mapId = player.mapId;
+    }
+
+    if (payload.inventory) {
+      info.fullState.inventory = payload.inventory;
+    }
+    if (payload.gold !== undefined) {
+      info.fullState.inventory.gold = payload.gold;
+    }
+    if (payload.roster) {
+      info.fullState.roster = payload.roster;
+    }
+    if (payload.hero) {
+      info.fullState.hero = { ...info.fullState.hero, ...payload.hero };
+    }
+
+    this.heroRepo.saveHeroState(info.heroId, info.fullState);
+  }
+
+  onJoin(
+    client: Client,
+    options: {
+      name?: string;
+      spawnTile?: TileCoord;
+      mapId?: string;
+      sessionToken?: string;
+      heroId?: string;
+    } = {}
+  ) {
     this.connectedClients.set(client.sessionId, client);
+
+    // If authenticated hero handshake is provided
+    if (options.sessionToken && options.heroId && this.accountRepo && this.heroRepo) {
+      const account = this.accountRepo.validateSession(options.sessionToken);
+      if (!account) {
+        throw new Error('Unauthorized: Invalid or expired session token');
+      }
+
+      const fullState = this.heroRepo.getHeroFullState(options.heroId);
+      if (!fullState || fullState.accountId !== account.id) {
+        throw new Error('Unauthorized: Hero not found or not owned by account');
+      }
+
+      this.clientHeroMap.set(client.sessionId, {
+        heroId: fullState.hero.id,
+        accountId: account.id,
+        fullState
+      });
+
+      const player = new PlayerNetworkState(
+        client.sessionId,
+        fullState.hero.name,
+        fullState.x,
+        fullState.y,
+        fullState.direction,
+        fullState.mapId
+      );
+
+      this.state.players.set(client.sessionId, player);
+      this.playerStepCounters.set(client.sessionId, 0);
+
+      client.send('heroStateLoaded', fullState);
+      return;
+    }
+
+    // Default / Anonymous fallback
     const spawnX = options.spawnTile?.x ?? 10;
     const spawnY = options.spawnTile?.y ?? 10;
     const playerName = options.name ?? `Player_${client.sessionId.slice(0, 4)}`;
@@ -307,8 +395,17 @@ export class OverworldRoom extends Room<OverworldState> {
   }
 
   onLeave(client: Client, _consented?: boolean) {
+    this.handleSaveHeroState(client);
+    this.clientHeroMap.delete(client.sessionId);
     this.connectedClients.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.playerStepCounters.delete(client.sessionId);
+  }
+
+  onDispose() {
+    this.connectedClients.forEach(client => {
+      this.handleSaveHeroState(client);
+    });
+    this.clientHeroMap.clear();
   }
 }

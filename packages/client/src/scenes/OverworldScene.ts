@@ -176,8 +176,7 @@ export class OverworldScene extends Phaser.Scene {
       }
     });
 
-    // 5. Connect to Colyseus Server
-    this.connectToServer();
+    // 5. Connect to Colyseus Server deferred to hero selection flow
 
     // 6. Handle returning from battle (including defeat respawn, captured beasts & wild beast loot)
     this.events.on('resume', (_sys: any, data?: {
@@ -249,9 +248,13 @@ export class OverworldScene extends Phaser.Scene {
         }
       }
 
-      if (data?.inventory || data?.loot) {
+      if (data?.inventory || data?.loot || data?.expAwarded) {
         this.inventoryModal.setInventory(this.inventory);
         this.shopModal?.setInventory(this.inventory);
+        this.network.sendSyncHeroState({
+          inventory: this.inventory,
+          roster: this.roster
+        });
       }
 
       if (data?.levelUps && data.levelUps.length > 0 && zoneDisplay) {
@@ -355,11 +358,53 @@ export class OverworldScene extends Phaser.Scene {
     );
   }
 
-  private async connectToServer() {
+  private async connectToServer(options: { heroId?: string; sessionToken?: string; name?: string } = {}) {
     try {
+      const authService = AuthService.getInstance();
+      const sessionToken = options.sessionToken || authService.getToken() || undefined;
+      const heroId = options.heroId || this.activeHeroSummary?.id || undefined;
+      const playerName = options.name || this.activeHeroSummary?.name || 'Hero_' + Math.floor(Math.random() * 1000);
+
       const room = await this.network.connect('ws://localhost:2567', {
-        name: 'Hero_' + Math.floor(Math.random() * 1000),
-        spawnTile: this.playerTile
+        name: playerName,
+        spawnTile: this.playerTile,
+        sessionToken,
+        heroId
+      });
+
+      // Synchronize full hero state when loaded from SQLite server
+      this.network.onHeroStateLoaded((state: any) => {
+        if (!state) return;
+
+        if (state.inventory) {
+          this.inventory = state.inventory;
+          this.inventoryModal?.setInventory(this.inventory);
+          this.shopModal?.setInventory(this.inventory);
+        }
+
+        if (state.roster) {
+          this.roster = state.roster;
+          this.rosterModal?.setRoster(this.roster);
+          this.characterModal?.setHero(this.roster.hero);
+          const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
+          this.inventoryModal?.setHero(this.roster.hero);
+          this.inventoryModal?.setActiveBeast(activeBeast);
+        }
+
+        if (state.hero) {
+          this.roster.hero = { ...this.roster.hero, ...state.hero };
+          this.characterModal?.setHero(this.roster.hero);
+          this.characterModal?.updateHeroStatusBar();
+        }
+
+        if (state.mapId && state.mapId !== this.mapConfig.id) {
+          this.transitionToMap(state.mapId, { x: state.x, y: state.y }, `Loaded ${state.hero.name}`);
+        } else if (state.x !== undefined && state.y !== undefined) {
+          this.playerTile = { x: state.x, y: state.y };
+          const screenPos = isoToScreen(state.x, state.y, this.originX, this.originY, this.tileWidth, this.tileHeight);
+          this.playerContainer.setPosition(screenPos.x, screenPos.y);
+          this.playerContainer.setDepth(getIsometricDepth(state.x, state.y, 100));
+        }
       });
 
       // Listen for remote players
@@ -1947,6 +1992,7 @@ export class OverworldScene extends Phaser.Scene {
       onHeroUpdated: (hero) => {
         this.roster.hero = hero;
         this.inventoryModal?.setHero(hero);
+        this.network.sendSyncHeroState({ hero: this.roster.hero });
       },
       onOpen: () => {
         this.currentPath = [];
@@ -1958,6 +2004,7 @@ export class OverworldScene extends Phaser.Scene {
       onRosterUpdated: (newRoster) => {
         this.roster = newRoster;
         this.inventoryModal?.setActiveBeast(getActiveBeast());
+        this.network.sendSyncHeroState({ roster: this.roster });
       },
       onOpen: () => {
         this.currentPath = [];
@@ -1975,6 +2022,7 @@ export class OverworldScene extends Phaser.Scene {
         this.rosterModal.setRoster(this.roster);
         this.inventoryModal.setHero(this.roster.hero);
         this.inventoryModal.setActiveBeast(getActiveBeast());
+        this.network.sendSyncHeroState({ roster: this.roster });
         this.showToast(`💖 ${npc.name} ได้ฟื้นฟูพลังชีวิตและจิตวิญญาณให้ทีมของคุณเต็ม 100%!`, '#34d399');
       },
       onClose: () => {}
@@ -1984,6 +2032,7 @@ export class OverworldScene extends Phaser.Scene {
       onInventoryUpdated: (newInv) => {
         this.inventory = newInv;
         this.inventoryModal.setInventory(newInv);
+        this.network.sendSyncHeroState({ inventory: this.inventory });
       },
       onShowToast: (msg, color) => {
         this.showToast(msg, color);
@@ -1999,17 +2048,20 @@ export class OverworldScene extends Phaser.Scene {
         onHeroUpdated: (hero) => {
           this.roster.hero = hero;
           this.characterModal.setHero(hero);
+          this.network.sendSyncHeroState({ hero: this.roster.hero });
         },
         onBeastUpdated: (beast) => {
           const idx = this.roster.beasts.findIndex(b => b.id === beast.id);
           if (idx !== -1) {
             this.roster.beasts[idx] = beast;
             this.rosterModal.setRoster(this.roster);
+            this.network.sendSyncHeroState({ roster: this.roster });
           }
         },
         onInventoryUpdated: (inv) => {
           this.inventory = inv;
           this.shopModal?.setInventory(inv);
+          this.network.sendSyncHeroState({ inventory: this.inventory });
         },
         onWarpTown: () => {
           this.inventoryModal.close();
@@ -2088,22 +2140,14 @@ export class OverworldScene extends Phaser.Scene {
       HeroService.getInstance(),
       AuthService.getInstance(),
       {
-        onHeroSelected: (hero) => {
+        onHeroSelected: async (hero) => {
           this.activeHeroSummary = hero;
           this.showToast(`⚔️ Playing as ${hero.name} Lv.${hero.level} [${hero.element}]!`, '#38bdf8');
-          if (hero.mapId && hero.mapId !== this.mapConfig.id) {
-            this.transitionToMap(hero.mapId, { x: hero.x, y: hero.y }, `Teleported to ${hero.mapId}`);
-          } else {
-            this.playerTile = { x: hero.x, y: hero.y };
-            const screenPos = isoToScreen(hero.x, hero.y, this.originX, this.originY, this.tileWidth, this.tileHeight);
-            this.playerContainer.setPosition(screenPos.x, screenPos.y);
-            this.playerContainer.setDepth(getIsometricDepth(hero.x, hero.y, 100));
-          }
-          this.roster.hero.name = hero.name;
-          this.roster.hero.element = hero.element;
-          this.roster.hero.level = hero.level;
-          this.characterModal.setHero(this.roster.hero);
-          this.characterModal.updateHeroStatusBar();
+          await this.connectToServer({
+            heroId: hero.id,
+            sessionToken: AuthService.getInstance().getToken() || undefined,
+            name: hero.name
+          });
         },
         onOpenLinkAccount: () => {
           this.authModal.open('link');

@@ -47,7 +47,9 @@ export async function createServer(options: { dbEngine?: DatabaseEngine; dbPath?
   });
 
   gameServer.define('overworld', OverworldRoom, {
-    mapConfig: DEFAULT_OVERWORLD_MAP
+    mapConfig: DEFAULT_OVERWORLD_MAP,
+    accountRepo,
+    heroRepo
   });
 
   gameServer.define('battle', BattleRoom);

@@ -1,5 +1,5 @@
 import { Client, Room } from 'colyseus.js';
-import { type PortalTransitionPayload, type MoveMessagePayload } from '@poktsonline/shared';
+import { type PortalTransitionPayload, type MoveMessagePayload, type HeroFullSaveState } from '@poktsonline/shared';
 
 export interface PlayerNetData {
   id: string;
@@ -16,16 +16,23 @@ export type PlayerCallback = (sessionId: string, player: PlayerNetData) => void;
 export type PlayerRemoveCallback = (sessionId: string) => void;
 export type EncounterCallback = (payload: { encounter: any; playerPosition: { x: number; y: number } }) => void;
 export type PortalTransitionCallback = (payload: PortalTransitionPayload) => void;
+export type HeroStateLoadedCallback = (payload: HeroFullSaveState) => void;
 
 export class OverworldNetwork {
   private client?: Client;
   private room?: Room;
   private encounterListeners: EncounterCallback[] = [];
   private portalTransitionListeners: PortalTransitionCallback[] = [];
+  private heroStateLoadedListeners: HeroStateLoadedCallback[] = [];
 
   public async connect(
     serverUrl: string = 'ws://localhost:2567',
-    options: { name: string; spawnTile?: { x: number; y: number } }
+    options: {
+      name?: string;
+      spawnTile?: { x: number; y: number };
+      sessionToken?: string;
+      heroId?: string;
+    } = {}
   ): Promise<Room> {
     this.client = new Client(serverUrl);
     this.room = await this.client.joinOrCreate('overworld', options);
@@ -38,12 +45,19 @@ export class OverworldNetwork {
     this.setupRoomListeners(room);
   }
 
+  public onHeroStateLoaded(cb: HeroStateLoadedCallback) {
+    this.heroStateLoadedListeners.push(cb);
+  }
+
   private setupRoomListeners(room: Room) {
     room.onMessage('encounter', (payload: any) => {
       this.encounterListeners.forEach(cb => cb(payload));
     });
     room.onMessage('portalTransition', (payload: any) => {
       this.portalTransitionListeners.forEach(cb => cb(payload));
+    });
+    room.onMessage('heroStateLoaded', (payload: any) => {
+      this.heroStateLoadedListeners.forEach(cb => cb(payload));
     });
   }
 
@@ -65,6 +79,11 @@ export class OverworldNetwork {
   public sendWarpPortal(targetMapId: string, targetPosition: { x: number; y: number }, portalName?: string) {
     if (!this.room) return;
     this.room.send('warpPortal', { targetMapId, targetPosition, portalName });
+  }
+
+  public sendSyncHeroState(payload: any) {
+    if (!this.room) return;
+    this.room.send('syncHeroState', payload);
   }
 
   public onEncounter(callback: EncounterCallback) {

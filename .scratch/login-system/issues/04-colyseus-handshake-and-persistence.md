@@ -5,15 +5,15 @@ Integration of authenticated Hero selection into the live Colyseus Overworld Roo
 
 **Blocked by:** 03: Multi-Hero Character Selection and Creation Interface
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `OverworldRoom.onJoin()` validates `sessionToken` and loads the specified `heroId` from SQLite database.
-- [ ] Unauthorized join attempts (invalid token or unowned heroId) are rejected.
-- [ ] Hero spawns at their saved `mapId`, `x`, `y`, and `direction` on the Overworld.
-- [ ] Hero's saved Inventory (items and Gold) and Beast Roster are sent to the client and bound to game modals.
-- [ ] Auto-save triggers persist Hero state back to SQLite:
+- [x] `OverworldRoom.onJoin()` validates `sessionToken` and loads the specified `heroId` from SQLite database.
+- [x] Unauthorized join attempts (invalid token or unowned heroId) are rejected.
+- [x] Hero spawns at their saved `mapId`, `x`, `y`, and `direction` on the Overworld.
+- [x] Hero's saved Inventory (items and Gold) and Beast Roster are sent to the client and bound to game modals.
+- [x] Auto-save triggers persist Hero state back to SQLite:
   - On player movement / map portal transitions (`warpPortal`, `warpTown`).
   - On battle conclusion (`battleConcluded` with loot and EXP).
   - On shop transactions (buying and selling items).
   - On client disconnect (`onLeave`).
-- [ ] Integration tests verify that rejoining after disconnect restores the exact saved state, position, items, and roster.
+- [x] Integration tests verify that rejoining after disconnect restores the exact saved state, position, items, and roster.
