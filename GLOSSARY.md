@@ -16,6 +16,10 @@ _Avoid_: Avatar, player unit, main character
 A collectible creature in the world that can be captured, leveled up, and summoned to fight alongside the Hero.
 _Avoid_: Pet, monster, general, pokemon
 
+**Roaming Beast**:
+A visible wild Beast roaming actively across wild Zones on the Overworld that can chase nearby Heroes and initiate combat upon collision, while coexisting with step-based random encounters.
+_Avoid_: Wandering monster, world boss, mob on map
+
 **Battle Instance**:
 An isolated turn-based combat session between a team of Heroes/Beasts and enemy units.
 _Avoid_: Match, arena, encounter room

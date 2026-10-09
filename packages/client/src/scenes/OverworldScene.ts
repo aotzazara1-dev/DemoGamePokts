@@ -71,6 +71,7 @@ export class OverworldScene extends Phaser.Scene {
   private shopModal!: ShopModalController;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
+  private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor() {
@@ -128,6 +129,15 @@ export class OverworldScene extends Phaser.Scene {
       }
 
       this.pendingNPCInteraction = null;
+
+      // Check if clicked directly on a roaming beast
+      const targetBeast = Array.from(this.roamingBeasts.values()).find(
+        b => b.tile.x === targetX && b.tile.y === targetY && b.container.visible
+      );
+      if (targetBeast) {
+        this.navigateToRoamingBeast(targetBeast.entity);
+        return;
+      }
 
       // Check if clicked directly on a portal
       const targetPortal = this.mapConfig.portals?.find(
@@ -338,6 +348,21 @@ export class OverworldScene extends Phaser.Scene {
         this.removeOtherPlayer(sessionId);
       });
 
+      // Listen for synchronized roaming beasts
+      if ((room.state as any).roamingBeasts) {
+        (room.state as any).roamingBeasts.onAdd((beast: any, beastId: string) => {
+          this.addRoamingBeast(beastId, beast);
+
+          beast.onChange = () => {
+            this.updateRoamingBeast(beastId, beast);
+          };
+        });
+
+        (room.state as any).roamingBeasts.onRemove((_beast: any, beastId: string) => {
+          this.removeRoamingBeast(beastId);
+        });
+      }
+
       // Listen for wild encounter triggers
       this.network.onEncounter((payload) => {
         this.triggerBattleTransition(payload);
@@ -537,6 +562,108 @@ export class OverworldScene extends Phaser.Scene {
       g.fillStyle(0xffffff, 1);
       g.fillTriangle(13, 11, 19, 11, 16, 18);
       g.generateTexture('npc_elder', 32, 32);
+      g.destroy();
+    }
+
+    // Leaf Sprite (Wind - cute green forest spirit with leaf ears)
+    if (!this.textures.exists('beast_leaf_sprite')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x10b981, 1);
+      g.fillCircle(16, 18, 11);
+      g.fillStyle(0x34d399, 1);
+      g.fillTriangle(10, 10, 6, 2, 14, 8);
+      g.fillTriangle(22, 10, 26, 2, 18, 8);
+      g.fillStyle(0x064e3b, 1);
+      g.fillCircle(13, 17, 2);
+      g.fillCircle(19, 17, 2);
+      g.fillStyle(0xf472b6, 0.8);
+      g.fillCircle(10, 20, 2);
+      g.fillCircle(22, 20, 2);
+      g.generateTexture('beast_leaf_sprite', 32, 32);
+      g.destroy();
+    }
+
+    // Rock Boar (Earth - sturdy brown wild boar with white tusks)
+    if (!this.textures.exists('beast_rock_boar')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x78350f, 1);
+      g.fillRoundedRect(6, 12, 20, 14, 4);
+      g.fillStyle(0xb45309, 1);
+      g.fillRoundedRect(18, 16, 8, 8, 2);
+      g.fillStyle(0xffffff, 1);
+      g.fillTriangle(20, 16, 23, 10, 22, 16);
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(15, 15, 2);
+      g.generateTexture('beast_rock_boar', 32, 32);
+      g.destroy();
+    }
+
+    // Iron Beetle (Earth - armored obsidian beetle with pincer horn)
+    if (!this.textures.exists('beast_iron_beetle')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x334155, 1);
+      g.fillCircle(16, 18, 11);
+      g.fillStyle(0x64748b, 1);
+      g.fillRect(10, 14, 12, 4);
+      g.fillStyle(0x94a3b8, 1);
+      g.fillTriangle(14, 10, 16, 2, 18, 10);
+      g.fillStyle(0xef4444, 1);
+      g.fillCircle(13, 16, 2);
+      g.fillCircle(19, 16, 2);
+      g.generateTexture('beast_iron_beetle', 32, 32);
+      g.destroy();
+    }
+
+    // Cave Serpent (Water - blue slithering subterranean snake)
+    if (!this.textures.exists('beast_cave_serpent')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x0284c7, 1);
+      g.fillCircle(16, 18, 10);
+      g.fillStyle(0x38bdf8, 1);
+      g.fillCircle(20, 14, 7);
+      g.fillStyle(0xfacc15, 1);
+      g.fillCircle(22, 12, 2);
+      g.fillStyle(0xef4444, 1);
+      g.fillRect(25, 14, 4, 1.5);
+      g.generateTexture('beast_cave_serpent', 32, 32);
+      g.destroy();
+    }
+
+    // Bamboo Panda (Wind - playful black & white bear with bamboo)
+    if (!this.textures.exists('beast_bamboo_panda')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xf8fafc, 1);
+      g.fillCircle(16, 18, 11);
+      g.fillStyle(0x0f172a, 1);
+      g.fillCircle(9, 9, 4);
+      g.fillCircle(23, 9, 4);
+      g.fillStyle(0x0f172a, 1);
+      g.fillCircle(12, 17, 3);
+      g.fillCircle(20, 17, 3);
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(12, 17, 1);
+      g.fillCircle(20, 17, 1);
+      g.fillStyle(0x22c55e, 1);
+      g.fillRect(23, 16, 3, 12);
+      g.generateTexture('beast_bamboo_panda', 32, 32);
+      g.destroy();
+    }
+
+    // Crimson Fox (Fire - fiery orange agile fox with flame tail)
+    if (!this.textures.exists('beast_crimson_fox')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xe11d48, 1);
+      g.fillRoundedRect(8, 14, 16, 12, 4);
+      g.fillStyle(0xf43f5e, 1);
+      g.fillTriangle(8, 14, 6, 6, 12, 12);
+      g.fillTriangle(20, 12, 24, 6, 22, 14);
+      g.fillStyle(0xfb923c, 1);
+      g.fillCircle(6, 20, 5);
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(4, 20, 2.5);
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(18, 16, 2);
+      g.generateTexture('beast_crimson_fox', 32, 32);
       g.destroy();
     }
   }
@@ -896,6 +1023,12 @@ export class OverworldScene extends Phaser.Scene {
         });
       }
 
+      // Filter roaming beasts for the new map
+      this.roamingBeasts.forEach(remote => {
+        const isSameMap = remote.entity.mapId === this.mapConfig.id && !remote.entity.inCombat;
+        remote.container.setVisible(isSameMap);
+      });
+
       if (portalName) {
         this.showToast(`✨ Entered ${this.mapConfig.name}!`, '#38bdf8');
       }
@@ -1026,6 +1159,151 @@ export class OverworldScene extends Phaser.Scene {
     if (remote) {
       remote.container.destroy();
       this.otherPlayers.delete(sessionId);
+    }
+  }
+
+  private addRoamingBeast(beastId: string, beast: any) {
+    if (this.roamingBeasts.has(beastId)) return;
+
+    const isSameMap = beast.mapId === this.mapConfig.id && !beast.inCombat;
+    const screenPos = isoToScreen(beast.x, beast.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    const container = this.add.container(screenPos.x, screenPos.y);
+
+    // Shadow
+    const shadow = this.add.ellipse(0, 0, 22, 11, 0x000000, 0.35);
+
+    // Beast sprite
+    const textureKey = this.getBeastTextureKey(beast.templateId, beast.element);
+    const sprite = this.add.image(0, -18, textureKey);
+    sprite.setName('beast_sprite');
+
+    // Bobbing / breathing animation
+    this.tweens.add({
+      targets: sprite,
+      y: '-=3',
+      duration: 750,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Level & Name badge
+    const elemColor = this.getElementColor(beast.element);
+    const nameLabel = this.add.text(0, -38, `Lv.${beast.level} ${beast.name}`, {
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: elemColor,
+      stroke: '#0f172a',
+      strokeThickness: 3
+    }).setOrigin(0.5, 0.5);
+
+    container.add([shadow, sprite, nameLabel]);
+    container.setDepth(getIsometricDepth(beast.x, beast.y, 80));
+    container.setVisible(isSameMap);
+
+    // Clickable hit area
+    container.setSize(48, 48);
+    container.setInteractive(new Phaser.Geom.Rectangle(-24, -36, 48, 48), Phaser.Geom.Rectangle.Contains);
+    container.input!.cursor = 'pointer';
+
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isAnyModalOpen()) return;
+      pointer.event.stopPropagation();
+      this.navigateToRoamingBeast(beast);
+    });
+
+    this.roamingBeasts.set(beastId, {
+      container,
+      tile: { x: beast.x, y: beast.y },
+      entity: beast
+    });
+  }
+
+  private updateRoamingBeast(beastId: string, beast: any) {
+    const remote = this.roamingBeasts.get(beastId);
+    if (!remote) return;
+
+    remote.entity = beast;
+
+    const isSameMap = beast.mapId === this.mapConfig.id && !beast.inCombat;
+    const wasVisible = remote.container.visible;
+    remote.container.setVisible(isSameMap);
+    if (!isSameMap) return;
+
+    const screenPos = isoToScreen(beast.x, beast.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    // Flip horizontally when changing direction
+    const dx = beast.x - remote.tile.x;
+    if (dx !== 0) {
+      const spr = remote.container.getByName('beast_sprite') as Phaser.GameObjects.Image;
+      if (spr) {
+        spr.setFlipX(dx < 0);
+      }
+    }
+
+    if (!wasVisible || Math.abs(dx) > 1 || Math.abs(beast.y - remote.tile.y) > 1) {
+      this.tweens.killTweensOf(remote.container);
+      remote.container.setPosition(screenPos.x, screenPos.y);
+      remote.tile = { x: beast.x, y: beast.y };
+      remote.container.setDepth(getIsometricDepth(beast.x, beast.y, 80));
+      return;
+    }
+
+    this.tweens.add({
+      targets: remote.container,
+      x: screenPos.x,
+      y: screenPos.y,
+      duration: 250,
+      ease: 'Linear',
+      onComplete: () => {
+        remote.tile = { x: beast.x, y: beast.y };
+        remote.container.setDepth(getIsometricDepth(beast.x, beast.y, 80));
+      }
+    });
+  }
+
+  private removeRoamingBeast(beastId: string) {
+    const remote = this.roamingBeasts.get(beastId);
+    if (remote) {
+      remote.container.destroy();
+      this.roamingBeasts.delete(beastId);
+    }
+  }
+
+  private navigateToRoamingBeast(beast: any) {
+    if (this.isTransitioning) return;
+
+    const targetX = beast.x;
+    const targetY = beast.y;
+
+    const path = findPath(this.playerTile, { x: targetX, y: targetY }, this.mapConfig);
+    if (path && path.length > 1) {
+      this.pendingNPCInteraction = null;
+      this.currentPath = path.slice(1);
+      this.showDestinationMarker(targetX, targetY);
+      if (!this.isMoving) {
+        const next = this.currentPath.shift()!;
+        this.attemptMove(next.x, next.y);
+      }
+    }
+  }
+
+  private getBeastTextureKey(templateId: string, _element: string): string {
+    const specificKey = `beast_${templateId}`;
+    if (this.textures.exists(specificKey)) {
+      return specificKey;
+    }
+    return 'combat_wild';
+  }
+
+  private getElementColor(element: string): string {
+    switch (element?.toLowerCase()) {
+      case 'wind': return '#34d399';
+      case 'fire': return '#f87171';
+      case 'water': return '#38bdf8';
+      case 'earth': return '#fbbf24';
+      default: return '#facc15';
     }
   }
 

@@ -266,3 +266,23 @@ export interface PortalTransitionMessage {
   y: number;
   portalName?: string;
 }
+
+export interface RoamingBeastEntity {
+  id: string;
+  templateId: string;
+  name: string;
+  element: Element;
+  level: number;
+  mapId: string;
+  zoneId: string;
+  x: number;
+  y: number;
+  direction?: Direction;
+  inCombat: boolean;
+  respawnAt: number;
+  baseAtk: number;
+  baseDef: number;
+  baseAgi: number;
+  baseHp: number;
+  baseSp: number;
+}

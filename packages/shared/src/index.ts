@@ -10,3 +10,4 @@ export * from './data/skills.js';
 export * from './inventory/item-database.js';
 export * from './inventory/inventory-manager.js';
 export * from './inventory/loot-engine.js';
+export * from './overworld/roaming-beast-manager.js';

@@ -1,9 +1,11 @@
 import { Room, Client } from '@colyseus/core';
-import { OverworldState, PlayerNetworkState } from '../schema/OverworldState.js';
+import { OverworldState, PlayerNetworkState, RoamingBeastNetworkState } from '../schema/OverworldState.js';
 import {
   OverworldEngine,
   DEFAULT_OVERWORLD_MAP,
+  MAP_DATABASE,
   getMapConfig,
+  RoamingBeastManager,
   type MapConfig,
   type Direction,
   type TileCoord,
@@ -31,12 +33,18 @@ export class OverworldRoom extends Room<OverworldState> {
   public mapConfig: MapConfig = DEFAULT_OVERWORLD_MAP;
   public rng: () => number = Math.random;
   private playerStepCounters: Map<string, number> = new Map();
+  private connectedClients: Map<string, Client> = new Map();
 
   onCreate(options: { mapConfig?: MapConfig } = {}) {
     if (options.mapConfig) {
       this.mapConfig = options.mapConfig;
     }
     this.setState(new OverworldState());
+
+    this.initRoamingBeasts(options.mapConfig);
+
+    // Run simulation tick for roaming beasts every 1500ms
+    this.setSimulationInterval(() => this.tickRoamingBeasts(), 1500);
 
     this.onMessage('move', (client: Client, message: MoveMessagePayload) => {
       const player = this.state.players.get(client.sessionId);
@@ -91,10 +99,31 @@ export class OverworldRoom extends Room<OverworldState> {
         player.direction = determineDirection(currentPos, result.newPosition);
         this.playerStepCounters.set(client.sessionId, result.stepsInZone);
 
+        // A. Step-based random wild encounter
         if (result.encounterTriggered && result.encounter) {
           player.inBattle = true;
           client.send('encounter', {
             encounter: result.encounter,
+            playerPosition: { x: player.x, y: player.y }
+          });
+          return;
+        }
+
+        // B. Collision with Roaming Beast
+        const collidedBeast = Array.from(this.state.roamingBeasts.values()).find(
+          b => b.mapId === player.mapId && !b.inCombat && b.x === player.x && b.y === player.y
+        );
+
+        if (collidedBeast) {
+          player.inBattle = true;
+          collidedBeast.inCombat = true;
+          collidedBeast.respawnAt = Date.now() + 20000;
+          const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(collidedBeast as any);
+          client.send('encounter', {
+            encounter: {
+              zoneId: collidedBeast.zoneId,
+              wildEnemies: [combatant]
+            },
             playerPosition: { x: player.x, y: player.y }
           });
         }
@@ -104,7 +133,7 @@ export class OverworldRoom extends Room<OverworldState> {
     this.onMessage('warpTown', (client: Client) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      if (player.inBattle) return; // Cannot teleport during active combat
+      if (player.inBattle) return;
 
       player.mapId = 'novice_town_and_meadow';
       player.x = 10;
@@ -149,7 +178,6 @@ export class OverworldRoom extends Room<OverworldState> {
           portalName: validPortal.name
         });
       } else if (player.mapId === message.targetMapId) {
-        // Player already transitioned via move step resolution, sync target coordinates
         player.x = message.targetPosition.x;
         player.y = message.targetPosition.y;
         this.playerStepCounters.set(client.sessionId, 0);
@@ -164,7 +192,106 @@ export class OverworldRoom extends Room<OverworldState> {
     });
   }
 
+  public initRoamingBeasts(overrideMap?: MapConfig) {
+    const mapsToPopulate = overrideMap ? [overrideMap] : Object.values(MAP_DATABASE);
+
+    mapsToPopulate.forEach(map => {
+      const beasts = RoamingBeastManager.generateMapRoamingBeasts(map, 2);
+      beasts.forEach(b => {
+        this.state.roamingBeasts.set(
+          b.id,
+          new RoamingBeastNetworkState({
+            id: b.id,
+            templateId: b.templateId,
+            name: b.name,
+            element: b.element,
+            level: b.level,
+            mapId: b.mapId,
+            zoneId: b.zoneId,
+            x: b.x,
+            y: b.y,
+            direction: b.direction || 'down',
+            inCombat: false,
+            respawnAt: 0,
+            baseAtk: b.baseAtk,
+            baseDef: b.baseDef,
+            baseAgi: b.baseAgi,
+            baseHp: b.baseHp,
+            baseSp: b.baseSp
+          })
+        );
+      });
+    });
+  }
+
+  public tickRoamingBeasts() {
+    const playersList = Array.from(this.state.players.values()).map(p => ({
+      id: p.id,
+      x: p.x,
+      y: p.y,
+      inBattle: p.inBattle,
+      mapId: p.mapId
+    }));
+
+    const now = Date.now();
+
+    this.state.roamingBeasts.forEach(beast => {
+      const mapConfig = getMapConfig(beast.mapId);
+
+      // 1. Check respawn cooldown
+      if (beast.inCombat || beast.respawnAt > 0) {
+        if (now >= beast.respawnAt) {
+          const zone = mapConfig.zones.find(z => z.id === beast.zoneId);
+          if (zone) {
+            const newPos = RoamingBeastManager.findValidSpawnTile(zone, mapConfig);
+            if (newPos) {
+              beast.x = newPos.x;
+              beast.y = newPos.y;
+            }
+          }
+          beast.inCombat = false;
+          beast.respawnAt = 0;
+        }
+        return;
+      }
+
+      // 2. AI Stepping & Aggro
+      const step = RoamingBeastManager.stepRoamingBeastAI(
+        beast as any,
+        playersList,
+        mapConfig,
+        this.rng
+      );
+
+      beast.x = step.x;
+      beast.y = step.y;
+      beast.direction = step.direction;
+
+      // 3. Collision Trigger from Beast AI
+      if (step.triggeredPlayerId) {
+        const client = this.connectedClients.get(step.triggeredPlayerId) || this.clients.find(c => c.sessionId === step.triggeredPlayerId);
+        const player = this.state.players.get(step.triggeredPlayerId);
+
+        if (client && player && !player.inBattle) {
+          player.inBattle = true;
+          beast.inCombat = true;
+          beast.respawnAt = now + 20000;
+
+          const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(beast as any);
+          client.send('encounter', {
+            encounter: {
+              zoneId: beast.zoneId,
+              wildEnemies: [combatant]
+            },
+            playerPosition: { x: player.x, y: player.y }
+          });
+        }
+      }
+    });
+  }
+
   onJoin(client: Client, options: { name?: string; spawnTile?: TileCoord; mapId?: string } = {}) {
+    this.connectedClients.set(client.sessionId, client);
     const spawnX = options.spawnTile?.x ?? 10;
     const spawnY = options.spawnTile?.y ?? 10;
     const playerName = options.name ?? `Player_${client.sessionId.slice(0, 4)}`;
@@ -176,6 +303,7 @@ export class OverworldRoom extends Room<OverworldState> {
   }
 
   onLeave(client: Client, _consented?: boolean) {
+    this.connectedClients.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.playerStepCounters.delete(client.sessionId);
   }
