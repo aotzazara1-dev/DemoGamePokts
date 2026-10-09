@@ -46,8 +46,9 @@ export function createHeroRouter(accountRepo: AccountRepository, heroRepo: HeroR
       const account = req.account!;
       const { name, element } = req.body || {};
 
-      if (!name || typeof name !== 'string' || name.trim().length < 3 || name.trim().length > 16) {
-        return res.status(400).json({ error: 'Hero name must be between 3 and 16 characters' });
+      const validNameRegex = /^[a-zA-Z0-9 \u0E00-\u0E7F]{3,16}$/;
+      if (!name || typeof name !== 'string' || !validNameRegex.test(name.trim())) {
+        return res.status(400).json({ error: 'Hero name must be 3-16 characters and contain only letters, numbers, Thai characters, or spaces' });
       }
 
       if (!element || !Object.values(Element).includes(element as Element)) {

@@ -1,7 +1,27 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
-import { AccountRepository } from '../db/AccountRepository.js';
+import { AccountRepository, AccountRecord } from '../db/AccountRepository.js';
 import { PasswordUtils } from '../auth/PasswordUtils.js';
+import { AccountSummary } from '@poktsonline/shared';
+
+function toAccountSummary(account: AccountRecord): AccountSummary {
+  return {
+    id: account.id,
+    username: account.username,
+    isGuest: account.isGuest,
+    createdAt: account.createdAt
+  };
+}
+
+function validateCredentials(username?: unknown, password?: unknown): { error?: string; trimmedUsername: string; cleanPassword: string } {
+  if (!username || typeof username !== 'string' || username.trim().length < 3 || username.trim().length > 20) {
+    return { error: 'Username must be between 3 and 20 characters', trimmedUsername: '', cleanPassword: '' };
+  }
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    return { error: 'Password must be at least 6 characters long', trimmedUsername: '', cleanPassword: '' };
+  }
+  return { trimmedUsername: username.trim(), cleanPassword: password };
+}
 
 export function createAuthRouter(accountRepo: AccountRepository): Router {
   const router = Router();
@@ -29,12 +49,7 @@ export function createAuthRouter(accountRepo: AccountRepository): Router {
       return res.json({
         token: sessionToken,
         guestToken,
-        account: {
-          id: account.id,
-          username: account.username,
-          isGuest: account.isGuest,
-          createdAt: account.createdAt
-        }
+        account: toAccountSummary(account)
       });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || 'Failed to create guest session' });
@@ -45,33 +60,23 @@ export function createAuthRouter(accountRepo: AccountRepository): Router {
   router.post('/register', (req: Request, res: Response): any => {
     try {
       const { username, password } = req.body || {};
-
-      if (!username || typeof username !== 'string' || username.trim().length < 3 || username.trim().length > 20) {
-        return res.status(400).json({ error: 'Username must be between 3 and 20 characters' });
+      const validation = validateCredentials(username, password);
+      if (validation.error) {
+        return res.status(400).json({ error: validation.error });
       }
 
-      if (!password || typeof password !== 'string' || password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-      }
-
-      const trimmedUsername = username.trim();
-      const existing = accountRepo.findAccountByUsername(trimmedUsername);
+      const existing = accountRepo.findAccountByUsername(validation.trimmedUsername);
       if (existing) {
-        return res.status(409).json({ error: `Username '${trimmedUsername}' already exists` });
+        return res.status(409).json({ error: `Username '${validation.trimmedUsername}' already exists` });
       }
 
-      const passwordHash = PasswordUtils.hashPassword(password);
-      const account = accountRepo.createRegisteredAccount(trimmedUsername, passwordHash);
+      const passwordHash = PasswordUtils.hashPassword(validation.cleanPassword);
+      const account = accountRepo.createRegisteredAccount(validation.trimmedUsername, passwordHash);
       const sessionToken = accountRepo.createSession(account.id);
 
       return res.json({
         token: sessionToken,
-        account: {
-          id: account.id,
-          username: account.username,
-          isGuest: account.isGuest,
-          createdAt: account.createdAt
-        }
+        account: toAccountSummary(account)
       });
     } catch (err: any) {
       if (err.message && err.message.includes('already exists')) {
@@ -104,12 +109,7 @@ export function createAuthRouter(accountRepo: AccountRepository): Router {
 
       return res.json({
         token: sessionToken,
-        account: {
-          id: account.id,
-          username: account.username,
-          isGuest: account.isGuest,
-          createdAt: account.createdAt
-        }
+        account: toAccountSummary(account)
       });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || 'Login failed' });
@@ -134,33 +134,24 @@ export function createAuthRouter(accountRepo: AccountRepository): Router {
       }
 
       const { username, password } = req.body || {};
-      if (!username || typeof username !== 'string' || username.trim().length < 3 || username.trim().length > 20) {
-        return res.status(400).json({ error: 'Username must be between 3 and 20 characters' });
+      const validation = validateCredentials(username, password);
+      if (validation.error) {
+        return res.status(400).json({ error: validation.error });
       }
 
-      if (!password || typeof password !== 'string' || password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-      }
-
-      const trimmedUsername = username.trim();
-      const existing = accountRepo.findAccountByUsername(trimmedUsername);
+      const existing = accountRepo.findAccountByUsername(validation.trimmedUsername);
       if (existing && existing.id !== account.id) {
-        return res.status(409).json({ error: `Username '${trimmedUsername}' already exists` });
+        return res.status(409).json({ error: `Username '${validation.trimmedUsername}' already exists` });
       }
 
-      const passwordHash = PasswordUtils.hashPassword(password);
-      accountRepo.linkGuestAccount(account.id, trimmedUsername, passwordHash);
+      const passwordHash = PasswordUtils.hashPassword(validation.cleanPassword);
+      accountRepo.linkGuestAccount(account.id, validation.trimmedUsername, passwordHash);
 
       const updated = accountRepo.findAccountById(account.id)!;
 
       return res.json({
         token,
-        account: {
-          id: updated.id,
-          username: updated.username,
-          isGuest: updated.isGuest,
-          createdAt: updated.createdAt
-        }
+        account: toAccountSummary(updated)
       });
     } catch (err: any) {
       if (err.message && err.message.includes('already exists')) {
@@ -183,12 +174,7 @@ export function createAuthRouter(accountRepo: AccountRepository): Router {
     }
 
     return res.json({
-      account: {
-        id: account.id,
-        username: account.username,
-        isGuest: account.isGuest,
-        createdAt: account.createdAt
-      }
+      account: toAccountSummary(account)
     });
   });
 

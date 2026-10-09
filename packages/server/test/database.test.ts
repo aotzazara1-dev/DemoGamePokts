@@ -113,7 +113,26 @@ describe('Database Engine & Repositories (Ticket 01)', () => {
       expect(fullState?.hero.name).toBe('XiaoLong');
       expect(fullState?.inventory.slots.length).toBe(20);
       expect(fullState?.roster.beasts.length).toBeGreaterThan(0);
+      expect(fullState?.roster.beasts[0].level).toBe(1);
+      expect(fullState?.roster.beasts[0].name).toBe('Aqua Fin');
       expect(fullState?.roster.activeBeastId).toBeDefined();
+    });
+
+    it('validates hero name character set (allowing Thai, letters, numbers, spaces; rejecting symbols)', () => {
+      const account = accountRepo.createGuestAccount('charset_tester');
+      
+      // Valid Thai name
+      const thaiHero = heroRepo.createHero(account.id, { name: 'จอมยุทธ์ หนึ่ง', element: Element.Fire });
+      expect(thaiHero.name).toBe('จอมยุทธ์ หนึ่ง');
+
+      // Invalid characters with symbols
+      expect(() => {
+        heroRepo.createHero(account.id, { name: '<script>', element: Element.Water });
+      }).toThrow(/contain only letters, numbers, Thai characters, or spaces/i);
+
+      expect(() => {
+        heroRepo.createHero(account.id, { name: 'Hero@#$', element: Element.Earth });
+      }).toThrow(/contain only letters, numbers, Thai characters, or spaces/i);
     });
 
     it('enforces maximum 3 heroes per account', () => {

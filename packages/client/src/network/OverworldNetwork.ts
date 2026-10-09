@@ -1,5 +1,5 @@
 import { Client, Room } from 'colyseus.js';
-import { type PortalTransitionPayload, type MoveMessagePayload, type HeroFullSaveState } from '@poktsonline/shared';
+import { type PortalTransitionPayload, type MoveMessagePayload, type HeroFullSaveState, type SyncHeroStatePayload } from '@poktsonline/shared';
 
 export interface PlayerNetData {
   id: string;
@@ -81,7 +81,7 @@ export class OverworldNetwork {
     this.room.send('warpPortal', { targetMapId, targetPosition, portalName });
   }
 
-  public sendSyncHeroState(payload: any) {
+  public sendSyncHeroState(payload: Partial<SyncHeroStatePayload>) {
     if (!this.room) return;
     this.room.send('syncHeroState', payload);
   }

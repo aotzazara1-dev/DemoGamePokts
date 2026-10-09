@@ -138,7 +138,7 @@ export class CharacterSelectModalController {
           <div class="char-slot-loc">📍 ${this.formatMapName(hero.mapId)}</div>
           <div class="char-slot-actions">
             <button class="btn-enter-world" data-id="${hero.id}">⚔️ ENTER WORLD</button>
-            <button class="btn-delete-hero" data-id="${hero.id}" title="Delete character">🗑️</button>
+            <button class="btn-delete-hero" data-id="${hero.id}" title="Delete hero">🗑️</button>
           </div>
         `;
 

@@ -12,6 +12,7 @@ import {
   type MoveMessagePayload,
   type PortalTransitionPayload,
   type HeroFullSaveState,
+  type SyncHeroStatePayload,
   Element
 } from '@poktsonline/shared';
 import { AccountRepository, HeroRepository } from '../db/index.js';
@@ -57,7 +58,7 @@ export class OverworldRoom extends Room<OverworldState> {
     // Run simulation tick for roaming beasts every 1500ms
     this.setSimulationInterval(() => this.tickRoamingBeasts(), 1500);
 
-    this.onMessage('syncHeroState', (client: Client, message: any) => {
+    this.onMessage('syncHeroState', (client: Client, message: SyncHeroStatePayload) => {
       this.handleSaveHeroState(client, message);
     });
 
@@ -105,6 +106,12 @@ export class OverworldRoom extends Room<OverworldState> {
             targetMapId: result.portal.targetMapId,
             targetPosition: result.portal.targetPosition,
             portalName: result.portal.name
+          });
+          this.handleSaveHeroState(client, {
+            mapId: player.mapId,
+            x: player.x,
+            y: player.y,
+            direction: player.direction as Direction
           });
           return;
         }
@@ -164,6 +171,12 @@ export class OverworldRoom extends Room<OverworldState> {
         targetPosition: { x: 10, y: 10 },
         portalName: 'Town Teleport'
       });
+      this.handleSaveHeroState(client, {
+        mapId: player.mapId,
+        x: player.x,
+        y: player.y,
+        direction: player.direction as Direction
+      });
     });
 
     this.onMessage('warpPortal', (client: Client, message: PortalTransitionPayload) => {
@@ -194,6 +207,12 @@ export class OverworldRoom extends Room<OverworldState> {
           targetMapId: validPortal.targetMapId,
           targetPosition: validPortal.targetPosition,
           portalName: validPortal.name
+        });
+        this.handleSaveHeroState(client, {
+          mapId: player.mapId,
+          x: player.x,
+          y: player.y,
+          direction: player.direction as Direction
         });
       }
     });
@@ -309,16 +328,16 @@ export class OverworldRoom extends Room<OverworldState> {
     });
   }
 
-  public handleSaveHeroState(client: Client, payload: Partial<HeroFullSaveState> & { gold?: number } = {}) {
+  public handleSaveHeroState(client: Client, payload: Partial<HeroFullSaveState | SyncHeroStatePayload> & { gold?: number } = {}) {
     const info = this.clientHeroMap.get(client.sessionId);
     if (!info || !this.heroRepo) return;
 
     const player = this.state.players.get(client.sessionId);
     if (player) {
-      info.fullState.x = player.x;
-      info.fullState.y = player.y;
-      info.fullState.direction = player.direction as Direction;
-      info.fullState.mapId = player.mapId;
+      info.fullState.x = payload.x !== undefined ? payload.x : player.x;
+      info.fullState.y = payload.y !== undefined ? payload.y : player.y;
+      info.fullState.direction = (payload.direction || player.direction) as Direction;
+      info.fullState.mapId = payload.mapId || player.mapId;
     }
 
     if (payload.inventory) {

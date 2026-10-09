@@ -80,7 +80,7 @@ describe('HTTP Hero Management Endpoints (Ticket 03)', () => {
       expect(listRes.body.heroes[0].name).toBe('LingHuChong');
     });
 
-    it('rejects hero creation with invalid name length', async () => {
+    it('rejects hero creation with invalid name length or invalid characters', async () => {
       const resShort = await request(app)
         .post('/api/heroes')
         .set('Authorization', `Bearer ${authToken}`)
@@ -92,6 +92,19 @@ describe('HTTP Hero Management Endpoints (Ticket 03)', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({ name: 'ThisNameIsWayTooLongForAHero', element: Element.Water });
       expect(resLong.status).toBe(400);
+
+      const resSymbols = await request(app)
+        .post('/api/heroes')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Hero!@#$', element: Element.Earth });
+      expect(resSymbols.status).toBe(400);
+
+      const resThai = await request(app)
+        .post('/api/heroes')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'กวนอู ขุนศึก', element: Element.Earth });
+      expect(resThai.status).toBe(201);
+      expect(resThai.body.hero.name).toBe('กวนอู ขุนศึก');
     });
 
     it('enforces maximum 3 heroes limit per account', async () => {

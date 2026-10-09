@@ -41,3 +41,14 @@ export interface HeroFullSaveState {
   roster: PlayerRosterState;
   createdAt: number;
 }
+
+export interface SyncHeroStatePayload {
+  x?: number;
+  y?: number;
+  direction?: Direction;
+  mapId?: string;
+  inventory?: InventoryState;
+  roster?: PlayerRosterState;
+  hero?: Combatant;
+}
+

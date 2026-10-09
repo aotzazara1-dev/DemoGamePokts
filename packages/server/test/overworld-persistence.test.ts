@@ -130,4 +130,41 @@ describe('OverworldRoom Auth & Full State Persistence (Ticket 04)', () => {
       });
     }).toThrow(/unauthorized|not found/i);
   });
+
+  it('persists coordinates and mapId to SQLite immediately on warpTown transition', async () => {
+    const account = accountRepo.createRegisteredAccount('WarpUser', 'password123');
+    const sessionToken = accountRepo.createSession(account.id);
+    const hero = heroRepo.createHero(account.id, {
+      name: 'WarpUser',
+      element: Element.Wind
+    });
+
+    const mockClient: any = {
+      sessionId: 'sess_warp',
+      send: () => {}
+    };
+
+    room.onJoin(mockClient, { sessionToken, heroId: hero.id });
+
+    // Set player position away from town
+    const player = room.state.players.get('sess_warp')!;
+    player.x = 22;
+    player.y = 35;
+    player.mapId = 'misty_forest';
+
+    // Trigger warpTown
+    (room as any).onMessageHandlers['warpTown'](mockClient);
+
+    // Verify room state was updated to town
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(10);
+    expect(player.y).toBe(10);
+
+    // Verify SQLite was persisted immediately without needing disconnect
+    const savedState = heroRepo.getHeroFullState(hero.id)!;
+    expect(savedState.mapId).toBe('novice_town_and_meadow');
+    expect(savedState.x).toBe(10);
+    expect(savedState.y).toBe(10);
+  });
 });
+

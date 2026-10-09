@@ -21,7 +21,8 @@ import {
   type LootReward,
   type PortalDefinition,
   type NPCDefinition,
-  type HeroSummary
+  type HeroSummary,
+  type SyncHeroStatePayload
 } from '@poktsonline/shared';
 import {
   CharacterModalController,
@@ -251,7 +252,7 @@ export class OverworldScene extends Phaser.Scene {
       if (data?.inventory || data?.loot || data?.expAwarded) {
         this.inventoryModal.setInventory(this.inventory);
         this.shopModal?.setInventory(this.inventory);
-        this.network.sendSyncHeroState({
+        this.syncHeroSaveState({
           inventory: this.inventory,
           roster: this.roster
         });
@@ -356,6 +357,10 @@ export class OverworldScene extends Phaser.Scene {
       this.authModal?.isOpen() ||
       this.charSelectModal?.isOpen()
     );
+  }
+
+  public syncHeroSaveState(delta: Partial<SyncHeroStatePayload>): void {
+    this.network.sendSyncHeroState(delta);
   }
 
   private async connectToServer(options: { heroId?: string; sessionToken?: string; name?: string } = {}) {
@@ -1992,7 +1997,7 @@ export class OverworldScene extends Phaser.Scene {
       onHeroUpdated: (hero) => {
         this.roster.hero = hero;
         this.inventoryModal?.setHero(hero);
-        this.network.sendSyncHeroState({ hero: this.roster.hero });
+        this.syncHeroSaveState({ hero: this.roster.hero });
       },
       onOpen: () => {
         this.currentPath = [];
@@ -2004,7 +2009,7 @@ export class OverworldScene extends Phaser.Scene {
       onRosterUpdated: (newRoster) => {
         this.roster = newRoster;
         this.inventoryModal?.setActiveBeast(getActiveBeast());
-        this.network.sendSyncHeroState({ roster: this.roster });
+        this.syncHeroSaveState({ roster: this.roster });
       },
       onOpen: () => {
         this.currentPath = [];
@@ -2022,7 +2027,7 @@ export class OverworldScene extends Phaser.Scene {
         this.rosterModal.setRoster(this.roster);
         this.inventoryModal.setHero(this.roster.hero);
         this.inventoryModal.setActiveBeast(getActiveBeast());
-        this.network.sendSyncHeroState({ roster: this.roster });
+        this.syncHeroSaveState({ roster: this.roster });
         this.showToast(`💖 ${npc.name} ได้ฟื้นฟูพลังชีวิตและจิตวิญญาณให้ทีมของคุณเต็ม 100%!`, '#34d399');
       },
       onClose: () => {}
@@ -2032,7 +2037,7 @@ export class OverworldScene extends Phaser.Scene {
       onInventoryUpdated: (newInv) => {
         this.inventory = newInv;
         this.inventoryModal.setInventory(newInv);
-        this.network.sendSyncHeroState({ inventory: this.inventory });
+        this.syncHeroSaveState({ inventory: this.inventory });
       },
       onShowToast: (msg, color) => {
         this.showToast(msg, color);
@@ -2048,20 +2053,20 @@ export class OverworldScene extends Phaser.Scene {
         onHeroUpdated: (hero) => {
           this.roster.hero = hero;
           this.characterModal.setHero(hero);
-          this.network.sendSyncHeroState({ hero: this.roster.hero });
+          this.syncHeroSaveState({ hero: this.roster.hero });
         },
         onBeastUpdated: (beast) => {
           const idx = this.roster.beasts.findIndex(b => b.id === beast.id);
           if (idx !== -1) {
             this.roster.beasts[idx] = beast;
             this.rosterModal.setRoster(this.roster);
-            this.network.sendSyncHeroState({ roster: this.roster });
+            this.syncHeroSaveState({ roster: this.roster });
           }
         },
         onInventoryUpdated: (inv) => {
           this.inventory = inv;
           this.shopModal?.setInventory(inv);
-          this.network.sendSyncHeroState({ inventory: this.inventory });
+          this.syncHeroSaveState({ inventory: this.inventory });
         },
         onWarpTown: () => {
           this.inventoryModal.close();

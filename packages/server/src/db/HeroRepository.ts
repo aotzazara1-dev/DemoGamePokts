@@ -56,6 +56,10 @@ export class HeroRepository {
     if (trimmedName.length < 3 || trimmedName.length > 16) {
       throw new Error('Hero name must be between 3 and 16 characters');
     }
+    const validNameRegex = /^[a-zA-Z0-9 \u0E00-\u0E7F]{3,16}$/;
+    if (!validNameRegex.test(trimmedName)) {
+      throw new Error('Hero name must contain only letters, numbers, Thai characters, or spaces');
+    }
 
     const heroId = 'hero_' + crypto.randomUUID().slice(0, 8);
     const now = Date.now();
@@ -342,48 +346,48 @@ export class HeroRepository {
           id: 'beast_starter_earth',
           name: 'Rock Boar',
           isHero: false,
-          level: 4,
+          level: 1,
           element: Element.Earth,
-          hp: 85,
-          maxHp: 85,
-          sp: 20,
-          maxSp: 20,
-          atk: 22,
-          def: 20,
-          int: 8,
-          agi: 14
+          hp: 60,
+          maxHp: 60,
+          sp: 15,
+          maxSp: 15,
+          atk: 16,
+          def: 15,
+          int: 6,
+          agi: 10
         };
       case Element.Fire:
         return {
           id: 'beast_starter_fire',
           name: 'Flame Fox',
           isHero: false,
-          level: 4,
+          level: 1,
           element: Element.Fire,
-          hp: 70,
-          maxHp: 70,
-          sp: 20,
-          maxSp: 20,
-          atk: 26,
-          def: 12,
-          int: 14,
-          agi: 20
+          hp: 50,
+          maxHp: 50,
+          sp: 15,
+          maxSp: 15,
+          atk: 19,
+          def: 9,
+          int: 10,
+          agi: 14
         };
       case Element.Wind:
         return {
           id: 'beast_starter_wind',
           name: 'Gale Hawk',
           isHero: false,
-          level: 4,
+          level: 1,
           element: Element.Wind,
-          hp: 65,
-          maxHp: 65,
-          sp: 25,
-          maxSp: 25,
-          atk: 21,
-          def: 13,
-          int: 12,
-          agi: 24
+          hp: 45,
+          maxHp: 45,
+          sp: 18,
+          maxSp: 18,
+          atk: 15,
+          def: 10,
+          int: 9,
+          agi: 17
         };
       case Element.Water:
       default:
@@ -391,16 +395,16 @@ export class HeroRepository {
           id: 'beast_starter_water',
           name: 'Aqua Fin',
           isHero: false,
-          level: 4,
+          level: 1,
           element: Element.Water,
-          hp: 75,
-          maxHp: 75,
-          sp: 25,
-          maxSp: 25,
-          atk: 20,
-          def: 15,
-          int: 10,
-          agi: 18
+          hp: 55,
+          maxHp: 55,
+          sp: 18,
+          maxSp: 18,
+          atk: 14,
+          def: 11,
+          int: 8,
+          agi: 13
         };
     }
   }
