@@ -116,7 +116,9 @@ export class OverworldScene extends Phaser.Scene {
       this.clearDestinationMarker();
       this.network.sendBattleConcluded();
 
-      // Restore buttons when returning to Overworld
+      // Restore HUD elements and buttons when returning to Overworld
+      const uiOverlay = document.getElementById('ui-overlay');
+      if (uiOverlay) uiOverlay.style.display = 'block';
       const htmlBtn = document.getElementById('btn-roster');
       if (htmlBtn) htmlBtn.style.display = 'flex';
       const charBtn = document.getElementById('btn-character-status');
@@ -195,14 +197,30 @@ export class OverworldScene extends Phaser.Scene {
     this.updateHeroStatusBar();
 
     if (this.input.keyboard) {
-      this.input.keyboard.on('keydown-B', () => this.toggleRosterModal());
-      this.input.keyboard.on('keydown-F', () => this.toggleRosterModal());
-      this.input.keyboard.on('keydown-C', () => this.toggleCharacterModal());
+      this.input.keyboard.on('keydown-B', () => {
+        if (this.scene.isPaused()) return;
+        this.toggleRosterModal();
+      });
+      this.input.keyboard.on('keydown-F', () => {
+        if (this.scene.isPaused()) return;
+        this.toggleRosterModal();
+      });
+      this.input.keyboard.on('keydown-C', () => {
+        if (this.scene.isPaused()) return;
+        this.toggleCharacterModal();
+      });
       this.input.keyboard.on('keydown-T', () => {
+        if (this.scene.isPaused()) return;
+        const panel = document.getElementById('debug-panel');
+        if (panel) panel.classList.toggle('open');
+      });
+      this.input.keyboard.on('keydown-BACKTICK', () => {
+        if (this.scene.isPaused()) return;
         const panel = document.getElementById('debug-panel');
         if (panel) panel.classList.toggle('open');
       });
       this.input.keyboard.on('keydown-ESC', () => {
+        if (this.scene.isPaused()) return;
         this.toggleRosterModal(false);
         this.toggleCharacterModal(false);
         const panel = document.getElementById('debug-panel');
@@ -604,7 +622,9 @@ export class OverworldScene extends Phaser.Scene {
     const debugPanel = document.getElementById('debug-panel');
     if (debugPanel) debugPanel.classList.remove('open');
 
-    // Hide HUD buttons during battle
+    // Hide Overworld HUD and buttons during battle
+    const uiOverlay = document.getElementById('ui-overlay');
+    if (uiOverlay) uiOverlay.style.display = 'none';
     const htmlBtn = document.getElementById('btn-roster');
     if (htmlBtn) htmlBtn.style.display = 'none';
     const charBtn = document.getElementById('btn-character-status');
@@ -665,6 +685,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   public toggleRosterModal(forceOpen?: boolean) {
+    if (this.scene.isPaused() && forceOpen !== false) return;
     const modal = document.getElementById('roster-modal');
     if (!modal) return;
 
@@ -897,6 +918,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   public toggleCharacterModal(forceOpen?: boolean) {
+    if (this.scene.isPaused() && forceOpen !== false) return;
     const modal = document.getElementById('character-modal');
     if (!modal) return;
 

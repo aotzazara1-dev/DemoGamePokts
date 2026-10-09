@@ -68,6 +68,26 @@ export class BattleScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    // Ensure Overworld HUD elements, buttons, and modals are hidden during combat
+    const elementsToHide = [
+      'ui-overlay',
+      'btn-roster',
+      'btn-character-status',
+      'btn-toggle-debug',
+      'debug-panel',
+      'roster-modal',
+      'character-modal'
+    ];
+    elementsToHide.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (el.classList.contains('open')) el.classList.remove('open');
+        if (id.startsWith('btn-') || id === 'ui-overlay') {
+          el.style.display = 'none';
+        }
+      }
+    });
+
     // 1. Dark Atmospheric Combat Arena Backdrop
     this.add.rectangle(width / 2, height / 2, width, height, 0x050a14, 0.96);
 
