@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "node --test --loader ts-node/esm test/**/*.test.ts || vitest run",
+    "test": "vitest run",
     "build": "tsc"
   }
 }
