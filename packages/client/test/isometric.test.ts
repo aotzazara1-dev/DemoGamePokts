@@ -76,5 +76,23 @@ describe('Isometric Coordinate Math', () => {
     const maxTileDepth = getIsometricDepth(100, 100, 100);
     expect(UI_MODAL_DEPTH).toBeGreaterThan(maxTileDepth);
   });
+
+  it('demonstrates that floating portal label offset (y - 28) skews isometric tile coordinates away from portal', () => {
+    // Portal at (1, 15) in Pebble Cave
+    const portalTile = { x: 1, y: 15 };
+    const screen = isoToScreen(portalTile.x, portalTile.y, TILE_WIDTH, TILE_HEIGHT, ORIGIN_X, ORIGIN_Y);
+
+    // Clicking exactly on the center ground tile correctly maps to (1, 15)
+    const groundClick = screenToIso(screen.x, screen.y, TILE_WIDTH, TILE_HEIGHT, ORIGIN_X, ORIGIN_Y);
+    expect(Math.round(groundClick.tileX)).toBe(1);
+    expect(Math.round(groundClick.tileY)).toBe(15);
+
+    // Clicking on the floating banner text at y - 28 skews the inverse projection to (0, 14),
+    // proving why an interactive hit-area on the portal object is required!
+    const bannerClick = screenToIso(screen.x, screen.y - 28, TILE_WIDTH, TILE_HEIGHT, ORIGIN_X, ORIGIN_Y);
+    expect(Math.round(bannerClick.tileX)).toBe(0);
+    expect(Math.round(bannerClick.tileY)).toBe(14);
+    expect(Math.round(bannerClick.tileX)).not.toBe(portalTile.x);
+  });
 });
 

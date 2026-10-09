@@ -113,6 +113,15 @@ export class OverworldScene extends Phaser.Scene {
 
       if (targetX === this.playerTile.x && targetY === this.playerTile.y) return;
 
+      // Check if clicked directly on a portal
+      const targetPortal = this.mapConfig.portals?.find(
+        p => p.position.x === targetX && p.position.y === targetY
+      );
+      if (targetPortal) {
+        this.navigateToPortal(targetPortal);
+        return;
+      }
+
       // Compute A* Path
       const path = findPath(this.playerTile, { x: targetX, y: targetY }, this.mapConfig);
       if (path && path.length > 1) {
@@ -219,10 +228,8 @@ export class OverworldScene extends Phaser.Scene {
       }
 
       if (data?.respawnTile) {
-        this.playerTile = { ...data.respawnTile };
-        const screenPos = isoToScreen(this.playerTile.x, this.playerTile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
-        this.playerContainer.setPosition(screenPos.x, screenPos.y);
-        this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
+        this.transitionToMap('novice_town_and_meadow', data.respawnTile, 'Novice Town');
+        this.network.sendWarpTown();
         if (zoneDisplay && (!data?.levelUps || data.levelUps.length === 0)) {
           zoneDisplay.innerText = '🏡 Respawned at Novice Town. Health & Spirit restored!';
           zoneDisplay.style.color = '#6ee7b7';
@@ -530,10 +537,73 @@ export class OverworldScene extends Phaser.Scene {
           strokeThickness: 3
         }).setOrigin(0.5, 0.5);
 
+        // Make portal rune and label directly interactive with hand cursor
+        portalContainer.setSize(96, 64);
+        portalContainer.setInteractive(new Phaser.Geom.Rectangle(-48, -38, 96, 64), Phaser.Geom.Rectangle.Contains);
+        portalContainer.input!.cursor = 'pointer';
+
+        portalContainer.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+          pointer.event.stopPropagation();
+          this.navigateToPortal(portal);
+        });
+
+        nameLabel.setInteractive({ useHandCursor: true });
+        nameLabel.on('pointerover', () => {
+          nameLabel.setColor('#facc15');
+          nameLabel.setScale(1.08);
+        });
+        nameLabel.on('pointerout', () => {
+          nameLabel.setColor('#38bdf8');
+          nameLabel.setScale(1.0);
+        });
+        nameLabel.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+          pointer.event.stopPropagation();
+          this.navigateToPortal(portal);
+        });
+
         portalContainer.add([rune, nameLabel]);
         portalContainer.setDepth(getIsometricDepth(portal.position.x, portal.position.y, 40));
         this.mapPortals.push(portalContainer);
       });
+    }
+  }
+
+  private navigateToPortal(portal: PortalDefinition) {
+    if (this.isTransitioning) return;
+
+    // If player is already on the portal tile, trigger warp directly
+    if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+      if (!this.network.getRoom()) {
+        this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
+      } else {
+        this.network.sendMove(portal.position.x, portal.position.y);
+      }
+      return;
+    }
+
+    // If player is adjacent (1 tile cardinal or diagonal), step directly onto portal
+    const dx = Math.abs(portal.position.x - this.playerTile.x);
+    const dy = Math.abs(portal.position.y - this.playerTile.y);
+    if (dx <= 1 && dy <= 1) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+      this.attemptMove(portal.position.x, portal.position.y);
+      return;
+    }
+
+    // Otherwise, compute A* Path towards portal tile
+    const path = findPath(this.playerTile, portal.position, this.mapConfig);
+    if (path && path.length > 1) {
+      this.currentPath = path.slice(1);
+      this.showDestinationMarker(portal.position.x, portal.position.y);
+      if (!this.isMoving) {
+        const next = this.currentPath.shift()!;
+        this.attemptMove(next.x, next.y);
+      }
     }
   }
 
@@ -542,6 +612,17 @@ export class OverworldScene extends Phaser.Scene {
     this.isTransitioning = true;
     this.currentPath = [];
     this.clearDestinationMarker();
+
+    if (this.playerContainer) {
+      this.tweens.killTweensOf(this.playerContainer);
+    }
+    this.isMoving = false;
+
+    // Safety timeout to ensure transition lock is always freed even if camera events drop
+    this.time.delayedCall(500, () => {
+      this.isTransitioning = false;
+      this.isMoving = false;
+    });
 
     this.cameras.main.fadeOut(250, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
@@ -560,6 +641,7 @@ export class OverworldScene extends Phaser.Scene {
       );
 
       if (this.playerContainer) {
+        this.tweens.killTweensOf(this.playerContainer);
         this.playerContainer.setPosition(screenPos.x, screenPos.y);
         this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
       }
@@ -584,6 +666,7 @@ export class OverworldScene extends Phaser.Scene {
       this.cameras.main.fadeIn(250, 0, 0, 0);
       this.cameras.main.once('camerafadeincomplete', () => {
         this.isTransitioning = false;
+        this.isMoving = false;
       });
     });
   }
@@ -994,10 +1077,26 @@ export class OverworldScene extends Phaser.Scene {
           this.triggerBattleTransition(payload);
         },
         onWarp: (tile, toastMsg, color) => {
-          this.playerTile = { ...tile };
-          const screenPos = isoToScreen(tile.x, tile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
-          this.playerContainer.setPosition(screenPos.x, screenPos.y);
-          this.playerContainer.setDepth(getIsometricDepth(tile.x, tile.y, 100));
+          this.inventoryModal.close();
+          this.debugToolbar.close();
+          this.currentPath = [];
+          this.clearDestinationMarker();
+
+          if (tile.mapId && tile.mapId !== this.mapConfig.id) {
+            this.transitionToMap(tile.mapId, { x: tile.x, y: tile.y }, toastMsg);
+            if (tile.mapId === 'novice_town_and_meadow' && tile.x === 10 && tile.y === 10) {
+              this.network.sendWarpTown();
+            }
+          } else {
+            this.playerTile = { x: tile.x, y: tile.y };
+            const screenPos = isoToScreen(tile.x, tile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+            if (this.playerContainer) {
+              this.tweens.killTweensOf(this.playerContainer);
+              this.playerContainer.setPosition(screenPos.x, screenPos.y);
+              this.playerContainer.setDepth(getIsometricDepth(tile.x, tile.y, 100));
+            }
+            this.network.sendMove(tile.x, tile.y);
+          }
           this.showToast(toastMsg, color);
         },
         onShowToast: (msg, color) => {

@@ -13,7 +13,7 @@ export interface DebugToolbarCallbacks {
   onRosterUpdated: (roster: PlayerRosterState) => void;
   onInventoryUpdated?: (inventory: InventoryState) => void;
   onInstantBattle: (encounter: any) => void;
-  onWarp: (tile: { x: number; y: number }, toastMsg: string, color?: string) => void;
+  onWarp: (tile: { x: number; y: number; mapId?: string }, toastMsg: string, color?: string) => void;
   onShowToast: (msg: string, color?: string) => void;
 }
 
@@ -248,7 +248,7 @@ export class DebugToolbarController {
     const btnWarpTown = document.getElementById('dbg-warp-town');
     if (btnWarpTown) {
       btnWarpTown.onclick = () => {
-        this.callbacks.onWarp({ x: 10, y: 10 }, '🏡 Teleported to Novice Town (Safe Zone)', '#6ee7b7');
+        this.callbacks.onWarp({ x: 10, y: 10, mapId: 'novice_town_and_meadow' }, '🏡 Teleported to Novice Town (Safe Zone)', '#6ee7b7');
       };
     }
 
@@ -256,7 +256,23 @@ export class DebugToolbarController {
     const btnWarpMeadow = document.getElementById('dbg-warp-meadow');
     if (btnWarpMeadow) {
       btnWarpMeadow.onclick = () => {
-        this.callbacks.onWarp({ x: 23, y: 10 }, '🌾 Teleported to Whispering Meadow (Wild Encounter Zone)', '#f59e0b');
+        this.callbacks.onWarp({ x: 23, y: 10, mapId: 'novice_town_and_meadow' }, '🌾 Teleported to Whispering Meadow (Wild Zone)', '#f59e0b');
+      };
+    }
+
+    // 11. Teleport Pebble Cave
+    const btnWarpCave = document.getElementById('dbg-warp-cave');
+    if (btnWarpCave) {
+      btnWarpCave.onclick = () => {
+        this.callbacks.onWarp({ x: 2, y: 15, mapId: 'pebble_cave' }, '🪨 Teleported to Pebble Cave Depths!', '#38bdf8');
+      };
+    }
+
+    // 12. Teleport Bamboo Forest
+    const btnWarpForest = document.getElementById('dbg-warp-forest');
+    if (btnWarpForest) {
+      btnWarpForest.onclick = () => {
+        this.callbacks.onWarp({ x: 2, y: 25, mapId: 'bamboo_forest' }, '🎋 Teleported to Bamboo Forest Grove!', '#34d399');
       };
     }
 

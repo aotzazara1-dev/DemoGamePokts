@@ -194,4 +194,31 @@ describe('OverworldRoom', () => {
     expect(warpMsg?.payload.targetMapId).toBe('novice_town_and_meadow');
     expect(warpMsg?.payload.targetPosition).toEqual({ x: 10, y: 10 });
   });
+
+  it('supports full two-way round-trip portal transitions (meadow -> cave -> meadow)', () => {
+    const client = createMockClient('client_1');
+    // Start adjacent to portal in meadow: portal is at (5, 6) which leads to pebble_cave (2, 15)
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
+
+    // 1. Warp into Pebble Cave by stepping on (5, 6)
+    (room as any).onMessageHandlers['move'](client, { targetX: 5, targetY: 6 });
+
+    const player = room.state.players.get('client_1')!;
+    expect(player.mapId).toBe('pebble_cave');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+
+    // 2. In Pebble Cave, step onto the return portal at (1, 15)
+    (room as any).onMessageHandlers['move'](client, { targetX: 1, targetY: 15 });
+
+    // Should warp back to novice_town_and_meadow at (35, 3)
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(35);
+    expect(player.y).toBe(3);
+
+    const transitions = client.messages.filter(m => m.type === 'portalTransition');
+    expect(transitions).toHaveLength(2);
+    expect(transitions[1].payload.targetMapId).toBe('novice_town_and_meadow');
+    expect(transitions[1].payload.targetPosition).toEqual({ x: 35, y: 3 });
+  });
 });
