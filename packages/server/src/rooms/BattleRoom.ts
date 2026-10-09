@@ -2,6 +2,7 @@ import { Room, Client } from '@colyseus/core';
 import { BattleRoomState, CombatantNetworkState } from '../schema/BattleState.js';
 import {
   BattleEngine,
+  ProgressionEngine,
   type BattleState,
   type Combatant,
   type TeamFormation,
@@ -208,9 +209,53 @@ export class BattleRoom extends Room<BattleRoomState> {
 
     if (result.nextState.outcome !== 'ongoing') {
       this.state.phase = result.nextState.outcome;
+
+      let expAwarded = 0;
+      const levelUps: any[] = [];
+      const updatedAllies: Combatant[] = [];
+
+      if (result.nextState.outcome === 'victory') {
+        let totalExpPool = 0;
+        ['front', 'back'].forEach(r => {
+          this.authoritativeBattleState.enemies[r as 'front' | 'back'].forEach(e => {
+            if (e && e.hp <= 0) {
+              totalExpPool += ProgressionEngine.calculateEnemyExpReward(e.level);
+            }
+          });
+        });
+
+        const livingAllies: Combatant[] = [];
+        ['front', 'back'].forEach(r => {
+          this.authoritativeBattleState.allies[r as 'front' | 'back'].forEach(a => {
+            if (a && a.hp > 0) livingAllies.push(a);
+          });
+        });
+
+        if (livingAllies.length > 0 && totalExpPool > 0) {
+          expAwarded = Math.floor(totalExpPool / livingAllies.length);
+          livingAllies.forEach(ally => {
+            const prog = ProgressionEngine.addExpToCombatant(ally, expAwarded);
+            updatedAllies.push(prog.combatant);
+            if (prog.leveledUp) {
+              levelUps.push({
+                id: ally.id,
+                name: ally.name,
+                isHero: ally.isHero,
+                oldLevel: prog.oldLevel,
+                newLevel: prog.newLevel,
+                statPointsGained: prog.statPointsGained
+              });
+            }
+          });
+        }
+      }
+
       this.broadcast('battleEnd', {
         outcome: result.nextState.outcome,
-        capturedBeastIds: result.nextState.capturedBeastIds
+        capturedBeastIds: result.nextState.capturedBeastIds,
+        expAwarded,
+        levelUps,
+        updatedAllies
       });
       if (this.timerInterval) {
         this.timerInterval.clear();

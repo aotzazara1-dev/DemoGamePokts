@@ -36,6 +36,9 @@ export interface Combatant extends Attributes {
   isHero: boolean;
   level: number;
   element: Element;
+  exp?: number;
+  maxExp?: number;
+  statPoints?: number;
   action?: CombatAction;
   isDefending?: boolean;
 }

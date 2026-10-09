@@ -4,4 +4,5 @@ export * from './battle/battle-engine.js';
 export * from './overworld/overworld-engine.js';
 export * from './overworld/pathfinding.js';
 export * from './roster/roster-manager.js';
+export * from './progression/progression-engine.js';
 export * from './data/skills.js';

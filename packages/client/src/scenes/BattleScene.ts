@@ -4,6 +4,7 @@ import { getValidTargets } from '../battle/targeting.js';
 import {
   Element,
   BattleEngine,
+  ProgressionEngine,
   ELEMENTAL_SKILLS,
   type SkillDefinition,
   type Combatant,
@@ -638,8 +639,14 @@ export class BattleScene extends Phaser.Scene {
       this.playResolutionSequence(payload.events, payload.outcome);
     });
 
-    this.network.onBattleEnd((payload) => {
-      this.showBattleEndBanner(payload.outcome, payload.capturedBeastIds);
+    this.network.onBattleEnd((payload: any) => {
+      this.showBattleEndBanner(
+        payload.outcome,
+        payload.capturedBeastIds || [],
+        payload.expAwarded,
+        payload.levelUps,
+        payload.updatedAllies
+      );
     });
   }
 
@@ -868,14 +875,20 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
-  private showBattleEndBanner(outcome: string, capturedBeastIds: string[]) {
+  private showBattleEndBanner(
+    outcome: string,
+    capturedBeastIds: string[],
+    expAwarded?: number,
+    levelUps?: any[],
+    updatedAllies?: Combatant[]
+  ) {
     this.battleState.outcome = outcome as any;
     const { width, height } = this.scale;
 
     const bannerContainer = this.add.container(width / 2, height / 2);
     bannerContainer.setDepth(1_000_000);
 
-    const bannerBg = this.add.rectangle(0, 0, 520, 220, 0x0f172a, 0.98);
+    const bannerBg = this.add.rectangle(0, 0, 560, 260, 0x0f172a, 0.98);
     bannerBg.setStrokeStyle(3, 0xd4af37, 1);
 
     const isDefeat = outcome === 'defeat';
@@ -883,33 +896,57 @@ export class BattleScene extends Phaser.Scene {
     const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN COMBAT 💀';
     const titleColor = isWin ? '#fbbf24' : outcome === 'escaped' ? '#38bdf8' : '#ef4444';
 
-    const titleText = this.add.text(0, -60, title, {
+    const titleText = this.add.text(0, -85, title, {
       fontSize: '22px',
       color: titleColor,
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    const rewardsText = this.add.text(0, -10, isWin
-      ? 'Combat concluded successfully. Returning to overworld.'
-      : isDefeat
-        ? 'All friendly units have fallen. Transported to Novice Town.'
-        : 'Disengaged safely from wild encounter.', {
-      fontSize: '13px',
-      color: '#e2e8f0'
+    // Calculate EXP fallback if not provided
+    if (isWin && expAwarded === undefined) {
+      let totalPool = 0;
+      ['front', 'back'].forEach(r => {
+        this.battleState.enemies[r as 'front' | 'back'].forEach(e => {
+          if (e && e.hp <= 0) totalPool += ProgressionEngine.calculateEnemyExpReward(e.level);
+        });
+      });
+      const livingCount = ['front', 'back'].reduce((acc, r) => {
+        return acc + this.battleState.allies[r as 'front' | 'back'].filter(a => a && a.hp > 0).length;
+      }, 0);
+      expAwarded = livingCount > 0 ? Math.floor(totalPool / livingCount) : 0;
+    }
+
+    const expTextStr = isWin && (expAwarded ?? 0) > 0 ? `✨ Experience Gained: +${expAwarded} EXP` : '';
+    const expText = this.add.text(0, -48, expTextStr, {
+      fontSize: '14px',
+      color: '#38bdf8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    let levelUpMsg = '';
+    if (levelUps && levelUps.length > 0) {
+      levelUpMsg = levelUps.map(l => `🎉 LEVEL UP! ${l.name} is now Lv.${l.newLevel}! (+${l.statPointsGained} Stat Points)`).join('\n');
+    }
+    const levelUpText = this.add.text(0, -16, levelUpMsg, {
+      fontSize: '12px',
+      color: '#facc15',
+      fontStyle: 'bold',
+      align: 'center',
+      lineSpacing: 4
     }).setOrigin(0.5, 0.5);
 
     const captureNote = capturedBeastIds.length > 0
-      ? `🎉 Captured Beast added to team roster!`
+      ? `🕸️ Captured Beast added to team roster!`
       : '';
-    const captureText = this.add.text(0, 16, captureNote, {
+    const captureText = this.add.text(0, 22, captureNote, {
       fontSize: '13px',
       color: '#a855f7',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
     // Return to Overworld or Respawn Button
-    const returnBtn = this.add.rectangle(0, 65, 250, 42, isDefeat ? 0x991b1b : 0xd97706).setInteractive({ useHandCursor: true });
-    const returnBtnText = this.add.text(0, 65, isDefeat ? 'Respawn at Novice Town' : 'Return to Overworld', {
+    const returnBtn = this.add.rectangle(0, 75, 250, 42, isDefeat ? 0x991b1b : 0xd97706).setInteractive({ useHandCursor: true });
+    const returnBtnText = this.add.text(0, 75, isDefeat ? 'Respawn at Novice Town' : 'Return to Overworld', {
       fontSize: '14px',
       color: '#ffffff',
       fontStyle: 'bold'
@@ -930,14 +967,25 @@ export class BattleScene extends Phaser.Scene {
         });
 
         if (isDefeat) {
-          this.scene.resume('OverworldScene', { respawnTile: { x: 10, y: 10 }, capturedBeasts });
+          this.scene.resume('OverworldScene', {
+            respawnTile: { x: 10, y: 10 },
+            capturedBeasts,
+            expAwarded,
+            levelUps,
+            updatedAllies
+          });
         } else {
-          this.scene.resume('OverworldScene', { capturedBeasts });
+          this.scene.resume('OverworldScene', {
+            capturedBeasts,
+            expAwarded,
+            levelUps,
+            updatedAllies
+          });
         }
       });
     });
 
-    bannerContainer.add([bannerBg, titleText, rewardsText, captureText, returnBtn, returnBtnText]);
+    bannerContainer.add([bannerBg, titleText, expText, levelUpText, captureText, returnBtn, returnBtnText]);
     bannerContainer.setScale(0.7);
     this.tweens.add({
       targets: bannerContainer,

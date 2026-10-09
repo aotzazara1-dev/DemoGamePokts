@@ -203,4 +203,47 @@ describe('BattleRoom', () => {
     clearTimeout((aiRoom as any)['_autoDisposeTimeout']);
     clearInterval((aiRoom as any)['_patchInterval']);
   });
+
+  it('calculates EXP reward and broadcasts level-up results on victory', () => {
+    const weakEnemy: Combatant = {
+      ...mockWildEnemy,
+      hp: 1, // Will faint in 1 hit
+      maxHp: 20,
+      level: 4
+    };
+
+    const expRoom = new BattleRoom();
+    expRoom.onCreate({
+      playerCombatants: [mockHero],
+      wildEnemies: [weakEnemy]
+    });
+
+    const client = createMockClient('client_1');
+    expRoom.onJoin(client as any);
+
+    let battleEndPayload: any = null;
+    vi.spyOn(expRoom, 'broadcast').mockImplementation((type: any, payload: any) => {
+      if (type === 'battleEnd') {
+        battleEndPayload = payload;
+      }
+      return true as any;
+    });
+
+    // Hero attacks weak enemy to win battle
+    (expRoom as any).onMessageHandlers['selectAction'](client, {
+      combatantId: 'hero_1',
+      action: { type: 'attack', targetId: 'enemy_1' }
+    });
+
+    expect(battleEndPayload).not.toBeNull();
+    expect(battleEndPayload.outcome).toBe('victory');
+    // Enemy Lv.4 gives 30 * 4 = 120 EXP
+    expect(battleEndPayload.expAwarded).toBe(120);
+    expect(battleEndPayload.updatedAllies.length).toBe(1);
+
+    expRoom.clock?.stop();
+    clearTimeout((expRoom as any)['_autoDisposeTimeout']);
+    clearInterval((expRoom as any)['_patchInterval']);
+  });
 });
+

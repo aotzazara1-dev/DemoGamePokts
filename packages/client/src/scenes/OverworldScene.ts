@@ -5,6 +5,7 @@ import {
   DEFAULT_OVERWORLD_MAP,
   findPath,
   RosterManager,
+  ProgressionEngine,
   Element,
   type MapConfig,
   type TileCoord,
@@ -34,6 +35,7 @@ export class OverworldScene extends Phaser.Scene {
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
   private isRosterOpen: boolean = false;
+  private isCharacterModalOpen: boolean = false;
   private selectedFormationUnitType: 'hero' | 'beast' = 'hero';
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
@@ -78,7 +80,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.isRosterOpen) return;
+      if (this.isRosterOpen || this.isCharacterModalOpen) return;
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -103,29 +105,65 @@ export class OverworldScene extends Phaser.Scene {
     this.connectToServer();
 
     // 6. Handle returning from battle (including defeat respawn & captured beasts)
-    this.events.on('resume', (_sys: any, data?: { respawnTile?: TileCoord; capturedBeasts?: Combatant[] }) => {
+    this.events.on('resume', (_sys: any, data?: {
+      respawnTile?: TileCoord;
+      capturedBeasts?: Combatant[];
+      expAwarded?: number;
+      levelUps?: any[];
+      updatedAllies?: Combatant[];
+    }) => {
       this.currentPath = [];
       this.clearDestinationMarker();
       this.network.sendBattleConcluded();
 
-      // Restore Beasts button when returning to Overworld
+      // Restore buttons when returning to Overworld
       const htmlBtn = document.getElementById('btn-roster');
       if (htmlBtn) htmlBtn.style.display = 'flex';
+      const charBtn = document.getElementById('btn-character-status');
+      if (charBtn) charBtn.style.display = 'block';
 
       const zoneDisplay = document.getElementById('zone-display');
+
+      // Sync progression updates from server or fallback
+      if (data?.updatedAllies && data.updatedAllies.length > 0) {
+        data.updatedAllies.forEach(updated => {
+          if (updated.isHero) {
+            this.roster.hero = { ...this.roster.hero, ...updated };
+          } else {
+            const idx = this.roster.beasts.findIndex(b => b.id === updated.id);
+            if (idx !== -1) {
+              this.roster.beasts[idx] = { ...this.roster.beasts[idx], ...updated };
+            }
+          }
+        });
+      } else if (data?.expAwarded && data.expAwarded > 0) {
+        const progHero = ProgressionEngine.addExpToCombatant(this.roster.hero, data.expAwarded);
+        this.roster.hero = progHero.combatant;
+
+        const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
+        if (activeBeast) {
+          const progBeast = ProgressionEngine.addExpToCombatant(activeBeast, data.expAwarded);
+          const idx = this.roster.beasts.findIndex(b => b.id === activeBeast.id);
+          if (idx !== -1) this.roster.beasts[idx] = progBeast.combatant;
+        }
+      }
+
+      if (data?.levelUps && data.levelUps.length > 0 && zoneDisplay) {
+        zoneDisplay.innerText = data.levelUps.map(l => `🎉 LEVEL UP! ${l.name} Lv.${l.newLevel}! (+${l.statPointsGained} Stat Points)`).join(' | ');
+        zoneDisplay.style.color = '#fbbf24';
+      }
 
       if (data?.capturedBeasts && data.capturedBeasts.length > 0) {
         data.capturedBeasts.forEach(b => {
           const res = RosterManager.addCapturedBeast(this.roster, b);
           if (res.success) {
             this.roster = res.roster;
-            if (zoneDisplay) {
+            if (zoneDisplay && (!data?.levelUps || data.levelUps.length === 0)) {
               zoneDisplay.innerText = `🎉 Successfully captured ${b.name} and added to Beast Roster!`;
               zoneDisplay.style.color = '#a855f7';
             }
           }
         });
-        this.updateRosterButtonLabel();
       }
 
       if (data?.respawnTile) {
@@ -133,24 +171,34 @@ export class OverworldScene extends Phaser.Scene {
         const screenPos = isoToScreen(this.playerTile.x, this.playerTile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
         this.playerContainer.setPosition(screenPos.x, screenPos.y);
         this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
-        if (zoneDisplay) {
+        if (zoneDisplay && (!data?.levelUps || data.levelUps.length === 0)) {
           zoneDisplay.innerText = '🏡 Respawned at Novice Town. Health & Spirit restored!';
           zoneDisplay.style.color = '#6ee7b7';
         }
       } else {
-        if (zoneDisplay && (!data?.capturedBeasts || data.capturedBeasts.length === 0)) {
+        if (zoneDisplay && (!data?.capturedBeasts || data.capturedBeasts.length === 0) && (!data?.levelUps || data.levelUps.length === 0)) {
           zoneDisplay.innerText = 'Returned to Overworld. Exploring...';
         }
       }
+
+      this.updateRosterButtonLabel();
+      this.updateHeroStatusBar();
     });
 
     // 7. Setup Beast Roster & Formation button and keyboard shortcuts
     this.createRosterButton();
     this.setupRosterModalDOM();
+    this.setupCharacterModalDOM();
+    this.updateHeroStatusBar();
+
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => this.toggleRosterModal());
       this.input.keyboard.on('keydown-F', () => this.toggleRosterModal());
-      this.input.keyboard.on('keydown-ESC', () => this.toggleRosterModal(false));
+      this.input.keyboard.on('keydown-C', () => this.toggleCharacterModal());
+      this.input.keyboard.on('keydown-ESC', () => {
+        this.toggleRosterModal(false);
+        this.toggleCharacterModal(false);
+      });
     }
   }
 
@@ -363,7 +411,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
-    if (this.isRosterOpen) return;
+    if (this.isRosterOpen || this.isCharacterModalOpen) return;
 
     // 1. Mouse Hold-to-Move
     const pointer = this.input.activePointer;
@@ -542,13 +590,14 @@ export class OverworldScene extends Phaser.Scene {
     this.currentPath = [];
     this.clearDestinationMarker();
 
-    if (this.isRosterOpen) {
-      this.toggleRosterModal();
-    }
+    this.toggleRosterModal(false);
+    this.toggleCharacterModal(false);
 
-    // Hide Beasts button during battle
+    // Hide HUD buttons during battle
     const htmlBtn = document.getElementById('btn-roster');
     if (htmlBtn) htmlBtn.style.display = 'none';
+    const charBtn = document.getElementById('btn-character-status');
+    if (charBtn) charBtn.style.display = 'none';
 
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
@@ -656,7 +705,7 @@ export class OverworldScene extends Phaser.Scene {
                 <span class="badge-element badge-${beast.element}">${this.getElementIcon(beast.element)} ${beast.element}</span>
               </div>
               <div class="beast-bars">
-                <span>HP: ${beast.hp}/${beast.maxHp}</span> &bull; <span>SP: ${beast.sp}/${beast.maxSp}</span>
+                <span>HP: ${beast.hp}/${beast.maxHp}</span> &bull; <span>SP: ${beast.sp}/${beast.maxSp}</span> &bull; <span>EXP: ${beast.exp ?? 0}/${beast.maxExp ?? ProgressionEngine.calculateExpToNextLevel(beast.level)}</span>
               </div>
               <div class="beast-stats-row">
                 <span>ATK: ${beast.atk}</span>
@@ -664,6 +713,15 @@ export class OverworldScene extends Phaser.Scene {
                 <span>INT: ${beast.int || 10}</span>
                 <span>AGI: ${beast.agi}</span>
               </div>
+              ${(beast.statPoints ?? 0) > 0 ? `
+                <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px; font-size: 10px; color: #fbbf24;">
+                  <span>⭐ ${beast.statPoints} Pts:</span>
+                  <button class="beast-stat-btn" data-attr="atk" data-id="${beast.id}">+ATK</button>
+                  <button class="beast-stat-btn" data-attr="def" data-id="${beast.id}">+DEF</button>
+                  <button class="beast-stat-btn" data-attr="int" data-id="${beast.id}">+INT</button>
+                  <button class="beast-stat-btn" data-attr="agi" data-id="${beast.id}">+AGI</button>
+                </div>
+              ` : ''}
             </div>
             <div>
               ${isActive 
@@ -682,6 +740,20 @@ export class OverworldScene extends Phaser.Scene {
               this.renderRosterModalDOM();
             };
           }
+
+          const statBtns = card.querySelectorAll<HTMLButtonElement>('.beast-stat-btn');
+          statBtns.forEach(btn => {
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              const attr = btn.getAttribute('data-attr') as 'atk' | 'def' | 'int' | 'agi';
+              const res = ProgressionEngine.allocateStatPoint(beast, attr);
+              if (res.success) {
+                const idx = this.roster.beasts.findIndex(b => b.id === beast.id);
+                if (idx !== -1) this.roster.beasts[idx] = res.combatant;
+                this.renderRosterModalDOM();
+              }
+            };
+          });
 
           beastContainer.appendChild(card);
         });
@@ -770,6 +842,129 @@ export class OverworldScene extends Phaser.Scene {
       case Element.Earth: return '🌍';
       case Element.Wind: return '🌪️';
       default: return '✨';
+    }
+  }
+
+  // ==========================================
+  // HERO CHARACTER STATUS & STAT ALLOCATION UI
+  // ==========================================
+
+  private setupCharacterModalDOM() {
+    const btnStatus = document.getElementById('btn-character-status');
+    if (btnStatus) btnStatus.onclick = () => this.toggleCharacterModal();
+
+    const btnClose = document.getElementById('btn-close-char-modal');
+    if (btnClose) btnClose.onclick = () => this.toggleCharacterModal(false);
+
+    const btnDone = document.getElementById('btn-close-char-bottom');
+    if (btnDone) btnDone.onclick = () => this.toggleCharacterModal(false);
+
+    const modal = document.getElementById('character-modal');
+    if (modal) {
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          this.toggleCharacterModal(false);
+        }
+      };
+    }
+
+    // Attach click listeners to stat allocation buttons
+    const plusBtns = document.querySelectorAll<HTMLButtonElement>('#character-modal .btn-stat-plus');
+    plusBtns.forEach(btn => {
+      btn.onclick = () => {
+        const attr = btn.getAttribute('data-attr') as 'atk' | 'def' | 'int' | 'agi';
+        const res = ProgressionEngine.allocateStatPoint(this.roster.hero, attr);
+        if (res.success) {
+          this.roster.hero = res.combatant;
+          this.renderCharacterModalDOM();
+          this.updateHeroStatusBar();
+        }
+      };
+    });
+  }
+
+  public toggleCharacterModal(forceOpen?: boolean) {
+    const modal = document.getElementById('character-modal');
+    if (!modal) return;
+
+    if (forceOpen !== undefined) {
+      this.isCharacterModalOpen = forceOpen;
+    } else {
+      this.isCharacterModalOpen = !this.isCharacterModalOpen;
+    }
+
+    if (this.isCharacterModalOpen) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+      modal.classList.add('open');
+      this.renderCharacterModalDOM();
+    } else {
+      modal.classList.remove('open');
+    }
+  }
+
+  private renderCharacterModalDOM() {
+    const modal = document.getElementById('character-modal');
+    if (!modal || !this.isCharacterModalOpen) return;
+
+    const hero = this.roster.hero;
+    const maxExp = hero.maxExp ?? ProgressionEngine.calculateExpToNextLevel(hero.level);
+    const exp = hero.exp ?? 0;
+    const expPercent = Math.min(100, Math.floor((exp / maxExp) * 100));
+    const statPoints = hero.statPoints ?? 0;
+
+    const nameTitle = document.getElementById('char-name-title');
+    if (nameTitle) nameTitle.innerText = `${hero.name} Lv.${hero.level} [${hero.element}]`;
+
+    const expText = document.getElementById('char-exp-text');
+    if (expText) expText.innerText = `EXP: ${exp} / ${maxExp} (${expPercent}%)`;
+
+    const expBar = document.getElementById('char-exp-bar');
+    if (expBar) expBar.style.width = `${expPercent}%`;
+
+    const pointsBadge = document.getElementById('char-stat-points-val');
+    if (pointsBadge) {
+      pointsBadge.innerText = `${statPoints} Points Available`;
+      pointsBadge.style.color = statPoints > 0 ? '#fbbf24' : '#94a3b8';
+      pointsBadge.style.borderColor = statPoints > 0 ? '#fbbf24' : '#475569';
+    }
+
+    // Values
+    const elAtk = document.getElementById('val-atk');
+    if (elAtk) elAtk.innerText = `${hero.atk}`;
+
+    const elDef = document.getElementById('val-def');
+    if (elDef) elDef.innerText = `${hero.def}`;
+
+    const elInt = document.getElementById('val-int');
+    if (elInt) elInt.innerText = `${hero.int}`;
+
+    const elAgi = document.getElementById('val-agi');
+    if (elAgi) elAgi.innerText = `${hero.agi}`;
+
+    const elHp = document.getElementById('val-hp');
+    if (elHp) elHp.innerText = `${hero.hp} / ${hero.maxHp}`;
+
+    const elSp = document.getElementById('val-sp');
+    if (elSp) elSp.innerText = `${hero.sp} / ${hero.maxSp}`;
+
+    // Enable/disable plus buttons
+    const plusBtns = document.querySelectorAll<HTMLButtonElement>('#character-modal .btn-stat-plus');
+    plusBtns.forEach(btn => {
+      btn.disabled = statPoints <= 0;
+    });
+  }
+
+  private updateHeroStatusBar() {
+    const hero = this.roster.hero;
+    const maxExp = hero.maxExp ?? ProgressionEngine.calculateExpToNextLevel(hero.level);
+    const exp = hero.exp ?? 0;
+    const statPoints = hero.statPoints ?? 0;
+
+    const quickInfo = document.getElementById('hero-quick-info');
+    if (quickInfo) {
+      const ptsNote = statPoints > 0 ? ` <span style="color: #fbbf24; font-weight: bold;">⭐ ${statPoints} PTS!</span>` : '';
+      quickInfo.innerHTML = `🧙 ${hero.name} Lv.${hero.level} (${exp}/${maxExp} EXP)${ptsNote}`;
     }
   }
 }

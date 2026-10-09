@@ -394,6 +394,188 @@
       background: #b45309;
       box-shadow: 0 0 16px rgba(217, 119, 6, 0.7);
     }
+
+    /* Character Status Modal */
+    #character-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #character-modal.open {
+      display: flex;
+    }
+    .character-card {
+      width: 680px;
+      max-width: 95%;
+      background: #0f172a;
+      border: 2px solid #38bdf8;
+      border-radius: 8px;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    .character-body {
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .char-overview-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .char-avatar-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .char-avatar-circle {
+      width: 48px;
+      height: 48px;
+      background: #1d4ed8;
+      border: 2px solid #60a5fa;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .char-name-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 2px;
+    }
+    .char-sub-text {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+    .exp-bar-container {
+      width: 220px;
+      height: 8px;
+      background: #0f172a;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .exp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .char-points-callout {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .stat-points-badge {
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid #fbbf24;
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+    .attributes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .attr-row {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .attr-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .attr-icon {
+      font-size: 18px;
+    }
+    .attr-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #f1f5f9;
+    }
+    .attr-desc {
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .attr-val-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .attr-val {
+      font-size: 15px;
+      font-weight: bold;
+      color: #38bdf8;
+      min-width: 32px;
+      text-align: right;
+    }
+    .btn-stat-plus {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-stat-plus:hover:not(:disabled) {
+      background: #0369a1;
+      transform: scale(1.05);
+    }
+    .btn-stat-plus:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .beast-stat-btn {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 9px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 3px;
+    }
+    .beast-stat-btn:hover {
+      background: #0369a1;
+    }
   </style>
 </head>
 <body>
@@ -402,10 +584,138 @@
       <div class="title">⚔️ Poktsonline - Overworld Alpha</div>
       <div class="hint">Move: [WASD] or [Arrow Keys] | Click Tile to Navigate</div>
       <div id="zone-display" style="color: #6ee7b7; margin-top: 4px;">Zone: Novice Town (Safe)</div>
+      <div id="hero-quick-bar" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+        <span id="hero-quick-info" style="color: #facc15; font-size: 12px; font-weight: bold;">🧙 Hero Lv.5 (0/559 EXP)</span>
+        <button id="btn-character-status" title="Open Character Status (Hotkey: C)" style="background: #2563eb; color: #fff; border: 1px solid #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
+          📊 Status [C]
+        </button>
+      </div>
     </div>
     <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
       🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
     </button>
+
+    <!-- Character Status & Stat Points Modal Overlay -->
+    <div id="character-modal">
+      <div class="character-card">
+        <div class="roster-header">
+          <div class="roster-header-titles">
+            <h2>🧙 HERO CHARACTER PROFILE</h2>
+            <p>View Attributes, track Experience (EXP), and allocate Stat Points</p>
+          </div>
+          <button id="btn-close-char-modal" class="btn-close-modal" title="Close (Hotkey: Esc or C)">✕ Close</button>
+        </div>
+
+        <div class="character-body">
+          <div class="char-overview-box">
+            <div class="char-avatar-row">
+              <div class="char-avatar-circle">🧙</div>
+              <div>
+                <div id="char-name-title" class="char-name-title">Hero Lv.5 [Water]</div>
+                <div id="char-exp-text" class="char-sub-text">EXP: 0 / 559 (0%)</div>
+                <div class="exp-bar-container">
+                  <div id="char-exp-bar" class="exp-bar-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="char-points-callout">
+              <span>Distributable Stat Points:</span>
+              <span id="char-stat-points-val" class="stat-points-badge">0 Points</span>
+            </div>
+          </div>
+
+          <div class="attributes-grid">
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">⚔️</span>
+                <div>
+                  <div class="attr-name">ATK (Attack)</div>
+                  <div class="attr-desc">Increases physical melee and skill damage</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-atk" class="attr-val">28</span>
+                <button class="btn-stat-plus" data-attr="atk" title="Allocate 1 Stat Point (+1 ATK)">+ 1</button>
+              </div>
+            </div>
+
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">🛡️</span>
+                <div>
+                  <div class="attr-name">DEF (Defense)</div>
+                  <div class="attr-desc">Reduces incoming damage & grants +10 Max HP</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-def" class="attr-val">18</span>
+                <button class="btn-stat-plus" data-attr="def" title="Allocate 1 Stat Point (+1 DEF, +10 HP)">+ 1</button>
+              </div>
+            </div>
+
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">✨</span>
+                <div>
+                  <div class="attr-name">INT (Intelligence)</div>
+                  <div class="attr-desc">Increases magical potency & grants +5 Max SP</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-int" class="attr-val">12</span>
+                <button class="btn-stat-plus" data-attr="int" title="Allocate 1 Stat Point (+1 INT, +5 SP)">+ 1</button>
+              </div>
+            </div>
+
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">⚡</span>
+                <div>
+                  <div class="attr-name">AGI (Agility)</div>
+                  <div class="attr-desc">Determines turn order & unlocks simultaneous Combos</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-agi" class="attr-val">22</span>
+                <button class="btn-stat-plus" data-attr="agi" title="Allocate 1 Stat Point (+1 AGI)">+ 1</button>
+              </div>
+            </div>
+
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">❤️</span>
+                <div>
+                  <div class="attr-name">Health Points (HP)</div>
+                  <div class="attr-desc">Maximum survivability pool</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-hp" class="attr-val">120 / 120</span>
+              </div>
+            </div>
+
+            <div class="attr-row">
+              <div class="attr-label">
+                <span class="attr-icon">💧</span>
+                <div>
+                  <div class="attr-name">Spirit Points (SP)</div>
+                  <div class="attr-desc">Energy required for elemental skills</div>
+                </div>
+              </div>
+              <div class="attr-val-box">
+                <span id="val-sp" class="attr-val">50 / 50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roster-footer">
+          <button id="btn-close-char-bottom" class="btn-confirm-formation">
+            ✔️ Done
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Beast Roster & Formation Grid Modal Overlay -->
     <div id="roster-modal">
