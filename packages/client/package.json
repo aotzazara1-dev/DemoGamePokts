@@ -5,9 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc"
+    "build": "tsc && vite build",
+    "test": "vitest run",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@poktsonline/shared": "*"
+    "@poktsonline/shared": "*",
+    "colyseus.js": "^0.15.28",
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
   }
 }

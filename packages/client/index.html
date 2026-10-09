@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poktsonline - Isometric RPG</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-wrapper {
+      position: relative;
+      border: 3px solid #d4af37;
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    #game-container {
+      width: 1024px;
+      height: 768px;
+    }
+    #ui-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #d4af37;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #ui-overlay .title {
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 4px;
+    }
+    #ui-overlay .hint {
+      color: #94a3b8;
+    }
+    #status-bar {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrapper">
+    <div id="ui-overlay">
+      <div class="title">⚔️ Poktsonline - Overworld Alpha</div>
+      <div class="hint">Move: [WASD] or [Arrow Keys] | Click Tile to Navigate</div>
+      <div id="zone-display" style="color: #6ee7b7; margin-top: 4px;">Zone: Novice Town (Safe)</div>
+    </div>
+    <div id="game-container"></div>
+  </div>
+  <div id="status-bar">Authoritative Colyseus Server Room &bull; TS Online Isometric Combat Mechanics</div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

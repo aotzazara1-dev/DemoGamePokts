@@ -4,10 +4,10 @@
 
 **Blocked by:** 04: Colyseus Authoritative Server Rooms
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Vite + Phaser 3 client project bootstraps in `packages/client`.
-- [ ] Isometric 2.5D tilemap scene renders with distinct visual terrain (safe town/path and wild grass/forest Zones).
-- [ ] Player controls Hero avatar with smooth grid-based movement and camera tracking.
-- [ ] Colyseus client SDK syncs and renders other online players moving on the same Overworld map.
-- [ ] When server triggers an encounter, client plays a screen transition effect and switches to the Battle Scene.
+- [x] Vite + Phaser 3 client project bootstraps in `packages/client`.
+- [x] Isometric 2.5D tilemap scene renders with distinct visual terrain (safe town/path and wild grass/forest Zones).
+- [x] Player controls Hero avatar with smooth grid-based movement and camera tracking.
+- [x] Colyseus client SDK syncs and renders other online players moving on the same Overworld map.
+- [x] When server triggers an encounter, client plays a screen transition effect and switches to the Battle Scene.

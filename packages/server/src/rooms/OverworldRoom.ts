@@ -2,66 +2,14 @@ import { Room, Client } from '@colyseus/core';
 import { OverworldState, PlayerNetworkState } from '../schema/OverworldState.js';
 import {
   OverworldEngine,
+  DEFAULT_OVERWORLD_MAP,
   type MapConfig,
   type Direction,
   type TileCoord,
   Element
 } from '@poktsonline/shared';
 
-export const DEFAULT_OVERWORLD_MAP: MapConfig = {
-  width: 50,
-  height: 50,
-  obstacles: [
-    { x: 15, y: 15 },
-    { x: 15, y: 16 },
-    { x: 16, y: 15 }
-  ],
-  zones: [
-    {
-      id: 'novice_town',
-      name: 'Novice Town',
-      type: 'safe',
-      bounds: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
-      encounterRatePerStep: 0,
-      encounterPool: []
-    },
-    {
-      id: 'whispering_meadow',
-      name: 'Whispering Meadow',
-      type: 'wild',
-      bounds: { minX: 21, maxX: 49, minY: 0, maxY: 49 },
-      encounterRatePerStep: 0.15,
-      encounterPool: [
-        {
-          beastTemplateId: 'leaf_sprite',
-          name: 'Leaf Sprite',
-          element: Element.Wind,
-          baseLevel: 3,
-          levelVariance: 1,
-          weight: 1,
-          baseHp: 35,
-          baseSp: 15,
-          baseAtk: 12,
-          baseDef: 8,
-          baseAgi: 14
-        },
-        {
-          beastTemplateId: 'rock_boar',
-          name: 'Rock Boar',
-          element: Element.Earth,
-          baseLevel: 4,
-          levelVariance: 1,
-          weight: 1,
-          baseHp: 50,
-          baseSp: 10,
-          baseAtk: 16,
-          baseDef: 14,
-          baseAgi: 8
-        }
-      ]
-    }
-  ]
-};
+export { DEFAULT_OVERWORLD_MAP };
 
 function determineDirection(from: TileCoord, to: TileCoord): Direction {
   const dx = to.x - from.x;
