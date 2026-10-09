@@ -1,6 +1,6 @@
 /**
  * Core Domain Types for Poktsonline
- * Aligned with GLOSSARY.md and ADR 0003
+ * Aligned with GLOSSARY.md and ADRs
  */
 
 export enum Element {
@@ -38,4 +38,48 @@ export interface Combatant extends Attributes {
   element: Element;
   action?: CombatAction;
   isDefending?: boolean;
+}
+
+export interface TeamFormation {
+  front: (Combatant | null)[];
+  back: (Combatant | null)[];
+}
+
+export type BattleOutcome = 'ongoing' | 'victory' | 'defeat' | 'escaped';
+
+export interface BattleState {
+  round: number;
+  outcome: BattleOutcome;
+  allies: TeamFormation;
+  enemies: TeamFormation;
+  capturedBeastIds: string[];
+}
+
+export type TeamActionsMap = Record<string, CombatAction>;
+
+export type BattleEventType =
+  | 'attack'
+  | 'damage'
+  | 'blocked'
+  | 'combo'
+  | 'defend'
+  | 'heal'
+  | 'capture_success'
+  | 'capture_fail'
+  | 'faint'
+  | 'flee'
+  | 'victory'
+  | 'defeat';
+
+export interface BattleEvent {
+  type: BattleEventType;
+  actorId: string;
+  targetId?: string;
+  value?: number;
+  message: string;
+}
+
+export interface TurnResolutionResult {
+  nextState: BattleState;
+  events: BattleEvent[];
 }
