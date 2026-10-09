@@ -69,4 +69,12 @@ describe('Isometric Coordinate Math', () => {
     expect(Math.round(inverted.tileX)).toBe(3);
     expect(Math.round(inverted.tileY)).toBe(4);
   });
+
+  it('guarantees UI modal depth (1,000,000) exceeds maximum overworld tile depths', () => {
+    const UI_MODAL_DEPTH = 1_000_000;
+    // Map with 100x100 tiles at maximum corner plus foreground entity sublayer
+    const maxTileDepth = getIsometricDepth(100, 100, 100);
+    expect(UI_MODAL_DEPTH).toBeGreaterThan(maxTileDepth);
+  });
 });
+

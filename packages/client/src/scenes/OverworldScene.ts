@@ -608,11 +608,11 @@ export class OverworldScene extends Phaser.Scene {
 
     const container = this.add.container(width / 2, height / 2);
     container.setScrollFactor(0);
-    container.setDepth(3000);
+    container.setDepth(1_000_000);
     container.setScale(1 / zoom);
 
-    // Dim background
-    const dim = this.add.rectangle(0, 0, width * zoom, height * zoom, 0x000000, 0.75).setInteractive();
+    // Dim background (extra coverage to guarantee full viewport blocking)
+    const dim = this.add.rectangle(0, 0, width * zoom * 2, height * zoom * 2, 0x000000, 0.75).setInteractive();
     dim.on('pointerdown', () => { /* prevent click through */ });
 
     // Modal background

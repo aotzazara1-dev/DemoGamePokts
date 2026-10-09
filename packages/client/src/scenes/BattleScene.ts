@@ -873,7 +873,7 @@ export class BattleScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     const bannerContainer = this.add.container(width / 2, height / 2);
-    bannerContainer.setDepth(1000);
+    bannerContainer.setDepth(1_000_000);
 
     const bannerBg = this.add.rectangle(0, 0, 520, 220, 0x0f172a, 0.98);
     bannerBg.setStrokeStyle(3, 0xd4af37, 1);
