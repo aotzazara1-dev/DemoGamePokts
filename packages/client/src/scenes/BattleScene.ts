@@ -20,6 +20,7 @@ import {
   type LootReward,
   type ItemStack
 } from '@poktsonline/shared';
+import { soundManager } from '../audio/SoundManager.js';
 
 export class BattleScene extends Phaser.Scene {
   private network!: BattleNetwork;
@@ -507,6 +508,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private handleActionClick(actionType: CombatActionType) {
+    soundManager.playButtonClick();
     if (this.itemMenuContainer) {
       this.itemMenuContainer.destroy();
       this.itemMenuContainer = undefined;
@@ -614,6 +616,7 @@ export class BattleScene extends Phaser.Scene {
       btn.on('pointerover', () => btnBg.setFillStyle(0x0284c7, 1.0));
       btn.on('pointerout', () => btnBg.setFillStyle(0x1e293b, 0.95));
       btn.on('pointerdown', () => {
+        soundManager.playButtonClick();
         this.selectedItemId = item.itemId;
         this.selectedActionType = 'item';
         if (this.itemMenuContainer) {
@@ -648,6 +651,7 @@ export class BattleScene extends Phaser.Scene {
     cancelBtn.on('pointerover', () => cancelBg.setFillStyle(0xdc2626, 1.0));
     cancelBtn.on('pointerout', () => cancelBg.setFillStyle(0x991b1b, 0.95));
     cancelBtn.on('pointerdown', () => {
+      soundManager.playButtonClick();
       if (this.itemMenuContainer) {
         this.itemMenuContainer.destroy();
         this.itemMenuContainer = undefined;
@@ -710,6 +714,8 @@ export class BattleScene extends Phaser.Scene {
       this.statusBannerText.setColor('#ef4444');
       return;
     }
+
+    soundManager.playButtonClick();
 
     // Target locked
     this.stagedActions[this.currentTurnActorId] = {
@@ -929,6 +935,7 @@ export class BattleScene extends Phaser.Scene {
     const target = evt.targetId ? this.combatantVisuals.get(evt.targetId) : undefined;
 
     if (evt.type === 'pass') {
+      soundManager.playButtonClick();
       const actor = this.combatantVisuals.get(evt.actorId);
       if (actor) {
         this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'PASS ⏸️', '#94a3b8');
@@ -937,6 +944,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'defend') {
+      soundManager.playDefend();
       const actor = this.combatantVisuals.get(evt.actorId);
       if (actor) {
         this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'GUARD 🛡️', '#34d399');
@@ -945,6 +953,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'flee') {
+      soundManager.playFlee();
       const actor = this.combatantVisuals.get(evt.actorId);
       if (actor) {
         this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'FLEE 🏃', '#f87171');
@@ -953,6 +962,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'heal' && target) {
+      soundManager.playHeal();
       if (evt.value && evt.value > 0) {
         this.showFloatingCombatText(target.container.x, target.container.y - 20, `+${evt.value} HP 💚`, '#22c55e');
         target.unit.hp = Math.min(target.unit.maxHp, target.unit.hp + evt.value);
@@ -964,6 +974,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'sp_restore' && target) {
+      soundManager.playSpRestore();
       if (evt.value && evt.value > 0) {
         this.showFloatingCombatText(target.container.x, target.container.y - 20, `+${evt.value} SP 💧`, '#38bdf8');
         target.unit.sp = Math.min(target.unit.maxSp, target.unit.sp + evt.value);
@@ -973,6 +984,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'revive' && target) {
+      soundManager.playRevive();
       if (evt.value && evt.value > 0) {
         this.showFloatingCombatText(target.container.x, target.container.y - 20, `REVIVED! +${evt.value} HP ❤️`, '#fbbf24');
         target.unit.hp = evt.value;
@@ -987,6 +999,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (evt.type === 'combo' && target) {
+      soundManager.playAttack();
       // Find ally combatants participating in combo (uA + beast)
       const uAVis = this.combatantVisuals.get(evt.actorId);
       const beastVis = this.combatantVisuals.get('beast_1');
@@ -1006,6 +1019,7 @@ export class BattleScene extends Phaser.Scene {
       });
 
       this.time.delayedCall(180, () => {
+        soundManager.playHit();
         this.cameras.main.shake(160, 0.012);
         if (evt.value) {
           this.showFloatingCombatText(target.container.x, target.container.y - 20, `COMBO! -${evt.value}`, '#fbbf24');
@@ -1019,7 +1033,13 @@ export class BattleScene extends Phaser.Scene {
     const actor = this.combatantVisuals.get(evt.actorId);
 
     if (actor && target) {
-      // Leap forward animation
+      // Leap forward animation with attack / skill sound
+      if (evt.type === 'skill') {
+        soundManager.playSkill();
+      } else {
+        soundManager.playAttack();
+      }
+
       const startX = actor.container.x;
       const targetX = target.container.x;
       const leapDistance = (targetX - startX) * 0.35;
@@ -1031,6 +1051,7 @@ export class BattleScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Power2',
         onYoyo: () => {
+          soundManager.playHit();
           // Impact shake and floating combat text
           this.cameras.main.shake(120, 0.008);
           if (evt.value) {
@@ -1045,6 +1066,7 @@ export class BattleScene extends Phaser.Scene {
         }
       });
     } else if (evt.type === 'capture_success' && target) {
+      soundManager.playCaptureSuccess();
       this.showFloatingCombatText(target.container.x, target.container.y - 20, 'CAPTURED! ⭐', '#a855f7');
       this.tweens.add({
         targets: target.container,
@@ -1053,6 +1075,7 @@ export class BattleScene extends Phaser.Scene {
         duration: 500
       });
     } else if (evt.type === 'capture_fail' && target) {
+      soundManager.playCaptureFail();
       this.showFloatingCombatText(target.container.x, target.container.y - 20, 'FAILED! ❌', '#ef4444');
     }
   }
@@ -1128,6 +1151,15 @@ export class BattleScene extends Phaser.Scene {
 
     const isDefeat = outcome === 'defeat';
     const isWin = outcome === 'victory';
+
+    if (isWin) {
+      soundManager.playVictory();
+    } else if (isDefeat) {
+      soundManager.playDefeat();
+    } else if (outcome === 'escaped') {
+      soundManager.playFlee();
+    }
+
     const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN COMBAT 💀';
     const titleColor = isWin ? '#fbbf24' : outcome === 'escaped' ? '#38bdf8' : '#ef4444';
 
@@ -1212,6 +1244,7 @@ export class BattleScene extends Phaser.Scene {
     returnBtn.on('pointerover', () => returnBtn.setFillStyle(isDefeat ? 0xb91c1c : 0xf59e0b));
     returnBtn.on('pointerout', () => returnBtn.setFillStyle(isDefeat ? 0x991b1b : 0xd97706));
     returnBtn.on('pointerdown', () => {
+      soundManager.playButtonClick();
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
         this.scene.stop();
