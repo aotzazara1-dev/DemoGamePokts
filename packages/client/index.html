@@ -251,6 +251,81 @@
       </div>
     </div>
 
+    <!-- NPC Dialogue Modal Overlay -->
+    <div id="dialogue-modal">
+      <div class="dialogue-card">
+        <div class="dialogue-header">
+          <div id="dialogue-avatar" class="dialogue-avatar">💬</div>
+          <div class="dialogue-speaker-info">
+            <div id="dialogue-speaker-name" class="dialogue-speaker-name">ชื่อ NPC</div>
+            <div id="dialogue-speaker-title" class="dialogue-speaker-title">ตำแหน่ง / อาชีพ</div>
+          </div>
+          <button id="dialogue-btn-close" class="dialogue-btn-close" title="Close (Esc)">✕</button>
+        </div>
+        <div id="dialogue-text" class="dialogue-body">
+          ข้อความบทสนทนา...
+        </div>
+        <div id="dialogue-options-grid" class="dialogue-options-grid">
+          <!-- Dynamic dialogue options -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Merchant Shop Modal Overlay -->
+    <div id="shop-modal">
+      <div class="shop-card">
+        <div class="shop-header">
+          <div class="shop-title-box">
+            <div class="shop-title-icon">🏪</div>
+            <div id="shop-title-text" class="shop-title-text">ร้านค้าทั่วไป (General Store)</div>
+          </div>
+          <div class="shop-header-right">
+            <div class="shop-gold-badge">
+              <span>🪙</span>
+              <span id="shop-gold-val">0 G</span>
+            </div>
+            <button id="shop-btn-close" class="shop-btn-close" title="Close (Esc)">✕</button>
+          </div>
+        </div>
+
+        <div class="shop-tabs-row">
+          <button id="shop-tab-buy" class="shop-tab-btn active">🛒 ซื้อสินค้า (Buy)</button>
+          <button id="shop-tab-sell" class="shop-tab-btn">🪙 ขายสินค้า (Sell)</button>
+        </div>
+
+        <div class="shop-body">
+          <div id="shop-items-list" class="shop-items-list">
+            <!-- Dynamic items list -->
+          </div>
+        </div>
+
+        <div class="shop-footer">
+          <div class="shop-transact-row">
+            <div class="shop-qty-control">
+              <button id="shop-qty-minus" class="shop-qty-btn">-</button>
+              <input type="number" id="shop-qty-input" class="shop-qty-input" value="1" min="1" max="99" />
+              <button id="shop-qty-plus" class="shop-qty-btn">+</button>
+              <div class="shop-qty-shortcuts">
+                <button id="shop-qty-x1" class="shop-shortcut-btn">x1</button>
+                <button id="shop-qty-x5" class="shop-shortcut-btn">x5</button>
+                <button id="shop-qty-x10" class="shop-shortcut-btn">x10</button>
+                <button id="shop-qty-max" class="shop-shortcut-btn">Max</button>
+              </div>
+            </div>
+
+            <div class="shop-total-box">
+              <span>ยอดรวม:</span>
+              <span id="shop-total-val" class="shop-total-val">0 G</span>
+            </div>
+          </div>
+
+          <button id="shop-confirm-btn" class="shop-confirm-btn btn-buy">
+            🛒 ซื้อสินค้า
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Beast Roster & Formation Grid Modal Overlay -->
     <div id="roster-modal">
       <div class="roster-card">

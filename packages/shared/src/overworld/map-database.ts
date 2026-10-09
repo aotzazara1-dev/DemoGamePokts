@@ -8,6 +8,8 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     width: 50,
     height: 50,
     obstacles: [
+      { x: 8, y: 10 },
+      { x: 12, y: 8 },
       { x: 15, y: 15 },
       { x: 15, y: 16 },
       { x: 16, y: 15 }
@@ -71,6 +73,52 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         targetMapId: 'bamboo_forest',
         targetPosition: { x: 2, y: 25 },
         name: 'Pathway to Bamboo Forest'
+      }
+    ],
+    npcs: [
+      {
+        id: 'npc_merchant_qian',
+        name: 'พ่อค้าเฉียน (Merchant Qian)',
+        title: 'พ่อค้าของชำประจำหมู่บ้าน',
+        avatarIcon: '🏪',
+        spriteKey: 'npc_merchant',
+        position: { x: 8, y: 10 },
+        greeting: 'ยินดีต้อนรับจอมยุทธ์น้อย! ร้านข้ามีเสบียง ซาลาเปา ยาฟื้นพลัง และคัมภีร์วาร์ปพร้อมสรรพ ต้องการสิ่งใดหรือไม่?',
+        options: [
+          { id: 'opt_shop', label: '🛒 ซื้อขายสินค้า (Open Shop)', action: 'shop' },
+          { id: 'opt_close', label: '✕ ลาก่อน (Goodbye)', action: 'close' }
+        ],
+        shopItemIds: [
+          'item_steamed_bun',
+          'item_herbal_tea',
+          'item_vitality_pill',
+          'item_phoenix_feather',
+          'item_town_scroll'
+        ]
+      },
+      {
+        id: 'npc_elder_zhang',
+        name: 'ผู้เฒ่าจาง (Elder Zhang)',
+        title: 'ผู้อาวุโสแห่งหมู่บ้านเริ่มต้น',
+        avatarIcon: '👴',
+        spriteKey: 'npc_elder',
+        position: { x: 12, y: 8 },
+        greeting: 'ขอคารวะจอมยุทธ์! การเดินทางฝึกฝนในยุทธภพเต็มไปด้วยภยันตราย หากเหน็ดเหนื่อยเมื่อใด ให้ข้าช่วยรักษาบาดแผลและฟื้นฟูกำลังภายในให้เถิด',
+        options: [
+          {
+            id: 'opt_heal',
+            label: '💖 ฟื้นฟูกำลังทั้งหมด (Full Heal - ฟรี)',
+            action: 'heal',
+            response: 'ผู้เฒ่าจางได้ใช้วิชาลมปราณบำบัด ฟื้นฟูพลังชีวิตและจิตวิญญาณของทุกคนในปาร์ตี้จนเต็มเปี่ยม!'
+          },
+          {
+            id: 'opt_advice',
+            label: '📜 รับฟังคำแนะนำการผจญภัย (Advice)',
+            action: 'advice',
+            response: 'ทิศตะวันออกมีทุ่งหญ้า Whispering Meadow มีสัตว์อสูรธาตุลมและดิน หากเดินลึกขึ้นไปทิศเหนือจะพบถ้ำกรวด Pebble Cave และทิศตะวันออกไกลคือป่าไผ่ Bamboo Forest!'
+          },
+          { id: 'opt_close', label: '✕ ลาก่อน (Goodbye)', action: 'close' }
+        ]
       }
     ]
   },

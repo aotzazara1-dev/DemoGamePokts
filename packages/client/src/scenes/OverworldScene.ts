@@ -15,13 +15,16 @@ import {
   type PlayerRosterState,
   type InventoryState,
   type LootReward,
-  type PortalDefinition
+  type PortalDefinition,
+  type NPCDefinition
 } from '@poktsonline/shared';
 import {
   CharacterModalController,
   RosterModalController,
   InventoryModalController,
-  DebugToolbarController
+  DebugToolbarController,
+  DialogueModalController,
+  ShopModalController
 } from '../ui/index.js';
 
 export class OverworldScene extends Phaser.Scene {
@@ -43,11 +46,13 @@ export class OverworldScene extends Phaser.Scene {
   private mapTiles: Phaser.GameObjects.Image[] = [];
   private mapObstacles: Phaser.GameObjects.Image[] = [];
   private mapPortals: Phaser.GameObjects.Container[] = [];
+  private mapNPCs: Phaser.GameObjects.Container[] = [];
 
   // Dual-mode movement state
   private currentPath: TileCoord[] = [];
   private destinationMarker?: Phaser.GameObjects.Graphics;
   private pointerDownTime: number = 0;
+  private pendingNPCInteraction: NPCDefinition | null = null;
 
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
@@ -60,6 +65,8 @@ export class OverworldScene extends Phaser.Scene {
   private characterModal!: CharacterModalController;
   private inventoryModal!: InventoryModalController;
   private debugToolbar!: DebugToolbarController;
+  private dialogueModal!: DialogueModalController;
+  private shopModal!: ShopModalController;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -104,7 +111,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+      if (this.isAnyModalOpen()) return;
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -112,6 +119,17 @@ export class OverworldScene extends Phaser.Scene {
       const targetY = Math.round(isoCoord.tileY);
 
       if (targetX === this.playerTile.x && targetY === this.playerTile.y) return;
+
+      // Check if clicked directly on an NPC
+      const targetNPC = this.mapConfig.npcs?.find(
+        n => n.position.x === targetX && n.position.y === targetY
+      );
+      if (targetNPC) {
+        this.navigateToNPC(targetNPC);
+        return;
+      }
+
+      this.pendingNPCInteraction = null;
 
       // Check if clicked directly on a portal
       const targetPortal = this.mapConfig.portals?.find(
@@ -207,6 +225,7 @@ export class OverworldScene extends Phaser.Scene {
 
       if (data?.inventory || data?.loot) {
         this.inventoryModal.setInventory(this.inventory);
+        this.shopModal?.setInventory(this.inventory);
       }
 
       if (data?.levelUps && data.levelUps.length > 0 && zoneDisplay) {
@@ -281,8 +300,21 @@ export class OverworldScene extends Phaser.Scene {
         this.characterModal.close();
         this.inventoryModal.close();
         this.debugToolbar.close();
+        this.dialogueModal?.close();
+        this.shopModal?.close();
       });
     }
+  }
+
+  public isAnyModalOpen(): boolean {
+    return !!(
+      this.rosterModal?.isOpen() ||
+      this.characterModal?.isOpen() ||
+      this.inventoryModal?.isOpen() ||
+      this.debugToolbar?.isOpen() ||
+      this.dialogueModal?.isOpen() ||
+      this.shopModal?.isOpen()
+    );
   }
 
   private async connectToServer() {
@@ -457,6 +489,56 @@ export class OverworldScene extends Phaser.Scene {
       g.generateTexture('remote_hero_sprite', 32, 32);
       g.destroy();
     }
+
+    // Merchant NPC Texture (Green robe, gold coin hat, merchant pack)
+    if (!this.textures.exists('npc_merchant')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // Robe
+      g.fillStyle(0x059669, 1);
+      g.fillRect(8, 14, 16, 18);
+      // Gold belt / sash
+      g.fillStyle(0xfacc15, 1);
+      g.fillRect(8, 20, 16, 3);
+      // Satchel / coin pouch
+      g.fillStyle(0x78350f, 1);
+      g.fillRect(18, 21, 6, 6);
+      // Head
+      g.fillStyle(0xfde047, 1);
+      g.fillCircle(16, 9, 6);
+      // Merchant Hat (TS Online style round hat with red jewel)
+      g.fillStyle(0x0f172a, 1);
+      g.fillRect(9, 4, 14, 4);
+      g.fillStyle(0xef4444, 1);
+      g.fillCircle(16, 5, 2);
+      g.generateTexture('npc_merchant', 32, 32);
+      g.destroy();
+    }
+
+    // Elder NPC Texture (Sage/White robe, silver beard, topknot)
+    if (!this.textures.exists('npc_elder')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // Robe (White / Silver with navy trim)
+      g.fillStyle(0xf1f5f9, 1);
+      g.fillRect(8, 14, 16, 18);
+      g.fillStyle(0x3b82f6, 1);
+      g.fillRect(14, 14, 4, 18);
+      // Wooden staff in hand
+      g.fillStyle(0x78350f, 1);
+      g.fillRect(24, 6, 2, 26);
+      g.fillStyle(0x38bdf8, 1);
+      g.fillCircle(25, 6, 3); // staff gem
+      // Head
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(16, 9, 6);
+      // White hair / topknot
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(16, 4, 3);
+      // Long White Beard
+      g.fillStyle(0xffffff, 1);
+      g.fillTriangle(13, 11, 19, 11, 16, 18);
+      g.generateTexture('npc_elder', 32, 32);
+      g.destroy();
+    }
   }
 
   private renderTilemap() {
@@ -467,6 +549,8 @@ export class OverworldScene extends Phaser.Scene {
     this.mapObstacles = [];
     this.mapPortals.forEach(p => p.destroy());
     this.mapPortals = [];
+    this.mapNPCs.forEach(n => n.destroy());
+    this.mapNPCs = [];
 
     const map = this.mapConfig;
     for (let y = 0; y < map.height; y++) {
@@ -543,7 +627,7 @@ export class OverworldScene extends Phaser.Scene {
         portalContainer.input!.cursor = 'pointer';
 
         portalContainer.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-          if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+          if (this.isAnyModalOpen()) return;
           pointer.event.stopPropagation();
           this.navigateToPortal(portal);
         });
@@ -558,7 +642,7 @@ export class OverworldScene extends Phaser.Scene {
           nameLabel.setScale(1.0);
         });
         nameLabel.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-          if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+          if (this.isAnyModalOpen()) return;
           pointer.event.stopPropagation();
           this.navigateToPortal(portal);
         });
@@ -568,6 +652,154 @@ export class OverworldScene extends Phaser.Scene {
         this.mapPortals.push(portalContainer);
       });
     }
+
+    // Render NPCs
+    if (map.npcs && map.npcs.length > 0) {
+      map.npcs.forEach(npc => {
+        const screenPos = isoToScreen(
+          npc.position.x,
+          npc.position.y,
+          this.tileWidth,
+          this.tileHeight,
+          this.originX,
+          this.originY
+        );
+
+        const npcContainer = this.add.container(screenPos.x, screenPos.y);
+
+        // Shadow
+        const shadow = this.add.ellipse(0, 0, 24, 12, 0x000000, 0.4);
+
+        // Sprite
+        const sprite = this.add.image(0, -18, npc.spriteKey || 'hero_sprite');
+
+        // Speech bubble indicator (floating icon)
+        const bubbleBg = this.add.circle(0, -42, 11, 0x0f172a, 0.85);
+        bubbleBg.setStrokeStyle(1.5, 0x38bdf8);
+        const bubbleIcon = this.add.text(0, -42, npc.avatarIcon || '💬', {
+          fontSize: '11px'
+        }).setOrigin(0.5, 0.5);
+
+        // Floating bounce animation on bubble
+        this.tweens.add({
+          targets: [bubbleBg, bubbleIcon],
+          y: '-=4',
+          duration: 800,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        // Name and title badge
+        const nameText = this.add.text(0, -29, `${npc.name}`, {
+          fontSize: '11px',
+          fontStyle: 'bold',
+          color: '#facc15',
+          stroke: '#0f172a',
+          strokeThickness: 3
+        }).setOrigin(0.5, 0.5);
+
+        // Interactive hit area (generous clickable area)
+        npcContainer.setSize(64, 64);
+        npcContainer.setInteractive(new Phaser.Geom.Rectangle(-32, -48, 64, 64), Phaser.Geom.Rectangle.Contains);
+        npcContainer.input!.cursor = 'pointer';
+
+        npcContainer.on('pointerover', () => {
+          sprite.setScale(1.1);
+          nameText.setColor('#38bdf8');
+          bubbleBg.setStrokeStyle(2, 0xfacc15);
+        });
+
+        npcContainer.on('pointerout', () => {
+          sprite.setScale(1.0);
+          nameText.setColor('#facc15');
+          bubbleBg.setStrokeStyle(1.5, 0x38bdf8);
+        });
+
+        npcContainer.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (this.isAnyModalOpen()) return;
+          pointer.event.stopPropagation();
+          this.navigateToNPC(npc);
+        });
+
+        npcContainer.add([shadow, sprite, bubbleBg, bubbleIcon, nameText]);
+        npcContainer.setDepth(getIsometricDepth(npc.position.x, npc.position.y, 45));
+        this.mapNPCs.push(npcContainer);
+      });
+    }
+  }
+
+  private navigateToNPC(npc: NPCDefinition) {
+    if (this.isTransitioning) return;
+
+    // Check if player is already on an adjacent tile (distance <= 1)
+    const dx = Math.abs(npc.position.x - this.playerTile.x);
+    const dy = Math.abs(npc.position.y - this.playerTile.y);
+    if (dx <= 1 && dy <= 1 && !(dx === 0 && dy === 0)) {
+      this.currentPath = [];
+      this.pendingNPCInteraction = null;
+      this.clearDestinationMarker();
+      this.openNPCDialogue(npc);
+      return;
+    }
+
+    // Candidate adjacent tiles around the NPC
+    const neighborOffsets = [
+      { x: 0, y: 1 },
+      { x: 0, y: -1 },
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 1, y: -1 },
+      { x: -1, y: 1 },
+      { x: -1, y: -1 }
+    ];
+
+    let bestPath: TileCoord[] | null = null;
+    let bestTarget: TileCoord | null = null;
+
+    for (const offset of neighborOffsets) {
+      const candidate: TileCoord = {
+        x: npc.position.x + offset.x,
+        y: npc.position.y + offset.y
+      };
+
+      // Check within bounds
+      if (candidate.x < 0 || candidate.x >= this.mapConfig.width || candidate.y < 0 || candidate.y >= this.mapConfig.height) {
+        continue;
+      }
+
+      // Check not an obstacle
+      const isObstacle = this.mapConfig.obstacles.some(o => o.x === candidate.x && o.y === candidate.y);
+      if (isObstacle) continue;
+
+      const path = findPath(this.playerTile, candidate, this.mapConfig);
+      if (path && path.length > 0) {
+        if (!bestPath || path.length < bestPath.length) {
+          bestPath = path;
+          bestTarget = candidate;
+        }
+      }
+    }
+
+    if (bestPath && bestTarget && bestPath.length > 1) {
+      this.pendingNPCInteraction = npc;
+      this.currentPath = bestPath.slice(1);
+      this.showDestinationMarker(bestTarget.x, bestTarget.y);
+      if (!this.isMoving) {
+        const next = this.currentPath.shift()!;
+        this.attemptMove(next.x, next.y);
+      }
+    } else {
+      this.showToast(`💬 เข้าใกล้ ${npc.name} แล้วคลิกคุยได้เลย`, '#38bdf8');
+    }
+  }
+
+  private openNPCDialogue(npc: NPCDefinition) {
+    this.currentPath = [];
+    this.pendingNPCInteraction = null;
+    this.clearDestinationMarker();
+    this.dialogueModal.open(npc);
   }
 
   private navigateToPortal(portal: PortalDefinition) {
@@ -612,6 +844,9 @@ export class OverworldScene extends Phaser.Scene {
     this.isTransitioning = true;
     this.currentPath = [];
     this.clearDestinationMarker();
+    this.dialogueModal?.close();
+    this.shopModal?.close();
+    this.pendingNPCInteraction = null;
 
     if (this.playerContainer) {
       this.tweens.killTweensOf(this.playerContainer);
@@ -777,12 +1012,13 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
-    if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
+    if (this.isAnyModalOpen()) return;
 
     // 1. Mouse Hold-to-Move
     const pointer = this.input.activePointer;
     if (pointer.isDown && this.time.now - this.pointerDownTime > 200) {
       // User is holding down the mouse button!
+      this.pendingNPCInteraction = null;
       this.currentPath = [];
       this.clearDestinationMarker();
 
@@ -825,6 +1061,7 @@ export class OverworldScene extends Phaser.Scene {
       }
 
       if (dx !== 0 || dy !== 0) {
+        this.pendingNPCInteraction = null;
         this.currentPath = [];
         this.clearDestinationMarker();
         this.attemptMove(this.playerTile.x + dx, this.playerTile.y + dy);
@@ -834,6 +1071,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private stepTowardsPointer(pointer: Phaser.Input.Pointer) {
+    this.pendingNPCInteraction = null;
     const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
     const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
     const targetX = Math.round(isoCoord.tileX);
@@ -896,6 +1134,7 @@ export class OverworldScene extends Phaser.Scene {
     // Client-side quick boundary check
     if (targetX < 0 || targetX >= this.mapConfig.width || targetY < 0 || targetY >= this.mapConfig.height) {
       this.currentPath = [];
+      this.pendingNPCInteraction = null;
       this.clearDestinationMarker();
       return;
     }
@@ -903,6 +1142,7 @@ export class OverworldScene extends Phaser.Scene {
     // Obstacle check
     if (this.mapConfig.obstacles.some(o => o.x === targetX && o.y === targetY)) {
       this.currentPath = [];
+      this.pendingNPCInteraction = null;
       this.clearDestinationMarker();
       return;
     }
@@ -916,6 +1156,7 @@ export class OverworldScene extends Phaser.Scene {
     const portal = this.mapConfig.portals?.find(p => p.position.x === targetX && p.position.y === targetY);
     if (portal) {
       this.currentPath = [];
+      this.pendingNPCInteraction = null;
       this.clearDestinationMarker();
 
       // If running offline exploration without server, transition directly
@@ -943,9 +1184,24 @@ export class OverworldScene extends Phaser.Scene {
 
         if (portal) return;
 
+        // Check if reached NPC interaction distance (adjacent tile)
+        if (this.pendingNPCInteraction) {
+          const dx = Math.abs(this.pendingNPCInteraction.position.x - targetX);
+          const dy = Math.abs(this.pendingNPCInteraction.position.y - targetY);
+          if (dx <= 1 && dy <= 1) {
+            const npc = this.pendingNPCInteraction;
+            this.pendingNPCInteraction = null;
+            this.currentPath = [];
+            this.clearDestinationMarker();
+            this.openNPCDialogue(npc);
+            return;
+          }
+        }
+
         // Check if pointer is still being held down
         const pointer = this.input.activePointer;
         if (pointer.isDown && this.time.now - this.pointerDownTime > 200) {
+          this.pendingNPCInteraction = null;
           this.stepTowardsPointer(pointer);
         } else if (this.currentPath.length > 0) {
           const nextTile = this.currentPath.shift()!;
@@ -954,6 +1210,7 @@ export class OverworldScene extends Phaser.Scene {
             this.clearDestinationMarker();
           }
         } else {
+          this.pendingNPCInteraction = null;
           this.clearDestinationMarker();
         }
       }
@@ -963,12 +1220,15 @@ export class OverworldScene extends Phaser.Scene {
   private triggerBattleTransition(payload: any) {
     this.isMoving = true;
     this.currentPath = [];
+    this.pendingNPCInteraction = null;
     this.clearDestinationMarker();
 
     this.rosterModal.close();
     this.characterModal.close();
     this.inventoryModal.close();
     this.debugToolbar.close();
+    this.dialogueModal?.close();
+    this.shopModal?.close();
 
     // Hide Overworld HUD and buttons during battle
     const uiOverlay = document.getElementById('ui-overlay');
@@ -1023,6 +1283,37 @@ export class OverworldScene extends Phaser.Scene {
       }
     });
 
+    this.dialogueModal = new DialogueModalController({
+      onOpenShop: (npc) => {
+        this.shopModal.open(npc);
+      },
+      onHeal: (npc) => {
+        this.roster.hero.hp = this.roster.hero.maxHp;
+        this.roster.hero.sp = this.roster.hero.maxSp;
+        this.roster.beasts.forEach(b => {
+          b.hp = b.maxHp;
+          b.sp = b.maxSp;
+        });
+        this.characterModal.setHero(this.roster.hero);
+        this.rosterModal.setRoster(this.roster);
+        this.inventoryModal.setHero(this.roster.hero);
+        this.inventoryModal.setActiveBeast(getActiveBeast());
+        this.showToast(`💖 ${npc.name} ได้ฟื้นฟูพลังชีวิตและจิตวิญญาณให้ทีมของคุณเต็ม 100%!`, '#34d399');
+      },
+      onClose: () => {}
+    });
+
+    this.shopModal = new ShopModalController(this.inventory, {
+      onInventoryUpdated: (newInv) => {
+        this.inventory = newInv;
+        this.inventoryModal.setInventory(newInv);
+      },
+      onShowToast: (msg, color) => {
+        this.showToast(msg, color);
+      },
+      onClose: () => {}
+    });
+
     this.inventoryModal = new InventoryModalController(
       this.inventory,
       this.roster.hero,
@@ -1041,6 +1332,7 @@ export class OverworldScene extends Phaser.Scene {
         },
         onInventoryUpdated: (inv) => {
           this.inventory = inv;
+          this.shopModal?.setInventory(inv);
         },
         onWarpTown: () => {
           this.inventoryModal.close();
@@ -1072,6 +1364,7 @@ export class OverworldScene extends Phaser.Scene {
         onInventoryUpdated: (newInv) => {
           this.inventory = newInv;
           this.inventoryModal.setInventory(newInv);
+          this.shopModal?.setInventory(newInv);
         },
         onInstantBattle: (payload) => {
           this.triggerBattleTransition(payload);

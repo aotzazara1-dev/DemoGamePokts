@@ -55,6 +55,54 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
     stackMax: 99,
     usableInCombat: false,
     usableOnOverworld: true
+  },
+  item_beast_fang: {
+    id: 'item_beast_fang',
+    name: 'Beast Fang (เขี้ยวสัตว์อสูร)',
+    type: 'loot',
+    effectValue: 0,
+    description: 'A sharp predator fang dropped by beasts. Sells for a good price to merchants.',
+    price: 30,
+    sellPrice: 20,
+    stackMax: 99,
+    usableInCombat: false,
+    usableOnOverworld: false
+  },
+  item_boar_leather: {
+    id: 'item_boar_leather',
+    name: 'Boar Leather (หนังหมูป่า)',
+    type: 'loot',
+    effectValue: 0,
+    description: 'Tough, coarse hide from wild boars prized by crafters and merchants.',
+    price: 40,
+    sellPrice: 30,
+    stackMax: 99,
+    usableInCombat: false,
+    usableOnOverworld: false
+  },
+  item_serpent_scale: {
+    id: 'item_serpent_scale',
+    name: 'Serpent Scale (เกล็ดอสรพิษ)',
+    type: 'loot',
+    effectValue: 0,
+    description: 'Shimmering reptilian scale collected from deep subterranean serpents.',
+    price: 50,
+    sellPrice: 40,
+    stackMax: 99,
+    usableInCombat: false,
+    usableOnOverworld: false
+  },
+  item_bamboo_shoot: {
+    id: 'item_bamboo_shoot',
+    name: 'Bamboo Shoot (หน่อไม้สด)',
+    type: 'loot',
+    effectValue: 0,
+    description: 'Crisp green shoot gathered from emerald bamboo groves.',
+    price: 25,
+    sellPrice: 15,
+    stackMax: 99,
+    usableInCombat: false,
+    usableOnOverworld: false
   }
 };
 
@@ -69,6 +117,10 @@ export function getItemIcon(itemId: string): string {
     case 'item_vitality_pill': return '💊';
     case 'item_phoenix_feather': return '🪶';
     case 'item_town_scroll': return '📜';
+    case 'item_beast_fang': return '🦷';
+    case 'item_boar_leather': return '🐗';
+    case 'item_serpent_scale': return '🐍';
+    case 'item_bamboo_shoot': return '🎍';
     default: return '📦';
   }
 }

@@ -1,0 +1,376 @@
+/* ==========================================================================
+   Shop Modal (Merchant Buy / Sell Transaction Window)
+   ========================================================================== */
+
+#shop-modal {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 620px;
+  z-index: 1050;
+  pointer-events: auto;
+  animation: shopFadeIn 0.2s ease-out forwards;
+}
+
+#shop-modal.open {
+  display: block;
+}
+
+@keyframes shopFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.shop-card {
+  background: rgba(15, 23, 42, 0.98);
+  border: 2px solid #38bdf8;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 24px rgba(56, 189, 248, 0.15);
+  display: flex;
+  flex-direction: column;
+  color: #f8fafc;
+  overflow: hidden;
+  max-height: 85vh;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.shop-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shop-title-icon {
+  font-size: 24px;
+}
+
+.shop-title-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #facc15;
+  letter-spacing: 0.5px;
+}
+
+.shop-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shop-gold-badge {
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid #facc15;
+  color: #fde047;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(250, 204, 21, 0.2);
+}
+
+.shop-btn-close {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.shop-btn-close:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+/* Shop Tabs */
+.shop-tabs-row {
+  display: flex;
+  background: #0b1120;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.shop-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.shop-tab-btn:hover {
+  color: #f8fafc;
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.shop-tab-btn.active {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  font-weight: 700;
+}
+
+/* Shop Body */
+.shop-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shop-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-item-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shop-item-card:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.shop-item-card.selected {
+  background: rgba(2, 132, 199, 0.25);
+  border-color: #facc15;
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.2);
+}
+
+.shop-item-icon {
+  font-size: 26px;
+  width: 40px;
+  height: 40px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shop-item-details {
+  flex: 1;
+}
+
+.shop-item-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.shop-item-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.shop-item-price-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.shop-item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.shop-item-qty-tag {
+  font-size: 10px;
+  color: #64748b;
+}
+
+/* Empty State */
+.shop-empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* Footer & Transaction Control Box */
+.shop-footer {
+  padding: 14px 20px;
+  background: #0b1120;
+  border-top: 1px solid rgba(56, 189, 248, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shop-transact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shop-qty-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-qty-btn {
+  background: #1e293b;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #f8fafc;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.shop-qty-btn:hover {
+  background: #0284c7;
+  border-color: #38bdf8;
+}
+
+.shop-qty-input {
+  width: 44px;
+  height: 28px;
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #facc15;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shop-qty-shortcuts {
+  display: flex;
+  gap: 4px;
+}
+
+.shop-shortcut-btn {
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shop-shortcut-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+  border-color: #38bdf8;
+}
+
+.shop-total-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.shop-total-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.shop-confirm-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.shop-confirm-btn.btn-buy {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.shop-confirm-btn.btn-buy:hover {
+  background: linear-gradient(135deg, #0369a1, #1d4ed8);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+}
+
+.shop-confirm-btn.btn-sell {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+}
+
+.shop-confirm-btn.btn-sell:hover {
+  background: linear-gradient(135deg, #b45309, #92400e);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.5);
+}
+
+.shop-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

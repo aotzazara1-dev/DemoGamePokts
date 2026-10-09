@@ -148,6 +148,25 @@ export interface PortalDefinition {
   name: string;
 }
 
+export interface NPCDialogueOption {
+  id: string;
+  label: string;
+  action: 'shop' | 'heal' | 'advice' | 'close';
+  response?: string;
+}
+
+export interface NPCDefinition {
+  id: string;
+  name: string;
+  title: string;
+  avatarIcon: string;
+  spriteKey: string;
+  position: TileCoord;
+  greeting: string;
+  options: NPCDialogueOption[];
+  shopItemIds?: string[];
+}
+
 export type MapTheme = 'meadow' | 'cave' | 'forest';
 
 export interface MapConfig {
@@ -159,6 +178,7 @@ export interface MapConfig {
   obstacles: TileCoord[];
   zones: ZoneDefinition[];
   portals: PortalDefinition[];
+  npcs?: NPCDefinition[];
 }
 
 export interface PlayerOverworldState {
@@ -198,7 +218,7 @@ export interface PlayerRosterState {
   };
 }
 
-export type ItemType = 'hp_restore' | 'sp_restore' | 'revive' | 'scroll';
+export type ItemType = 'hp_restore' | 'sp_restore' | 'revive' | 'scroll' | 'loot';
 
 export interface ItemDefinition {
   id: string;
@@ -207,6 +227,7 @@ export interface ItemDefinition {
   effectValue: number;
   description: string;
   price: number;
+  sellPrice?: number;
   stackMax: number;
   usableInCombat: boolean;
   usableOnOverworld: boolean;

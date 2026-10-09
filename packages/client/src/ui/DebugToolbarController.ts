@@ -55,6 +55,11 @@ export class DebugToolbarController {
     this.toggle(false);
   }
 
+  public isOpen(): boolean {
+    const panel = document.getElementById('debug-panel');
+    return panel ? panel.classList.contains('open') : false;
+  }
+
   public setVisible(visible: boolean): void {
     const btnToggle = document.getElementById('btn-toggle-debug');
     if (btnToggle) btnToggle.style.display = visible ? 'flex' : 'none';
