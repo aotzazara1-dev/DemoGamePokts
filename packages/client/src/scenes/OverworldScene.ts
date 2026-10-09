@@ -10,6 +10,8 @@ import {
   RosterManager,
   ProgressionEngine,
   InventoryManager,
+  RoamingBeastManager,
+  type RoamingBeastEntity,
   type MapConfig,
   type TileCoord,
   type Direction,
@@ -349,19 +351,41 @@ export class OverworldScene extends Phaser.Scene {
       });
 
       // Listen for synchronized roaming beasts
-      if ((room.state as any).roamingBeasts) {
-        (room.state as any).roamingBeasts.onAdd((beast: any, beastId: string) => {
-          this.addRoamingBeast(beastId, beast);
+      const setupRoamingBeasts = (roamingBeasts: any) => {
+        if (!roamingBeasts) return;
 
+        // 1. Process all beasts already present in room state
+        if (typeof roamingBeasts.forEach === 'function') {
+          roamingBeasts.forEach((beast: any, beastId: string) => {
+            this.addRoamingBeast(beastId, beast);
+            beast.onChange = () => {
+              this.updateRoamingBeast(beastId, beast);
+            };
+          });
+        }
+
+        // 2. Listen for newly added beasts
+        roamingBeasts.onAdd((beast: any, beastId: string) => {
+          this.addRoamingBeast(beastId, beast);
           beast.onChange = () => {
             this.updateRoamingBeast(beastId, beast);
           };
         });
 
-        (room.state as any).roamingBeasts.onRemove((_beast: any, beastId: string) => {
+        // 3. Listen for removed beasts
+        roamingBeasts.onRemove((_beast: any, beastId: string) => {
           this.removeRoamingBeast(beastId);
         });
+      };
+
+      if ((room.state as any)?.roamingBeasts) {
+        setupRoamingBeasts((room.state as any).roamingBeasts);
       }
+      room.onStateChange.once((state: any) => {
+        if (state?.roamingBeasts) {
+          setupRoamingBeasts(state.roamingBeasts);
+        }
+      });
 
       // Listen for wild encounter triggers
       this.network.onEncounter((payload) => {
@@ -374,6 +398,7 @@ export class OverworldScene extends Phaser.Scene {
       });
     } catch (err) {
       console.warn('[OverworldScene] Could not connect to authoritative server. Running offline exploration mode.', err);
+      this.initOfflineRoamingBeasts();
     }
   }
 
@@ -666,6 +691,20 @@ export class OverworldScene extends Phaser.Scene {
       g.generateTexture('beast_crimson_fox', 32, 32);
       g.destroy();
     }
+
+    // Generic Wild Enemy fallback
+    if (!this.textures.exists('combat_wild')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xb91c1c, 1);
+      g.fillRoundedRect(8, 14, 16, 14, 4);
+      g.fillStyle(0xf87171, 1);
+      g.fillTriangle(10, 14, 16, 6, 22, 14);
+      g.fillStyle(0xfef08a, 1);
+      g.fillCircle(13, 18, 2);
+      g.fillCircle(19, 18, 2);
+      g.generateTexture('combat_wild', 32, 32);
+      g.destroy();
+    }
   }
 
   private renderTilemap() {
@@ -688,7 +727,9 @@ export class OverworldScene extends Phaser.Scene {
         } else if (map.theme === 'forest') {
           textureKey = 'tile_forest';
         } else {
-          const isWild = x >= 21;
+          const isWild = map.zones.some(
+            z => z.type === 'wild' && x >= z.bounds.minX && x <= z.bounds.maxX && y >= z.bounds.minY && y <= z.bounds.maxY
+          );
           textureKey = isWild ? 'tile_wild' : 'tile_safe';
         }
 
@@ -1305,6 +1346,65 @@ export class OverworldScene extends Phaser.Scene {
       case 'earth': return '#fbbf24';
       default: return '#facc15';
     }
+  }
+
+  private initOfflineRoamingBeasts() {
+    const beasts = RoamingBeastManager.generateMapRoamingBeasts(this.mapConfig, 6);
+    beasts.forEach((b: RoamingBeastEntity) => {
+      this.addRoamingBeast(b.id, b);
+    });
+
+    // Offline AI simulation timer
+    this.time.addEvent({
+      delay: 1500,
+      loop: true,
+      callback: () => {
+        if (this.isTransitioning) return;
+        const fakePlayer = {
+          id: 'self',
+          x: this.playerTile.x,
+          y: this.playerTile.y,
+          inBattle: false,
+          mapId: this.mapConfig.id
+        };
+
+        this.roamingBeasts.forEach((remote, beastId) => {
+          const b = remote.entity;
+          if (b.mapId !== this.mapConfig.id || b.inCombat) return;
+
+          const step = RoamingBeastManager.stepRoamingBeastAI(b, [fakePlayer], this.mapConfig);
+          b.x = step.x;
+          b.y = step.y;
+          b.direction = step.direction;
+          this.updateRoamingBeast(beastId, b);
+
+          if (step.triggeredPlayerId) {
+            b.inCombat = true;
+            this.time.delayedCall(20000, () => {
+              b.inCombat = false;
+              const zone = this.mapConfig.zones.find(z => z.id === b.zoneId);
+              if (zone) {
+                const newPos = RoamingBeastManager.findValidSpawnTile(zone, this.mapConfig);
+                if (newPos) {
+                  b.x = newPos.x;
+                  b.y = newPos.y;
+                }
+              }
+              this.updateRoamingBeast(beastId, b);
+            });
+
+            const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(b);
+            this.triggerBattleTransition({
+              encounter: {
+                zoneId: b.zoneId,
+                wildEnemies: [combatant]
+              },
+              playerPosition: { x: this.playerTile.x, y: this.playerTile.y }
+            });
+          }
+        });
+      }
+    });
   }
 
   override update(_time: number, delta: number) {

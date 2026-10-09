@@ -193,10 +193,13 @@ export class OverworldRoom extends Room<OverworldState> {
   }
 
   public initRoamingBeasts(overrideMap?: MapConfig) {
-    const mapsToPopulate = overrideMap ? [overrideMap] : Object.values(MAP_DATABASE);
+    const mapList = Object.values(MAP_DATABASE);
+    const mapsToPopulate = overrideMap
+      ? [overrideMap, ...mapList.filter(m => m.id !== overrideMap.id)]
+      : mapList;
 
     mapsToPopulate.forEach(map => {
-      const beasts = RoamingBeastManager.generateMapRoamingBeasts(map, 2);
+      const beasts = RoamingBeastManager.generateMapRoamingBeasts(map, 6);
       beasts.forEach(b => {
         this.state.roamingBeasts.set(
           b.id,

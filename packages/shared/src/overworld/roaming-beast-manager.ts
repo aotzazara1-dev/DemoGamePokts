@@ -12,14 +12,30 @@ export class RoamingBeastManager {
   /**
    * Spawns roaming beasts for all wild zones in a map.
    */
-  static generateMapRoamingBeasts(mapConfig: MapConfig, beastsPerZone: number = 2): RoamingBeastEntity[] {
+  static generateMapRoamingBeasts(mapConfig: MapConfig, beastsPerZone: number = 6): RoamingBeastEntity[] {
     const beasts: RoamingBeastEntity[] = [];
     const wildZones = mapConfig.zones.filter(z => z.type === 'wild' && z.encounterPool.length > 0);
 
-    wildZones.forEach((zone, zoneIdx) => {
+    wildZones.forEach((zone) => {
       for (let i = 0; i < beastsPerZone; i++) {
         const poolEntry = zone.encounterPool[i % zone.encounterPool.length];
-        const pos = this.findValidSpawnTile(zone, mapConfig, beasts);
+
+        let pos: TileCoord | null = null;
+        if (i === 0) {
+          const nearPos = { x: zone.bounds.minX + 1, y: 10 };
+          if (this.isTileWalkable(nearPos.x, nearPos.y, mapConfig, zone.id)) {
+            pos = nearPos;
+          }
+        } else if (i === 1) {
+          const nearPos = { x: zone.bounds.minX + 2, y: 13 };
+          if (this.isTileWalkable(nearPos.x, nearPos.y, mapConfig, zone.id)) {
+            pos = nearPos;
+          }
+        }
+
+        if (!pos) {
+          pos = this.findValidSpawnTile(zone, mapConfig, beasts);
+        }
         if (!pos) continue;
 
         const id = `roam_${mapConfig.id}_${zone.id}_${i + 1}`;

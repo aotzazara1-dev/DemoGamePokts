@@ -19,7 +19,7 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         id: 'novice_town',
         name: 'Novice Town',
         type: 'safe',
-        bounds: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
+        bounds: { minX: 0, maxX: 15, minY: 0, maxY: 20 },
         encounterRatePerStep: 0,
         encounterPool: []
       },
@@ -27,7 +27,7 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         id: 'whispering_meadow',
         name: 'Whispering Meadow',
         type: 'wild',
-        bounds: { minX: 21, maxX: 49, minY: 0, maxY: 49 },
+        bounds: { minX: 16, maxX: 49, minY: 0, maxY: 49 },
         encounterRatePerStep: 0.15,
         encounterPool: [
           {
