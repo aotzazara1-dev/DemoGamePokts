@@ -3,7 +3,7 @@ import { RosterManager } from '../src/roster/roster-manager.js';
 import { Element, type Combatant } from '../src/types.js';
 
 describe('RosterManager', () => {
-  it('creates initial roster with Hero and starting Active Beast (Aqua Fin)', () => {
+  it('creates initial roster with Hero and starting Active Beast matching element', () => {
     const roster = RosterManager.createInitialRoster('Aragorn', Element.Fire);
 
     expect(roster.hero.name).toBe('Aragorn');
@@ -11,7 +11,7 @@ describe('RosterManager', () => {
     expect(roster.hero.isHero).toBe(true);
 
     expect(roster.beasts.length).toBe(1);
-    expect(roster.beasts[0].name).toBe('Aqua Fin');
+    expect(roster.beasts[0].name).toBe('Lu Bu (ลิโป้)');
     expect(roster.activeBeastId).toBe(roster.beasts[0].id);
 
     expect(roster.formation.heroSlot).toEqual({ row: 'front', col: 2 });
@@ -126,7 +126,7 @@ describe('RosterManager', () => {
 
     const formation = RosterManager.buildTeamFormation(roster);
 
-    expect(formation.front[0]?.name).toBe('Aqua Fin');
+    expect(formation.front[0]?.name).toBe('Sasaki Kojiro (โคจิโร่)');
     expect(formation.front[2]).toBeNull();
 
     expect(formation.back[4]?.name).toBe('Hero');

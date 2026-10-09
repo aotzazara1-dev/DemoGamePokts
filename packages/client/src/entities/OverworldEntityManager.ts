@@ -624,6 +624,11 @@ export class OverworldEntityManager {
     if (this.scene.textures.exists(specificKey)) {
       return specificKey;
     }
+    const simplified = templateId.replace(/^champion_starter_/, '').replace(/^champion_/, '');
+    const simplifiedKey = `beast_${simplified}`;
+    if (this.scene.textures.exists(simplifiedKey)) {
+      return simplifiedKey;
+    }
     return 'combat_wild';
   }
 

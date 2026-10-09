@@ -294,9 +294,14 @@ export class CharacterSelectModalController {
 
   private formatMapName(mapId: string): string {
     switch (mapId) {
-      case 'novice_town_and_meadow': return 'Novice Town & Meadow';
-      case 'misty_forest': return 'Misty Bamboo Forest';
-      case 'subterranean_cave': return 'Subterranean Cavern';
+      case 'valhalla_coliseum':
+      case 'novice_town_and_meadow': return 'Valhalla Coliseum (วัลฮัลลา)';
+      case 'asgard_sanctuary':
+      case 'bamboo_forest':
+      case 'misty_forest': return 'Asgard Sanctuary (แอสการ์ด)';
+      case 'helheim_abyss':
+      case 'pebble_cave':
+      case 'subterranean_cave': return 'Helheim Abyss (เฮลไฮม์)';
       default: return mapId;
     }
   }

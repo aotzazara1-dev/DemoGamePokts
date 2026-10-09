@@ -103,7 +103,7 @@ describe('Database Engine & Repositories (Ticket 01)', () => {
       expect(hero.name).toBe('XiaoLong');
       expect(hero.element).toBe(Element.Water);
       expect(hero.level).toBe(1);
-      expect(hero.mapId).toBe('novice_town_and_meadow');
+      expect(hero.mapId).toBe('valhalla_coliseum');
       expect(hero.x).toBe(10);
       expect(hero.y).toBe(10);
 
@@ -114,7 +114,7 @@ describe('Database Engine & Repositories (Ticket 01)', () => {
       expect(fullState?.inventory.slots.length).toBe(20);
       expect(fullState?.roster.beasts.length).toBeGreaterThan(0);
       expect(fullState?.roster.beasts[0].level).toBe(1);
-      expect(fullState?.roster.beasts[0].name).toBe('Aqua Fin');
+      expect(fullState?.roster.beasts[0].name).toBe('Sasaki Kojiro (โคจิโร่)');
       expect(fullState?.roster.activeBeastId).toBeDefined();
     });
 

@@ -10,7 +10,80 @@ export class RosterManager {
   public static readonly MAX_BEAST_CAPACITY = 10;
 
   /**
-   * Initializes default player roster containing Hero and starting Active Beast (Aqua Fin).
+   * Returns starter Einherjar or God champion matching the chosen element.
+   */
+  public static getStarterChampion(element: Element): Combatant {
+    switch (element) {
+      case Element.Fire:
+        return {
+          id: 'champion_lu_bu',
+          name: 'Lu Bu (ลิโป้)',
+          isHero: false,
+          level: 4,
+          element: Element.Fire,
+          hp: 80,
+          maxHp: 80,
+          sp: 20,
+          maxSp: 20,
+          atk: 26,
+          def: 14,
+          int: 8,
+          agi: 16
+        };
+      case Element.Wind:
+        return {
+          id: 'champion_thor',
+          name: 'Thor (ธอร์)',
+          isHero: false,
+          level: 4,
+          element: Element.Wind,
+          hp: 75,
+          maxHp: 75,
+          sp: 25,
+          maxSp: 25,
+          atk: 24,
+          def: 16,
+          int: 10,
+          agi: 18
+        };
+      case Element.Earth:
+        return {
+          id: 'champion_adam',
+          name: 'Adam (อดัม)',
+          isHero: false,
+          level: 4,
+          element: Element.Earth,
+          hp: 85,
+          maxHp: 85,
+          sp: 25,
+          maxSp: 25,
+          atk: 22,
+          def: 18,
+          int: 10,
+          agi: 16
+        };
+      case Element.Water:
+      default:
+        return {
+          id: 'champion_kojiro',
+          name: 'Sasaki Kojiro (โคจิโร่)',
+          isHero: false,
+          level: 4,
+          element: Element.Water,
+          hp: 75,
+          maxHp: 75,
+          sp: 25,
+          maxSp: 25,
+          atk: 22,
+          def: 14,
+          int: 12,
+          agi: 20
+        };
+    }
+  }
+
+  /**
+   * Initializes default player roster containing Hero and starting Active Champion.
    */
   public static createInitialRoster(
     heroName: string = 'Hero',
@@ -32,21 +105,7 @@ export class RosterManager {
       agi: 22
     };
 
-    const initialBeast: Combatant = {
-      id: 'beast_aqua_fin',
-      name: 'Aqua Fin',
-      isHero: false,
-      level: 4,
-      element: Element.Water,
-      hp: 75,
-      maxHp: 75,
-      sp: 25,
-      maxSp: 25,
-      atk: 20,
-      def: 15,
-      int: 10,
-      agi: 18
-    };
+    const initialBeast = RosterManager.getStarterChampion(heroElement);
 
     return {
       hero,

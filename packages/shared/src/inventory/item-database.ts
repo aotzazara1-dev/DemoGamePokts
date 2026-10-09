@@ -3,10 +3,10 @@ import { ItemDefinition } from '../types.js';
 export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   item_small_herb: {
     id: 'item_small_herb',
-    name: 'Small Herb (สมุนไพรเล็ก)',
+    name: 'Ambrosia Dew (น้ำทิพย์อัมฤทธิ์)',
     type: 'hp_restore',
     effectValue: 50,
-    description: 'A soothing wild herb that restores 50 HP to a single ally.',
+    description: 'A soothing vial of celestial ambrosia that restores 50 HP to a single ally.',
     price: 10,
     sellPrice: 5,
     stackMax: 99,
@@ -15,10 +15,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_ginseng: {
     id: 'item_ginseng',
-    name: 'Ginseng (โสม)',
+    name: 'Soma Elixir (น้ำโสมะศักดิ์สิทธิ์)',
     type: 'sp_restore',
     effectValue: 40,
-    description: 'A prized mountain root that restores 40 SP to a single ally.',
+    description: 'A prized celestial elixir of the gods that restores 40 SP to a single ally.',
     price: 25,
     sellPrice: 12,
     stackMax: 99,
@@ -27,10 +27,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_steamed_bun: {
     id: 'item_steamed_bun',
-    name: 'Steamed Bun (ซาลาเปา)',
+    name: 'Golden Apple of Eden (แอปเปิ้ลทองคำแห่งอีเดน)',
     type: 'hp_restore',
     effectValue: 80,
-    description: 'A hot, freshly steamed bun that restores 80 HP to a single ally.',
+    description: 'A sacred golden fruit plucked from the Garden of Eden that restores 80 HP to a single ally.',
     price: 20,
     stackMax: 99,
     usableInCombat: true,
@@ -38,10 +38,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_herbal_tea: {
     id: 'item_herbal_tea',
-    name: 'Herbal Tea (ชาสมุนไพร)',
+    name: 'Nectar of the Gods (น้ำอมฤตแห่งทวยเทพ)',
     type: 'sp_restore',
     effectValue: 50,
-    description: 'Refreshing brewed tea that restores 50 SP to a single ally.',
+    description: 'Refreshing divine nectar brewed in Valhalla that restores 50 SP to a single ally.',
     price: 30,
     stackMax: 99,
     usableInCombat: true,
@@ -49,10 +49,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_vitality_pill: {
     id: 'item_vitality_pill',
-    name: 'Vitality Pill (ยาฟื้นพลัง)',
+    name: 'Valkyrie Balm (ยารักษาแห่งวาลคิรี)',
     type: 'hp_restore',
     effectValue: 200,
-    description: 'A potent medicinal herb pill restoring 200 HP to a single ally.',
+    description: 'A potent miraculous salve infused with Valkyrie healing essence restoring 200 HP to a single ally.',
     price: 80,
     stackMax: 99,
     usableInCombat: true,
@@ -60,10 +60,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_phoenix_feather: {
     id: 'item_phoenix_feather',
-    name: 'Phoenix Feather (ขนนกฟีนิกซ์)',
+    name: 'Völundr Feather (ขนนกฟื้นวิญญาณโวลุนเดอร์)',
     type: 'revive',
     effectValue: 100,
-    description: 'A mystical glowing feather that revives a fallen ally with 100 HP.',
+    description: 'A glowing Valkyrie soul feather that revives a fallen ally with 100 HP.',
     price: 150,
     stackMax: 20,
     usableInCombat: true,
@@ -71,10 +71,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_town_scroll: {
     id: 'item_town_scroll',
-    name: 'Town Scroll (ใบวาร์ปกลับเมือง)',
+    name: 'Bifrost Scroll (ม้วนคัมภีร์ไบฟรอสต์)',
     type: 'scroll',
     effectValue: 0,
-    description: 'An enchanted parchment that safely teleports the hero back to Novice Town.',
+    description: 'An enchanted celestial parchment that channels the Bifrost to teleport the hero back to Valhalla Coliseum.',
     price: 50,
     stackMax: 99,
     usableInCombat: false,
@@ -82,10 +82,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_beast_fang: {
     id: 'item_beast_fang',
-    name: 'Beast Fang (เขี้ยวสัตว์อสูร)',
+    name: 'Dragon Tooth (เขี้ยวมังกรสวรรค์)',
     type: 'loot',
     effectValue: 0,
-    description: 'A sharp predator fang dropped by beasts. Sells for a good price to merchants.',
+    description: 'A sharp sacred dragon tooth dropped by mythical beasts. Sells for a good price to celestial merchants.',
     price: 30,
     sellPrice: 20,
     stackMax: 99,
@@ -94,10 +94,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_boar_leather: {
     id: 'item_boar_leather',
-    name: 'Boar Leather (หนังหมูป่า)',
+    name: 'Nemean Hide (หนังราชสีห์นีเมียน)',
     type: 'loot',
     effectValue: 0,
-    description: 'Tough, coarse hide from wild boars prized by crafters and merchants.',
+    description: 'Impervious, golden pelt from mythological beasts prized by celestial crafters.',
     price: 40,
     sellPrice: 30,
     stackMax: 99,
@@ -106,10 +106,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_serpent_scale: {
     id: 'item_serpent_scale',
-    name: 'Serpent Scale (เกล็ดอสรพิษ)',
+    name: 'Jörmungandr Scale (เกล็ดพญางูยอร์มุนกันด์)',
     type: 'loot',
     effectValue: 0,
-    description: 'Shimmering reptilian scale collected from deep subterranean serpents.',
+    description: 'Shimmering abyssal scale collected from the deep mythical serpent of Helheim.',
     price: 50,
     sellPrice: 40,
     stackMax: 99,
@@ -118,10 +118,10 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   },
   item_bamboo_shoot: {
     id: 'item_bamboo_shoot',
-    name: 'Bamboo Shoot (หน่อไม้สด)',
+    name: 'Yggdrasil Branch (กิ่งไม้โลกอิกดราซิล)',
     type: 'loot',
     effectValue: 0,
-    description: 'Crisp green shoot gathered from emerald bamboo groves.',
+    description: 'A sacred radiant branch gathered from the World Tree in the Asgard Sanctuary.',
     price: 25,
     sellPrice: 15,
     stackMax: 99,
@@ -136,18 +136,17 @@ export function getItemDefinition(itemId: string): ItemDefinition | undefined {
 
 export function getItemIcon(itemId: string): string {
   switch (itemId) {
-    case 'item_small_herb': return '🌿';
-    case 'item_ginseng': return '🌱';
-    case 'item_steamed_bun': return '🥟';
+    case 'item_small_herb': return '🏺';
+    case 'item_ginseng': return '🧪';
+    case 'item_steamed_bun': return '🍎';
     case 'item_herbal_tea': return '🍵';
     case 'item_vitality_pill': return '💊';
     case 'item_phoenix_feather': return '🪶';
     case 'item_town_scroll': return '📜';
     case 'item_beast_fang': return '🦷';
-    case 'item_boar_leather': return '🐗';
-    case 'item_serpent_scale': return '🐍';
-    case 'item_bamboo_shoot': return '🎍';
+    case 'item_boar_leather': return '🦁';
+    case 'item_serpent_scale': return '🐉';
+    case 'item_bamboo_shoot': return '🌿';
     default: return '📦';
   }
 }
-

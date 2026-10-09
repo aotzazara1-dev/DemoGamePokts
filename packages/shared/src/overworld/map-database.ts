@@ -1,10 +1,10 @@
 import { MapConfig, Element } from '../types.js';
 
 export const MAP_DATABASE: Record<string, MapConfig> = {
-  novice_town_and_meadow: {
-    id: 'novice_town_and_meadow',
-    name: 'Novice Town & Whispering Meadow',
-    theme: 'meadow',
+  valhalla_coliseum: {
+    id: 'valhalla_coliseum',
+    name: 'Valhalla Coliseum (ลานประลองวัลฮัลลา)',
+    theme: 'coliseum',
     width: 50,
     height: 50,
     obstacles: [
@@ -16,76 +16,76 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     ],
     zones: [
       {
-        id: 'novice_town',
-        name: 'Novice Town',
+        id: 'valhalla_safe_ring',
+        name: 'Valhalla Inner Sanctum (เขตพักผ่อนวัลฮัลลา)',
         type: 'safe',
         bounds: { minX: 0, maxX: 15, minY: 0, maxY: 20 },
         encounterRatePerStep: 0,
         encounterPool: []
       },
       {
-        id: 'whispering_meadow',
-        name: 'Whispering Meadow',
+        id: 'valhalla_proving_grounds',
+        name: 'Valhalla Proving Grounds (ลานประลองเทพและมนุษย์)',
         type: 'wild',
         bounds: { minX: 16, maxX: 49, minY: 0, maxY: 49 },
         encounterRatePerStep: 0.15,
         encounterPool: [
           {
-            beastTemplateId: 'leaf_sprite',
-            name: 'Leaf Sprite',
+            beastTemplateId: 'valkyrie_scout',
+            name: 'Valkyrie Scout (วาลคิรีสอดแนม)',
             element: Element.Wind,
             baseLevel: 3,
             levelVariance: 1,
             weight: 1,
-            baseHp: 35,
-            baseSp: 15,
-            baseAtk: 12,
-            baseDef: 8,
-            baseAgi: 14
+            baseHp: 38,
+            baseSp: 18,
+            baseAtk: 14,
+            baseDef: 9,
+            baseAgi: 15
           },
           {
-            beastTemplateId: 'rock_boar',
-            name: 'Rock Boar',
+            beastTemplateId: 'fenrir_pup',
+            name: 'Fenrir Pup (ลูกสุนัขเฟนรีร์)',
             element: Element.Earth,
             baseLevel: 4,
             levelVariance: 1,
             weight: 1,
-            baseHp: 50,
-            baseSp: 10,
-            baseAtk: 16,
+            baseHp: 52,
+            baseSp: 12,
+            baseAtk: 17,
             baseDef: 14,
-            baseAgi: 8
+            baseAgi: 9
           }
         ]
       }
     ],
     portals: [
       {
-        id: 'portal_meadow_to_cave',
+        id: 'portal_valhalla_to_helheim',
         position: { x: 35, y: 2 },
-        targetMapId: 'pebble_cave',
+        targetMapId: 'helheim_abyss',
         targetPosition: { x: 2, y: 15 },
-        name: 'Entrance to Pebble Cave'
+        name: 'Bifrost Gate to Helheim Abyss (ประตูมิติสู่ขุมนรกเฮลไฮม์)'
       },
       {
-        id: 'portal_meadow_to_forest',
+        id: 'portal_valhalla_to_asgard',
         position: { x: 48, y: 25 },
-        targetMapId: 'bamboo_forest',
+        targetMapId: 'asgard_sanctuary',
         targetPosition: { x: 2, y: 25 },
-        name: 'Pathway to Bamboo Forest'
+        name: 'Bifrost Gate to Asgard Sanctuary (ประตูมิติสู่ป่าศักดิ์สิทธิ์แอสการ์ด)'
       }
     ],
     npcs: [
       {
-        id: 'npc_merchant_qian',
-        name: 'พ่อค้าเฉียน (Merchant Qian)',
-        title: 'พ่อค้าของชำประจำหมู่บ้าน',
-        avatarIcon: '🏪',
-        spriteKey: 'npc_merchant',
+        id: 'npc_heimdall',
+        name: 'Heimdall (ผู้ประกาศสงครามไฮม์ดัล)',
+        title: 'Apocalypse Announcer & Keeper of Gjallarhorn',
+        avatarIcon: '📯',
+        spriteKey: 'npc_heimdall',
         position: { x: 8, y: 10 },
-        greeting: 'ยินดีต้อนรับจอมยุทธ์น้อย! ร้านข้ามีเสบียง ซาลาเปา ยาฟื้นพลัง และคัมภีร์วาร์ปพร้อมสรรพ ต้องการสิ่งใดหรือไม่?',
+        greeting: 'ข้าคือไฮม์ดัล! ผู้เป่าแตรกยัลลาร์ฮอร์นและผู้ประกาศศึกมหาศึกคนชนเทพ! เหล่านักรบเอ๋ย เจ้าพร้อมสำหรับเสบียงและศาสตราวุธศักดิ์สิทธิ์หรือยัง?!',
         options: [
-          { id: 'opt_shop', label: '🛒 ซื้อขายสินค้า (Open Shop)', action: 'shop' },
+          { id: 'opt_shop', label: '🛒 ซื้อขายโอสถและอาวุธศักดิ์สิทธิ์ (Open Divine Shop)', action: 'shop' },
           { id: 'opt_close', label: '✕ ลาก่อน (Goodbye)', action: 'close' }
         ],
         shopItemIds: [
@@ -99,25 +99,25 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         ]
       },
       {
-        id: 'npc_elder_zhang',
-        name: 'ผู้เฒ่าจาง (Elder Zhang)',
-        title: 'ผู้อาวุโสแห่งหมู่บ้านเริ่มต้น',
-        avatarIcon: '👴',
-        spriteKey: 'npc_elder',
+        id: 'npc_brunhilde',
+        name: 'Brunhilde (บรุนฮิลด์ พี่สาวคนโตแห่ง 13 วาลคิรี)',
+        title: 'Chief Valkyrie Strategist',
+        avatarIcon: '🗡️',
+        spriteKey: 'npc_brunhilde',
         position: { x: 12, y: 8 },
-        greeting: 'ขอคารวะจอมยุทธ์! การเดินทางฝึกฝนในยุทธภพเต็มไปด้วยภยันตราย หากเหน็ดเหนื่อยเมื่อใด ให้ข้าช่วยรักษาบาดแผลและฟื้นฟูกำลังภายในให้เถิด',
+        greeting: 'ยินดีต้อนรับสู่ศึกแร็กนาร็อค ผู้ถูกอัญเชิญจากต่างโลก... มนุษย์และทวยเทพกำลังจะเข้าปะทะกัน หากเจ้าเหนื่อยล้า จงให้ข้าฟื้นฟูพลังวิญญาณแห่งโวลุนเดอร์ให้!',
         options: [
           {
             id: 'opt_heal',
-            label: '💖 ฟื้นฟูกำลังทั้งหมด (Full Heal - ฟรี)',
+            label: '💖 พลังฟื้นฟูแห่งโวลุนเดอร์ (Völundr Resonance Full Heal - ฟรี)',
             action: 'heal',
-            response: 'ผู้เฒ่าจางได้ใช้วิชาลมปราณบำบัด ฟื้นฟูพลังชีวิตและจิตวิญญาณของทุกคนในปาร์ตี้จนเต็มเปี่ยม!'
+            response: 'บรุนฮิลด์ได้ร่ายมนต์ศักดิ์สิทธิ์แห่งวาลคิรี ฟื้นฟูพลังชีวิตและจิตวิญญาณของทุกคนในปาร์ตี้จนเต็มเปี่ยม!'
           },
           {
             id: 'opt_advice',
-            label: '📜 รับฟังคำแนะนำการผจญภัย (Advice)',
+            label: '📜 คำแนะนำกลยุทธ์แร็กนาร็อค (Ragnarok Tactical Advice)',
             action: 'advice',
-            response: 'ทิศตะวันออกมีทุ่งหญ้า Whispering Meadow มีสัตว์อสูรธาตุลมและดิน หากเดินลึกขึ้นไปทิศเหนือจะพบถ้ำกรวด Pebble Cave และทิศตะวันออกไกลคือป่าไผ่ Bamboo Forest!'
+            response: 'ทางทิศตะวันออกมีสนามประลองที่มีวาลคิรีฝึกหัดและสุนัขป่าเฟนรีร์ หากขึ้นทิศเหนือผ่านเกทไบฟรอสต์จะไปสู่ขุมนรกเฮลไฮม์ และทิศตะวันออกไกลคือป่าศักดิ์สิทธิ์แอสการ์ด!'
           },
           { id: 'opt_close', label: '✕ ลาก่อน (Goodbye)', action: 'close' }
         ]
@@ -125,10 +125,10 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     ]
   },
 
-  pebble_cave: {
-    id: 'pebble_cave',
-    name: 'Pebble Cave',
-    theme: 'cave',
+  helheim_abyss: {
+    id: 'helheim_abyss',
+    name: 'Helheim Abyss (หุบเหวนรกเฮลไฮม์)',
+    theme: 'abyss',
     width: 30,
     height: 30,
     obstacles: [
@@ -139,36 +139,36 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     ],
     zones: [
       {
-        id: 'pebble_depths',
-        name: 'Pebble Cave Depths',
+        id: 'helheim_depths',
+        name: 'Helheim Nether Depths (ก้นบึ้งขุมนรกเฮลไฮม์)',
         type: 'wild',
         bounds: { minX: 0, maxX: 29, minY: 0, maxY: 29 },
         encounterRatePerStep: 0.16,
         encounterPool: [
           {
-            beastTemplateId: 'iron_beetle',
-            name: 'Iron Beetle',
+            beastTemplateId: 'cerberus_hound',
+            name: 'Cerberus Nether Hound (หมาสามหัวแห่งเฮเดส)',
             element: Element.Earth,
             baseLevel: 6,
             levelVariance: 1,
             weight: 1,
-            baseHp: 65,
-            baseSp: 15,
-            baseAtk: 18,
-            baseDef: 22,
-            baseAgi: 10
+            baseHp: 68,
+            baseSp: 16,
+            baseAtk: 20,
+            baseDef: 21,
+            baseAgi: 11
           },
           {
-            beastTemplateId: 'cave_serpent',
-            name: 'Cave Serpent',
+            beastTemplateId: 'chaos_serpent',
+            name: 'Níðhöggr Chaos Serpent (พญางูแห่งความวินาศนิดฮอกก์)',
             element: Element.Water,
             baseLevel: 7,
             levelVariance: 1,
             weight: 1,
-            baseHp: 55,
-            baseSp: 25,
-            baseAtk: 22,
-            baseDef: 12,
+            baseHp: 58,
+            baseSp: 28,
+            baseAtk: 23,
+            baseDef: 13,
             baseAgi: 18
           }
         ]
@@ -176,19 +176,19 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     ],
     portals: [
       {
-        id: 'portal_cave_to_meadow',
+        id: 'portal_helheim_to_valhalla',
         position: { x: 1, y: 15 },
-        targetMapId: 'novice_town_and_meadow',
+        targetMapId: 'valhalla_coliseum',
         targetPosition: { x: 35, y: 3 },
-        name: 'Exit to Whispering Meadow'
+        name: 'Return to Valhalla Coliseum (กลับสู่ลานประลองวัลฮัลลา)'
       }
     ]
   },
 
-  bamboo_forest: {
-    id: 'bamboo_forest',
-    name: 'Bamboo Forest',
-    theme: 'forest',
+  asgard_sanctuary: {
+    id: 'asgard_sanctuary',
+    name: 'Asgard Sanctuary (ป่าศักดิ์สิทธิ์แอสการ์ด)',
+    theme: 'sanctuary',
     width: 40,
     height: 40,
     obstacles: [
@@ -199,55 +199,63 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
     ],
     zones: [
       {
-        id: 'emerald_bamboo',
-        name: 'Emerald Bamboo Grove',
+        id: 'yggdrasil_grove',
+        name: 'Yggdrasil Celestial Grove (ดงพฤกษาอิกดราซิล)',
         type: 'wild',
         bounds: { minX: 0, maxX: 39, minY: 0, maxY: 39 },
         encounterRatePerStep: 0.18,
         encounterPool: [
           {
-            beastTemplateId: 'bamboo_panda',
-            name: 'Bamboo Panda',
+            beastTemplateId: 'pegasus_steed',
+            name: 'Celestial Pegasus (ม้าศึกเพกาซัส)',
             element: Element.Wind,
             baseLevel: 8,
             levelVariance: 1,
             weight: 1,
-            baseHp: 90,
-            baseSp: 20,
-            baseAtk: 26,
+            baseHp: 92,
+            baseSp: 22,
+            baseAtk: 27,
             baseDef: 18,
-            baseAgi: 12
+            baseAgi: 14
           },
           {
-            beastTemplateId: 'crimson_fox',
-            name: 'Crimson Fox',
+            beastTemplateId: 'thunder_raven',
+            name: 'Huginn Thunder Raven (เรเวนสายฟ้าแห่งโอดิน)',
             element: Element.Fire,
             baseLevel: 9,
             levelVariance: 1,
             weight: 1,
-            baseHp: 65,
+            baseHp: 68,
             baseSp: 35,
-            baseAtk: 28,
+            baseAtk: 29,
             baseDef: 14,
-            baseAgi: 22
+            baseAgi: 23
           }
         ]
       }
     ],
     portals: [
       {
-        id: 'portal_forest_to_meadow',
+        id: 'portal_asgard_to_valhalla',
         position: { x: 1, y: 25 },
-        targetMapId: 'novice_town_and_meadow',
+        targetMapId: 'valhalla_coliseum',
         targetPosition: { x: 47, y: 25 },
-        name: 'Return to Whispering Meadow'
+        name: 'Return to Valhalla Coliseum (กลับสู่ลานประลองวัลฮัลลา)'
       }
     ]
   }
 };
 
-export const DEFAULT_OVERWORLD_MAP: MapConfig = MAP_DATABASE['novice_town_and_meadow'];
+// Backward-compatibility aliases for legacy map IDs
+MAP_DATABASE['novice_town_and_meadow'] = MAP_DATABASE['valhalla_coliseum'];
+MAP_DATABASE['pebble_cave'] = MAP_DATABASE['helheim_abyss'];
+MAP_DATABASE['bamboo_forest'] = MAP_DATABASE['asgard_sanctuary'];
+
+export const DEFAULT_OVERWORLD_MAP: MapConfig = MAP_DATABASE['valhalla_coliseum'];
 
 export function getMapConfig(mapId: string): MapConfig {
+  if (mapId === 'novice_town_and_meadow') return MAP_DATABASE['valhalla_coliseum'];
+  if (mapId === 'pebble_cave') return MAP_DATABASE['helheim_abyss'];
+  if (mapId === 'bamboo_forest') return MAP_DATABASE['asgard_sanctuary'];
   return MAP_DATABASE[mapId] || DEFAULT_OVERWORLD_MAP;
 }

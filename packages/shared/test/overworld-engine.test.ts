@@ -151,13 +151,13 @@ describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
 
   describe('Multi-Map Database & Portals', () => {
     it('contains all 3 interconnected maps with themes and dimensions', () => {
-      expect(MAP_DATABASE['novice_town_and_meadow']).toBeDefined();
-      expect(MAP_DATABASE['pebble_cave']).toBeDefined();
-      expect(MAP_DATABASE['bamboo_forest']).toBeDefined();
+      expect(MAP_DATABASE['valhalla_coliseum']).toBeDefined();
+      expect(MAP_DATABASE['helheim_abyss']).toBeDefined();
+      expect(MAP_DATABASE['asgard_sanctuary']).toBeDefined();
 
-      expect(MAP_DATABASE['novice_town_and_meadow'].theme).toBe('meadow');
-      expect(MAP_DATABASE['pebble_cave'].theme).toBe('cave');
-      expect(MAP_DATABASE['bamboo_forest'].theme).toBe('forest');
+      expect(MAP_DATABASE['valhalla_coliseum'].theme).toBe('coliseum');
+      expect(MAP_DATABASE['helheim_abyss'].theme).toBe('abyss');
+      expect(MAP_DATABASE['asgard_sanctuary'].theme).toBe('sanctuary');
     });
 
     it('validates all portals link to existing target maps and coordinates within bounds', () => {
@@ -188,12 +188,12 @@ describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
 
     it('falls back to default map when requesting unknown mapId', () => {
       const fallback = getMapConfig('non_existent_map_id');
-      expect(fallback.id).toBe('novice_town_and_meadow');
+      expect(fallback.id).toBe('valhalla_coliseum');
     });
 
     it('detects and triggers a portal when stepping on a portal tile', () => {
-      const meadowMap = MAP_DATABASE['novice_town_and_meadow'];
-      const portal = meadowMap.portals.find(p => p.id === 'portal_meadow_to_cave')!;
+      const meadowMap = MAP_DATABASE['valhalla_coliseum'];
+      const portal = meadowMap.portals.find(p => p.id === 'portal_valhalla_to_helheim')!;
       expect(portal).toBeDefined();
 
       // Stand 1 tile next to the portal (portal is at 35, 2)
@@ -207,8 +207,8 @@ describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
     });
 
     it('triggers portal when player is already standing directly on the portal tile (dx=0, dy=0)', () => {
-      const meadowMap = MAP_DATABASE['novice_town_and_meadow'];
-      const portal = meadowMap.portals.find(p => p.id === 'portal_meadow_to_cave')!;
+      const meadowMap = MAP_DATABASE['valhalla_coliseum'];
+      const portal = meadowMap.portals.find(p => p.id === 'portal_valhalla_to_helheim')!;
       expect(portal).toBeDefined();
 
       // Player is already standing at the portal tile (35, 2)

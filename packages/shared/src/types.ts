@@ -167,7 +167,7 @@ export interface NPCDefinition {
   shopItemIds?: string[];
 }
 
-export type MapTheme = 'meadow' | 'cave' | 'forest';
+export type MapTheme = 'meadow' | 'cave' | 'forest' | 'coliseum' | 'sanctuary' | 'abyss';
 
 export interface MapConfig {
   id: string;

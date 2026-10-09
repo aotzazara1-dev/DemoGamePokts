@@ -36,10 +36,10 @@
     "semantic_hash": "f2d5932611263b8facbaf5e867e3ead2"
   },
   "packages/client/src/entities/OverworldEntityManager.ts": {
-    "mtime": 1791557643.4865177,
-    "seen": 1791558675.807616,
-    "ast_hash": "3f226978946f4564e63bbafacce97a6a",
-    "semantic_hash": "3f226978946f4564e63bbafacce97a6a"
+    "mtime": 1791560281.1280746,
+    "seen": 1791560439.0287557,
+    "ast_hash": "ae2ab12d248d06dfa5981633a7bc9161",
+    "semantic_hash": ""
   },
   "packages/client/src/index.ts": {
     "mtime": 1791525416.2318344,
@@ -66,10 +66,10 @@
     "semantic_hash": "72620b115d78e904ca2fb57db47c36f8"
   },
   "packages/client/src/renderer/OverworldRenderer.ts": {
-    "mtime": 1791557782.4989152,
-    "seen": 1791558675.807622,
-    "ast_hash": "6ec036c1983ff90b84d12c8f898fe49c",
-    "semantic_hash": "6ec036c1983ff90b84d12c8f898fe49c"
+    "mtime": 1791560325.3719065,
+    "seen": 1791560439.0287676,
+    "ast_hash": "98ae03a4edd925c19b81a4ef5468815e",
+    "semantic_hash": ""
   },
   "packages/client/src/scenes/BattleScene.ts": {
     "mtime": 1791548166.3372197,
@@ -96,10 +96,10 @@
     "semantic_hash": "ab66264389f83cca5a277bed1c005091"
   },
   "packages/client/src/ui/CharacterSelectModalController.ts": {
-    "mtime": 1791554070.0899172,
-    "seen": 1791558675.8076272,
-    "ast_hash": "227d62721a722d4289e50908e67d8347",
-    "semantic_hash": "227d62721a722d4289e50908e67d8347"
+    "mtime": 1791560307.4094257,
+    "seen": 1791560439.0287788,
+    "ast_hash": "5d5ef18a8148f526e4a8f33bad20c50b",
+    "semantic_hash": ""
   },
   "packages/client/src/ui/ChatController.ts": {
     "mtime": 1791556162.7253778,
@@ -264,10 +264,10 @@
     "semantic_hash": "782ba91bbe12fbeb468e710cdca85afb"
   },
   "packages/server/src/db/HeroRepository.ts": {
-    "mtime": 1791553963.8239994,
-    "seen": 1791558675.8076603,
-    "ast_hash": "3c90c3c3541ec669410b410a2c9c1031",
-    "semantic_hash": "3c90c3c3541ec669410b410a2c9c1031"
+    "mtime": 1791560081.8705354,
+    "seen": 1791560439.0288305,
+    "ast_hash": "d3f6b703408219001663ab726525ad43",
+    "semantic_hash": ""
   },
   "packages/server/src/db/index.ts": {
     "mtime": 1791552961.817158,
@@ -288,10 +288,10 @@
     "semantic_hash": "a66be9293c52d8857d762b5c49e56b74"
   },
   "packages/server/src/rooms/OverworldRoom.ts": {
-    "mtime": 1791555981.0179243,
-    "seen": 1791558675.807665,
-    "ast_hash": "48ad934cf8832650632b853926193d53",
-    "semantic_hash": "48ad934cf8832650632b853926193d53"
+    "mtime": 1791560116.0410595,
+    "seen": 1791560439.0288377,
+    "ast_hash": "9272c39dd4befb5432f65742d8b9581d",
+    "semantic_hash": ""
   },
   "packages/server/src/schema/BattleState.ts": {
     "mtime": 1791525210.14262,
@@ -324,10 +324,10 @@
     "semantic_hash": "f8ba5fe8c10a65f8409a2245c2605656"
   },
   "packages/server/test/database.test.ts": {
-    "mtime": 1791554087.9383535,
-    "seen": 1791558675.807672,
-    "ast_hash": "b19b2dac37d4b47fe9de7b2f1cbd848f",
-    "semantic_hash": "b19b2dac37d4b47fe9de7b2f1cbd848f"
+    "mtime": 1791560085.4265702,
+    "seen": 1791560439.0288482,
+    "ast_hash": "7a83af44400d76d6cb7a35f0bbd8072b",
+    "semantic_hash": ""
   },
   "packages/server/test/hero-api.test.ts": {
     "mtime": 1791554096.0046566,
@@ -336,16 +336,16 @@
     "semantic_hash": "18f730edc83a0d931f18fc3ea0a0cafe"
   },
   "packages/server/test/overworld-persistence.test.ts": {
-    "mtime": 1791554113.37095,
-    "seen": 1791558675.8076744,
-    "ast_hash": "478a9f3c11d9772574d7493ebcd4f9bb",
-    "semantic_hash": "478a9f3c11d9772574d7493ebcd4f9bb"
+    "mtime": 1791560088.1057577,
+    "seen": 1791560439.0288522,
+    "ast_hash": "7c2720494c81f689995acad54f5f3247",
+    "semantic_hash": ""
   },
   "packages/server/test/overworld-room.test.ts": {
-    "mtime": 1791550661.017594,
-    "seen": 1791558675.8076754,
-    "ast_hash": "40c9b35783c2303e3093ec08c421f1dd",
-    "semantic_hash": "40c9b35783c2303e3093ec08c421f1dd"
+    "mtime": 1791560417.9842608,
+    "seen": 1791560439.0288537,
+    "ast_hash": "602e80bd6c54513288a3254dd7a16f80",
+    "semantic_hash": ""
   },
   "packages/server/test/roaming-beast-server.test.ts": {
     "mtime": 1791548819.0825536,
@@ -408,10 +408,10 @@
     "semantic_hash": "b3184937275138a599ab12ffb5dc8040"
   },
   "packages/shared/src/inventory/item-database.ts": {
-    "mtime": 1791547347.9695308,
-    "seen": 1791558675.8076885,
-    "ast_hash": "7f709e2769a3ac46b7ad3c5efbff99bb",
-    "semantic_hash": "7f709e2769a3ac46b7ad3c5efbff99bb"
+    "mtime": 1791559983.8023365,
+    "seen": 1791560439.0288737,
+    "ast_hash": "171ed53d2bf4b957249638256e1aab3a",
+    "semantic_hash": ""
   },
   "packages/shared/src/inventory/loot-engine.ts": {
     "mtime": 1791537642.9902825,
@@ -420,10 +420,10 @@
     "semantic_hash": "13957b02778592b8036643af8d18ba4b"
   },
   "packages/shared/src/overworld/map-database.ts": {
-    "mtime": 1791549322.2975018,
-    "seen": 1791558675.807691,
-    "ast_hash": "0e883e44f04d6103f963b4ecf38caed1",
-    "semantic_hash": "0e883e44f04d6103f963b4ecf38caed1"
+    "mtime": 1791560046.7038312,
+    "seen": 1791560439.0288768,
+    "ast_hash": "5c3e04eda0afc060e2e2decef7b5697e",
+    "semantic_hash": ""
   },
   "packages/shared/src/overworld/overworld-engine.ts": {
     "mtime": 1791547325.3436415,
@@ -450,16 +450,16 @@
     "semantic_hash": "747d2079ebaafa7f459b5264b3cb780a"
   },
   "packages/shared/src/roster/roster-manager.ts": {
-    "mtime": 1791547380.2430341,
-    "seen": 1791558675.8076968,
-    "ast_hash": "7946271d3ca24dd8f16d4ad4b52177c5",
-    "semantic_hash": "7946271d3ca24dd8f16d4ad4b52177c5"
+    "mtime": 1791559993.855029,
+    "seen": 1791560439.0288846,
+    "ast_hash": "1ce1a16a1e4040bbbb351fb28201f7ba",
+    "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791548753.475258,
-    "seen": 1791558675.8076982,
-    "ast_hash": "6ad1244d7154c87d0a9b5c6133d11d54",
-    "semantic_hash": "6ad1244d7154c87d0a9b5c6133d11d54"
+    "mtime": 1791560353.8708386,
+    "seen": 1791560439.028887,
+    "ast_hash": "a9cf4ec8f9b9da27f69843e3f69da4f3",
+    "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
     "mtime": 1791555946.5509129,
@@ -480,16 +480,16 @@
     "semantic_hash": "53c4c21e88c72d25412a037b7cf7d2b5"
   },
   "packages/shared/test/inventory.test.ts": {
-    "mtime": 1791541851.6193216,
-    "seen": 1791558675.8077028,
-    "ast_hash": "2c32099e5c8d75f34efb1522f61697f0",
-    "semantic_hash": "2c32099e5c8d75f34efb1522f61697f0"
+    "mtime": 1791559986.4919245,
+    "seen": 1791560439.0288944,
+    "ast_hash": "325644d13224de3fc4a2b11a4450d608",
+    "semantic_hash": ""
   },
   "packages/shared/test/overworld-engine.test.ts": {
-    "mtime": 1791543437.667524,
-    "seen": 1791558675.807704,
-    "ast_hash": "0d0f6fba53457fa7fc19c0eabf92a583",
-    "semantic_hash": "0d0f6fba53457fa7fc19c0eabf92a583"
+    "mtime": 1791560399.458093,
+    "seen": 1791560439.0288966,
+    "ast_hash": "563283078fa126666e9f5274bd75f398",
+    "semantic_hash": ""
   },
   "packages/shared/test/pathfinding.test.ts": {
     "mtime": 1791528656.4742308,
@@ -510,10 +510,10 @@
     "semantic_hash": "7ec90975c57d7b29fa08a27c3e8fbf08"
   },
   "packages/shared/test/roster.test.ts": {
-    "mtime": 1791529517.3190718,
-    "seen": 1791558675.8077087,
-    "ast_hash": "939d035a90cda5b49d8f971cbe1162ca",
-    "semantic_hash": "939d035a90cda5b49d8f971cbe1162ca"
+    "mtime": 1791560001.5132258,
+    "seen": 1791560439.0289047,
+    "ast_hash": "3c385809a9c9dfd7df77546ce6e99cbd",
+    "semantic_hash": ""
   },
   "packages/shared/tsconfig.json": {
     "mtime": 1791525284.410644,
@@ -538,5 +538,497 @@
     "seen": 1791558675.8077145,
     "ast_hash": "38297ed90d387231987af0f8695f2f40",
     "semantic_hash": "38297ed90d387231987af0f8695f2f40"
+  },
+  ".scratch/inventory-system/issues/01-inventory-domain-and-loot-engine.md": {
+    "mtime": 1791535664.2512517,
+    "seen": 1791560439.0289147,
+    "ast_hash": "73a70b6a2af4775b1d7a119bb1df60cf",
+    "semantic_hash": ""
+  },
+  ".scratch/inventory-system/issues/02-battle-engine-item-action-and-loot-rewards.md": {
+    "mtime": 1791535669.7086487,
+    "seen": 1791560439.0289168,
+    "ast_hash": "4da7d7f71185b899a33f30165862ac1e",
+    "semantic_hash": ""
+  },
+  ".scratch/inventory-system/issues/03-inventory-modal-controller-and-styling.md": {
+    "mtime": 1791535673.8966837,
+    "seen": 1791560439.0289183,
+    "ast_hash": "a55660bbababe4f4561a7a0a9e9d7860",
+    "semantic_hash": ""
+  },
+  ".scratch/inventory-system/issues/04-battle-scene-item-hud-and-qa-toolbar.md": {
+    "mtime": 1791535680.0796604,
+    "seen": 1791560439.0289202,
+    "ast_hash": "77a5b0a5a842989a66db90bc999d5239",
+    "semantic_hash": ""
+  },
+  ".scratch/inventory-system/spec.md": {
+    "mtime": 1791535658.232294,
+    "seen": 1791560439.0289216,
+    "ast_hash": "49bf188dc9ef6ec6b3223f6d8eb9f8f8",
+    "semantic_hash": ""
+  },
+  ".scratch/level-progression/issues/01-progression-engine-formulas.md": {
+    "mtime": 1791532534.102955,
+    "seen": 1791560439.0289228,
+    "ast_hash": "d933bad4fa09b0dc081ceaa2d165b1c1",
+    "semantic_hash": ""
+  },
+  ".scratch/level-progression/issues/02-battle-room-exp-rewards.md": {
+    "mtime": 1791532537.7556553,
+    "seen": 1791560439.0289245,
+    "ast_hash": "c21c4103c72216aeea4aee7136ef9900",
+    "semantic_hash": ""
+  },
+  ".scratch/level-progression/issues/03-battle-scene-victory-banner-exp.md": {
+    "mtime": 1791532541.033361,
+    "seen": 1791560439.028926,
+    "ast_hash": "e10db34991ed9ed075811ca9da5272ff",
+    "semantic_hash": ""
+  },
+  ".scratch/level-progression/issues/04-stat-points-allocation-ui.md": {
+    "mtime": 1791532545.9291854,
+    "seen": 1791560439.0289276,
+    "ast_hash": "0199fc3a2421c727f2adc4ae233e026e",
+    "semantic_hash": ""
+  },
+  ".scratch/level-progression/spec.md": {
+    "mtime": 1791532530.2633746,
+    "seen": 1791560439.0289292,
+    "ast_hash": "df93fbc852a20d762ace1bcc989dae87",
+    "semantic_hash": ""
+  },
+  ".scratch/login-system/issues/01-sqlite-engine-and-schemas.md": {
+    "mtime": 1791552984.4870992,
+    "seen": 1791560439.0289311,
+    "ast_hash": "ccf6e2b100c8adb3fe87fe6dfbfea11b",
+    "semantic_hash": ""
+  },
+  ".scratch/login-system/issues/02-http-auth-and-client-modal.md": {
+    "mtime": 1791553276.692454,
+    "seen": 1791560439.0289326,
+    "ast_hash": "48b64cdd1f616ef443f4c446f99ace88",
+    "semantic_hash": ""
+  },
+  ".scratch/login-system/issues/03-character-selection-and-creation.md": {
+    "mtime": 1791553479.1376417,
+    "seen": 1791560439.0289342,
+    "ast_hash": "ccfa5edb35d9bc6b081f0ea0887b89e6",
+    "semantic_hash": ""
+  },
+  ".scratch/login-system/issues/04-colyseus-handshake-and-persistence.md": {
+    "mtime": 1791553715.6606958,
+    "seen": 1791560439.028936,
+    "ast_hash": "9daf5a9ed692a1435b5f1f18b0438bfe",
+    "semantic_hash": ""
+  },
+  ".scratch/login-system/spec.md": {
+    "mtime": 1791552735.6852615,
+    "seen": 1791560439.0289378,
+    "ast_hash": "3a97a53edea99774398a6e98fa168d10",
+    "semantic_hash": ""
+  },
+  ".scratch/minimap-and-chat/issues/01-shared-chat-types-and-server-broadcast.md": {
+    "mtime": 1791555926.3315353,
+    "seen": 1791560439.0289395,
+    "ast_hash": "2eff0b414ca97a2badd84d9b1017005a",
+    "semantic_hash": ""
+  },
+  ".scratch/minimap-and-chat/issues/02-minimap-radar-and-click-navigation.md": {
+    "mtime": 1791555932.0677147,
+    "seen": 1791560439.0289412,
+    "ast_hash": "049775cd4d020efe36f7a18a42742ee3",
+    "semantic_hash": ""
+  },
+  ".scratch/minimap-and-chat/issues/03-client-chat-ui-controller-and-input-guard.md": {
+    "mtime": 1791555936.1024606,
+    "seen": 1791560439.0289426,
+    "ast_hash": "5a7388c8d1552c0eb66d9986c227d6bd",
+    "semantic_hash": ""
+  },
+  ".scratch/minimap-and-chat/issues/04-overworld-speech-bubbles-and-e2e-verification.md": {
+    "mtime": 1791555940.19392,
+    "seen": 1791560439.028944,
+    "ast_hash": "19f39350f98b04952ca33b92a9d7647d",
+    "semantic_hash": ""
+  },
+  ".scratch/minimap-and-chat/spec.md": {
+    "mtime": 1791555921.7298336,
+    "seen": 1791560439.028946,
+    "ast_hash": "2021ab25749928224e12893a44cf0e1d",
+    "semantic_hash": ""
+  },
+  ".scratch/multi-map-portals/issues/01-shared-portal-types-and-map-database.md": {
+    "mtime": 1791538664.5867548,
+    "seen": 1791560439.0289474,
+    "ast_hash": "b277e6c016d034453361ac031d5b3ccf",
+    "semantic_hash": ""
+  },
+  ".scratch/multi-map-portals/issues/02-colyseus-multi-map-state-and-warp-sync.md": {
+    "mtime": 1791538668.0357966,
+    "seen": 1791560439.028949,
+    "ast_hash": "2880a70486911088dd66c49932c3bd78",
+    "semantic_hash": ""
+  },
+  ".scratch/multi-map-portals/issues/03-client-tilemap-theming-portal-rendering-and-transitions.md": {
+    "mtime": 1791538672.6934893,
+    "seen": 1791560439.0289505,
+    "ast_hash": "9472f4f96b67fac1703cedf4db3b7028",
+    "semantic_hash": ""
+  },
+  ".scratch/multi-map-portals/spec.md": {
+    "mtime": 1791538660.3663716,
+    "seen": 1791560439.0289521,
+    "ast_hash": "bcf2f73e6566771f189e7684d9bf1726",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/01-scaffold-monorepo-core-formulas.md": {
+    "mtime": 1791524216.7714722,
+    "seen": 1791560439.0289536,
+    "ast_hash": "fc47e088870431910feab31153afb40c",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/02-deep-battle-engine-turn-resolution.md": {
+    "mtime": 1791524655.0801637,
+    "seen": 1791560439.0289552,
+    "ast_hash": "bb8acfcc5abbd726ef8597527b9b394a",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/03-overworld-navigation-encounter-engine.md": {
+    "mtime": 1791524889.1250494,
+    "seen": 1791560439.0289567,
+    "ast_hash": "a2895c4af9939c08d654804c8664d465",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/04-colyseus-authoritative-server-rooms.md": {
+    "mtime": 1791525320.522466,
+    "seen": 1791560439.0289583,
+    "ast_hash": "9805368d4ea244ba62d27a5122e4d846",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/05-phaser-isometric-overworld-client.md": {
+    "mtime": 1791525482.2596684,
+    "seen": 1791560439.0289598,
+    "ast_hash": "b82d2836d74f9375c8e029dca0236286",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/issues/06-phaser-battle-scene-combat-hud.md": {
+    "mtime": 1791525574.8009963,
+    "seen": 1791560439.0289614,
+    "ast_hash": "869870a55c229d778a1173d88b75da6e",
+    "semantic_hash": ""
+  },
+  ".scratch/poktsonline-mvp/spec.md": {
+    "mtime": 1791338213.4955869,
+    "seen": 1791560439.0289636,
+    "ast_hash": "798a18a719c855b822c44f8d45ccb8a9",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/issues/01-shared-ragnarok-champions-and-items.md": {
+    "mtime": 1791560009.0350144,
+    "seen": 1791560439.0289655,
+    "ast_hash": "6a1d24d7bbeb9512ec3e772479512662",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/issues/02-valhalla-world-maps-and-portals.md": {
+    "mtime": 1791560184.1639373,
+    "seen": 1791560439.0289674,
+    "ast_hash": "24ba068346abfbea295e8d94bb5bb029",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/issues/03-npc-dialogues-and-characters.md": {
+    "mtime": 1791560218.4441402,
+    "seen": 1791560439.0289693,
+    "ast_hash": "5d3a7a9b6e08361efbf81391c780d7b3",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/issues/04-procedural-champion-textures-and-renderer.md": {
+    "mtime": 1791560335.678879,
+    "seen": 1791560439.028971,
+    "ast_hash": "0d4d39db53590064cbca56feee183941",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/issues/05-full-system-verification-and-smoke-test.md": {
+    "mtime": 1791560339.7527592,
+    "seen": 1791560439.0289726,
+    "ast_hash": "8312d32a7583e4da4587e9452800ea7a",
+    "semantic_hash": ""
+  },
+  ".scratch/ragnarok-theme/spec.md": {
+    "mtime": 1791559941.3278995,
+    "seen": 1791560439.0289743,
+    "ast_hash": "9d3829abb5ff8ae7a06942a4b73a5d55",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/issues/01-shared-roaming-beast-types.md": {
+    "mtime": 1791548798.89615,
+    "seen": 1791560439.028976,
+    "ast_hash": "607ea7097d3ff201eb3f79d7dba768ab",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/issues/02-colyseus-roaming-beast-schema-and-ai.md": {
+    "mtime": 1791548859.2039976,
+    "seen": 1791560439.0289774,
+    "ast_hash": "b7de3a74f62819d0ea52e269a5a44555",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/issues/03-server-encounter-trigger-and-respawn.md": {
+    "mtime": 1791548862.4370866,
+    "seen": 1791560439.028979,
+    "ast_hash": "b80f7b2180e5d7815655428a5a06dc43",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/issues/04-client-roaming-beast-renderer-and-interaction.md": {
+    "mtime": 1791548966.3351681,
+    "seen": 1791560439.0289805,
+    "ast_hash": "d1d41f90939e36e9a379f66f82b6563c",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/issues/05-dual-encounter-coexistence-and-testing.md": {
+    "mtime": 1791548970.402538,
+    "seen": 1791560439.0289822,
+    "ast_hash": "b496f1b4b29a57280fa4c1cdaa9a0a7d",
+    "semantic_hash": ""
+  },
+  ".scratch/roaming-wild-beasts/spec.md": {
+    "mtime": 1791548726.4735878,
+    "seen": 1791560439.028984,
+    "ast_hash": "4bbd74cd541ef1d0335665ed29f3bcde",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1791558689.389361,
+    "seen": 1791560439.0289862,
+    "ast_hash": "4f2f4897933643618552b5b577333b63",
+    "semantic_hash": ""
+  },
+  "CODING_STANDARDS.md": {
+    "mtime": 1791555377.3965237,
+    "seen": 1791560439.028988,
+    "ast_hash": "b605fbd43106a329b22b9cec95fd8666",
+    "semantic_hash": ""
+  },
+  "GLOSSARY.md": {
+    "mtime": 1791559836.6345317,
+    "seen": 1791560439.0289898,
+    "ast_hash": "3b53f4d3db75e71be87df7b7c922b387",
+    "semantic_hash": ""
+  },
+  "character_poses.md": {
+    "mtime": 1791428067.628703,
+    "seen": 1791560439.0289917,
+    "ast_hash": "b320ef49e17a4d3353231a0bedefe84a",
+    "semantic_hash": ""
+  },
+  "docs/adr/0001-web-tech-stack.md": {
+    "mtime": 1791337609.7451808,
+    "seen": 1791560439.0289936,
+    "ast_hash": "0ddca6da4b6731768ea4d433e11633b1",
+    "semantic_hash": ""
+  },
+  "docs/adr/0002-phaser-and-colyseus.md": {
+    "mtime": 1791337740.5405555,
+    "seen": 1791560439.028995,
+    "ast_hash": "e012206c4fc27144fd9c528ae0200d8b",
+    "semantic_hash": ""
+  },
+  "docs/adr/0003-classic-combat-rules.md": {
+    "mtime": 1791337743.1895456,
+    "seen": 1791560439.0289972,
+    "ast_hash": "f565926941df170ca9141251822ac818",
+    "semantic_hash": ""
+  },
+  "docs/adr/0004-monorepo-workspace-structure.md": {
+    "mtime": 1791337868.6785812,
+    "seen": 1791560439.0289986,
+    "ast_hash": "946ae527df029f4e2b253202da7c4a04",
+    "semantic_hash": ""
+  },
+  "docs/adr/0005-capture-and-encounter-mechanics.md": {
+    "mtime": 1791337870.44897,
+    "seen": 1791560439.0290003,
+    "ast_hash": "876d589972f1ef7a9455c89f8b1f0e56",
+    "semantic_hash": ""
+  },
+  "docs/adr/0006-damage-and-combo-formulas.md": {
+    "mtime": 1791337917.1198962,
+    "seen": 1791560439.029002,
+    "ast_hash": "f4e137dab67527f752f30299073e21cd",
+    "semantic_hash": ""
+  },
+  "docs/adr/0007-in-memory-persistence-mvp.md": {
+    "mtime": 1791337918.7646706,
+    "seen": 1791560439.029004,
+    "ast_hash": "2ae8922c42b59e9da20589c872a4cad8",
+    "semantic_hash": ""
+  },
+  "docs/adr/0008-elemental-skill-trees.md": {
+    "mtime": 1791523733.1864579,
+    "seen": 1791560439.0290058,
+    "ast_hash": "34756e0664a4919910467def774eeba6",
+    "semantic_hash": ""
+  },
+  "docs/adr/0009-manual-stat-allocation.md": {
+    "mtime": 1791523736.8980236,
+    "seen": 1791560439.029008,
+    "ast_hash": "135c94c24102e72a35a3a28681a12cd9",
+    "semantic_hash": ""
+  },
+  "docs/adr/0010-party-system-and-coop-combat.md": {
+    "mtime": 1791523741.386168,
+    "seen": 1791560439.0290098,
+    "ast_hash": "3c57cc5fe5a555e98e8ab447d7da448c",
+    "semantic_hash": ""
+  },
+  "docs/adr/0011-beast-roster-and-reserve-swapping.md": {
+    "mtime": 1791523745.07072,
+    "seen": 1791560439.0290117,
+    "ast_hash": "ed660627ed6dfd89237ccc698c60ccfd",
+    "semantic_hash": ""
+  },
+  "docs/adr/0012-inventory-and-item-system.md": {
+    "mtime": 1791535643.0225685,
+    "seen": 1791560439.0290134,
+    "ast_hash": "beccd9e7232d17f0a45300ef4d58807b",
+    "semantic_hash": ""
+  },
+  "docs/adr/0013-multi-map-and-portals.md": {
+    "mtime": 1791538655.349945,
+    "seen": 1791560439.029015,
+    "ast_hash": "a632377056dd3cebccfabf9fdbb18bce",
+    "semantic_hash": ""
+  },
+  "docs/adr/0014-roaming-wild-beasts.md": {
+    "mtime": 1791548719.246006,
+    "seen": 1791560439.0290167,
+    "ast_hash": "d6aa124b783990216b421a01156599e7",
+    "semantic_hash": ""
+  },
+  "docs/adr/0015-authentication-and-account-persistence.md": {
+    "mtime": 1791554077.5402608,
+    "seen": 1791560439.0290186,
+    "ast_hash": "47f0d274be551fc67000ca7c157c4e6f",
+    "semantic_hash": ""
+  },
+  "docs/adr/0016-minimap-and-chat-system.md": {
+    "mtime": 1791555911.567876,
+    "seen": 1791560439.02902,
+    "ast_hash": "7d90e920e3d3514c2ab11220a406bf19",
+    "semantic_hash": ""
+  },
+  "docs/adr/0017-record-of-ragnarok-theme-pivot.md": {
+    "mtime": 1791559830.3596847,
+    "seen": 1791560439.029022,
+    "ast_hash": "b016813bb37d1110a577add71cb95ad1",
+    "semantic_hash": ""
+  },
+  "docs/agents/domain.md": {
+    "mtime": 1791338092.2287915,
+    "seen": 1791560439.0290236,
+    "ast_hash": "37cdb57401617eb003e1ead0eb2915dc",
+    "semantic_hash": ""
+  },
+  "docs/agents/issue-tracker.md": {
+    "mtime": 1791338087.4659376,
+    "seen": 1791560439.0290253,
+    "ast_hash": "f6ea6281af476a211243069a6cd171f8",
+    "semantic_hash": ""
+  },
+  "docs/agents/triage-labels.md": {
+    "mtime": 1791338089.996407,
+    "seen": 1791560439.0290272,
+    "ast_hash": "1e1454fdaf15dc0312b001c1a50183c9",
+    "semantic_hash": ""
+  },
+  "packages/client/index.html": {
+    "mtime": 1791560301.0207775,
+    "seen": 1791560439.0290291,
+    "ast_hash": "7a660494f2a225e3385d68646ee3b11d",
+    "semantic_hash": ""
+  },
+  "packages/client/public/prototype-hex6.html": {
+    "mtime": 1791551187.7766647,
+    "seen": 1791560439.0290308,
+    "ast_hash": "cbb419f85b3a60ef3d6270387f9ad3c3",
+    "semantic_hash": ""
+  },
+  "packages/client/public/prototype-ro.html": {
+    "mtime": 1791551732.2705364,
+    "seen": 1791560439.0290327,
+    "ast_hash": "c1497a52ad4fdce4f1ac9cfd7c9e98af",
+    "semantic_hash": ""
+  },
+  "prototype-hex6.html": {
+    "mtime": 1791551187.7766647,
+    "seen": 1791560439.0290346,
+    "ast_hash": "cbb419f85b3a60ef3d6270387f9ad3c3",
+    "semantic_hash": ""
+  },
+  "prototype-ro.html": {
+    "mtime": 1791551732.2705364,
+    "seen": 1791560439.029036,
+    "ast_hash": "c1497a52ad4fdce4f1ac9cfd7c9e98af",
+    "semantic_hash": ""
+  },
+  "prototype/index.html": {
+    "mtime": 1791520963.936465,
+    "seen": 1791560439.0290377,
+    "ast_hash": "cbdd42d597910ddc50ef17e5e8377abb",
+    "semantic_hash": ""
+  },
+  "knight_sprites/knight_attack_1791427758506.jpg": {
+    "mtime": 1791427758.507092,
+    "seen": 1791560439.0290396,
+    "ast_hash": "58d6e72540306b1b7bf351335b877fed",
+    "semantic_hash": ""
+  },
+  "knight_sprites/knight_idle_1791427727160.jpg": {
+    "mtime": 1791545085.8769598,
+    "seen": 1791560439.0290413,
+    "ast_hash": "6ed6c04ba16c398840c540112d4661e8",
+    "semantic_hash": ""
+  },
+  "knight_sprites/knight_walk_1791427742458.jpg": {
+    "mtime": 1791427742.459041,
+    "seen": 1791560439.029043,
+    "ast_hash": "e6be21e39ec164fd3e6a08351cd8d1c5",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_battle.png": {
+    "mtime": 1791544952.5322912,
+    "seen": 1791560439.0290444,
+    "ast_hash": "2426ee5a257d2c7be0f629c865d54fb7",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_battle_full.png": {
+    "mtime": 1791544945.4950452,
+    "seen": 1791560439.0290463,
+    "ast_hash": "a14d4a3cd348ca77a8243ba77da74e24",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_overworld.png": {
+    "mtime": 1791544952.5433455,
+    "seen": 1791560439.0290482,
+    "ast_hash": "6e836af324c2628f7ea2df7a23f540cb",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_overworld_full.png": {
+    "mtime": 1791544946.0826912,
+    "seen": 1791560439.029052,
+    "ast_hash": "14a26cc3f0032e7d3d6c0807391065e9",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_portrait.png": {
+    "mtime": 1791544952.5469117,
+    "seen": 1791560439.0290537,
+    "ast_hash": "fa500a732f49e65610f8cc8db8d7589a",
+    "semantic_hash": ""
+  },
+  "packages/client/public/assets/characters/hero_portrait_full.png": {
+    "mtime": 1791544946.1726165,
+    "seen": 1791560439.0290592,
+    "ast_hash": "c65057649b8f5eee18edbe5fb9f924d6",
+    "semantic_hash": ""
   }
 }

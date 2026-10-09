@@ -63,7 +63,7 @@ export class HeroRepository {
 
     const heroId = 'hero_' + crypto.randomUUID().slice(0, 8);
     const now = Date.now();
-    const mapId = 'novice_town_and_meadow';
+    const mapId = 'valhalla_coliseum';
     const spawnX = 10;
     const spawnY = 10;
     const direction: Direction = 'down';
@@ -339,72 +339,72 @@ export class HeroRepository {
     return true;
   }
 
-  private getStarterBeast(element: Element): Combatant {
+  public getStarterBeast(element: Element): Combatant {
     switch (element) {
       case Element.Earth:
         return {
-          id: 'beast_starter_earth',
-          name: 'Rock Boar',
+          id: 'champion_starter_adam',
+          name: 'Adam (อดัม)',
           isHero: false,
           level: 1,
           element: Element.Earth,
+          hp: 65,
+          maxHp: 65,
+          sp: 20,
+          maxSp: 20,
+          atk: 18,
+          def: 16,
+          int: 8,
+          agi: 12
+        };
+      case Element.Fire:
+        return {
+          id: 'champion_starter_lu_bu',
+          name: 'Lu Bu (ลิโป้)',
+          isHero: false,
+          level: 1,
+          element: Element.Fire,
           hp: 60,
           maxHp: 60,
           sp: 15,
           maxSp: 15,
-          atk: 16,
-          def: 15,
-          int: 6,
-          agi: 10
-        };
-      case Element.Fire:
-        return {
-          id: 'beast_starter_fire',
-          name: 'Flame Fox',
-          isHero: false,
-          level: 1,
-          element: Element.Fire,
-          hp: 50,
-          maxHp: 50,
-          sp: 15,
-          maxSp: 15,
-          atk: 19,
-          def: 9,
-          int: 10,
+          atk: 22,
+          def: 10,
+          int: 8,
           agi: 14
         };
       case Element.Wind:
         return {
-          id: 'beast_starter_wind',
-          name: 'Gale Hawk',
+          id: 'champion_starter_thor',
+          name: 'Thor (ธอร์)',
           isHero: false,
           level: 1,
           element: Element.Wind,
-          hp: 45,
-          maxHp: 45,
-          sp: 18,
-          maxSp: 18,
-          atk: 15,
-          def: 10,
-          int: 9,
-          agi: 17
+          hp: 55,
+          maxHp: 55,
+          sp: 20,
+          maxSp: 20,
+          atk: 20,
+          def: 12,
+          int: 10,
+          agi: 16
         };
       case Element.Water:
       default:
         return {
-          id: 'beast_starter_water',
-          name: 'Aqua Fin',
+          id: 'champion_starter_kojiro',
+          name: 'Sasaki Kojiro (โคจิโร่)',
           isHero: false,
           level: 1,
           element: Element.Water,
           hp: 55,
           maxHp: 55,
-          sp: 18,
-          maxSp: 18,
-          atk: 14,
-          def: 11,
-          int: 8,
-          agi: 13
+          sp: 20,
+          maxSp: 20,
+          atk: 18,
+          def: 12,
+          int: 10,
+          agi: 16
         };
     }
   }

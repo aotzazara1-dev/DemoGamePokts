@@ -255,10 +255,10 @@ export class OverworldRoom extends Room<OverworldState> {
   }
 
   public initRoamingBeasts(overrideMap?: MapConfig) {
-    const mapList = Object.values(MAP_DATABASE);
+    const uniqueMaps = Array.from(new Map(Object.values(MAP_DATABASE).map(m => [m.id, m])).values());
     const mapsToPopulate = overrideMap
-      ? [overrideMap, ...mapList.filter(m => m.id !== overrideMap.id)]
-      : mapList;
+      ? [overrideMap, ...uniqueMaps.filter(m => m.id !== overrideMap.id)]
+      : uniqueMaps;
 
     mapsToPopulate.forEach(map => {
       const beasts = RoamingBeastManager.generateMapRoamingBeasts(map, 6);
@@ -435,7 +435,7 @@ export class OverworldRoom extends Room<OverworldState> {
     const spawnX = options.spawnTile?.x ?? 10;
     const spawnY = options.spawnTile?.y ?? 10;
     const playerName = options.name ?? `Player_${client.sessionId.slice(0, 4)}`;
-    const spawnMapId = options.mapId ?? 'novice_town_and_meadow';
+    const spawnMapId = options.mapId ?? this.mapConfig.id;
 
     const player = new PlayerNetworkState(client.sessionId, playerName, spawnX, spawnY, 'down', spawnMapId);
     this.state.players.set(client.sessionId, player);

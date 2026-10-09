@@ -8,8 +8,8 @@ A 2D tile-based multiplayer online turn-based RPG inspired by TS Online mechanic
 The shared 2D grid-based map where players navigate, see other players, and encounter wild entities.
 _Avoid_: World map, field, stage
 
-**Hero**:
-The primary character avatar created and directly controlled by a player.
+**Hero (Isekai Traveler / The Awakened)**:
+The primary character avatar summoned from modern Earth into the Valhalla realm, awakening with a Divine Elemental Core and directly controlled by a player.
 _Avoid_: Avatar, player unit, main character
 
 **Account**:
@@ -25,15 +25,19 @@ The pre-game interface where an authenticated Account views, creates, selects, o
 _Avoid_: Lobby, hero menu, character screen
 
 **Hero Save State**:
-The persistent authoritative database snapshot of a Hero's progression (Attributes, EXP, Stat Points, current Map, Tile position, Inventory, Gold, and Beast Roster).
+The persistent authoritative database snapshot of a Hero's progression (Attributes, EXP, Stat Points, current Map, Tile position, Inventory, Gold, and Champion Roster).
 _Avoid_: Savefile, character data, player backup
 
-**Beast**:
-A collectible creature in the world that can be captured, leveled up, and summoned to fight alongside the Hero.
+**Champion (Einherjar or God)**:
+A legendary human warrior soul (Einherjar: e.g. Lu Bu, Sasaki Kojiro, Adam) or celestial deity (God: e.g. Thor, Zeus, Shiva, Buddha) who can be contracted, leveled up, and summoned into battle alongside the Hero.
 _Avoid_: Pet, monster, general, pokemon
 
-**Roaming Beast**:
-A visible wild Beast roaming actively across wild Zones on the Overworld that can chase nearby Heroes and initiate combat upon collision, while coexisting with step-based random encounters.
+**Valkyrie Companion**:
+A divine battle maiden (e.g. Brunhilde, Göll, Randgriz, Hrist) who forges a soul contract (Völundr) to grant specialized passive buffs, stat auras, and ultimate divine abilities to the party.
+_Avoid_: Mascot, assist npc, fairy
+
+**Roaming Mythological Entity**:
+A visible wild mythological beast or rogue divine spirit roaming actively across wild Zones on the Overworld that can chase nearby Heroes and initiate combat upon collision.
 _Avoid_: Wandering monster, world boss, mob on map
 
 **Battle Instance**:

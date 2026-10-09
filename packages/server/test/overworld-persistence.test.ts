@@ -57,7 +57,7 @@ describe('OverworldRoom Auth & Full State Persistence (Ticket 04)', () => {
     expect(player?.name).toBe('ZhangWuji');
     expect(player?.x).toBe(10);
     expect(player?.y).toBe(10);
-    expect(player?.mapId).toBe('novice_town_and_meadow');
+    expect(player?.mapId).toBe('valhalla_coliseum');
 
     // 3. Verify heroStateLoaded message was sent
     const stateLoadedMsg = messagesSent.find(m => m.type === 'heroStateLoaded');

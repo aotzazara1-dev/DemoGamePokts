@@ -233,14 +233,14 @@ describe('OverworldRoom', () => {
     // 2. In Pebble Cave, step onto the return portal at (1, 15)
     (room as any).onMessageHandlers['move'](client, { targetX: 1, targetY: 15 });
 
-    // Should warp back to novice_town_and_meadow at (35, 3)
-    expect(player.mapId).toBe('novice_town_and_meadow');
+    // Should warp back to valhalla_coliseum at (35, 3)
+    expect(player.mapId).toBe('valhalla_coliseum');
     expect(player.x).toBe(35);
     expect(player.y).toBe(3);
 
     const transitions = client.messages.filter(m => m.type === 'portalTransition');
     expect(transitions).toHaveLength(2);
-    expect(transitions[1].payload.targetMapId).toBe('novice_town_and_meadow');
+    expect(transitions[1].payload.targetMapId).toBe('valhalla_coliseum');
     expect(transitions[1].payload.targetPosition).toEqual({ x: 35, y: 3 });
   });
 
@@ -344,20 +344,20 @@ describe('OverworldRoom', () => {
     player.x = 35;
     player.y = 1;
     (prodRoom as any).onMessageHandlers['move'](client, { targetX: 35, targetY: 2 });
-    expect(player.mapId).toBe('pebble_cave');
+    expect(player.mapId).toBe('helheim_abyss');
     expect(player.x).toBe(2);
     expect(player.y).toBe(15);
 
-    // 4. In pebble_cave, step on return portal at (1, 15)
+    // 4. In helheim_abyss, step on return portal at (1, 15)
     (prodRoom as any).onMessageHandlers['move'](client, { targetX: 1, targetY: 15 });
-    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.mapId).toBe('valhalla_coliseum');
     expect(player.x).toBe(35);
     expect(player.y).toBe(3);
 
     // Clear client messages
     client.messages.length = 0;
 
-    // 5. Walk in meadow (wild zone) - should trigger encounters!
+    // 5. Walk in coliseum proving grounds (wild zone) - should trigger encounters!
     prodRoom.rng = () => 0.0; // force encounter
     (prodRoom as any).onMessageHandlers['move'](client, { targetX: 35, targetY: 4 });
     expect(player.x).toBe(35);
@@ -365,7 +365,7 @@ describe('OverworldRoom', () => {
     expect(player.inBattle).toBe(true);
     const encounterMsg = client.messages.find(m => m.type === 'encounter');
     expect(encounterMsg).toBeDefined();
-    expect(encounterMsg?.payload.encounter.zoneId).toBe('whispering_meadow');
+    expect(encounterMsg?.payload.encounter.zoneId).toBe('valhalla_proving_grounds');
   });
 
   it('resynchronizes mapId and triggers encounters when client sends move with declared mapId', () => {
@@ -373,27 +373,27 @@ describe('OverworldRoom', () => {
     prodRoom.onCreate();
 
     const client = createMockClient('client_map_sync');
-    // Player on server is recorded on pebble_cave
-    prodRoom.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 2, y: 15 }, mapId: 'pebble_cave' });
+    // Player on server is recorded on helheim_abyss
+    prodRoom.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 2, y: 15 }, mapId: 'helheim_abyss' });
     const player = prodRoom.state.players.get('client_map_sync')!;
-    expect(player.mapId).toBe('pebble_cave');
+    expect(player.mapId).toBe('helheim_abyss');
 
-    // 1. Client declares it is now on novice_town_and_meadow at (35, 3)
+    // 1. Client declares it is now on valhalla_coliseum at (35, 3)
     (prodRoom as any).onMessageHandlers['move'](client, {
       targetX: 35,
       targetY: 3,
-      mapId: 'novice_town_and_meadow'
+      mapId: 'valhalla_coliseum'
     });
-    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.mapId).toBe('valhalla_coliseum');
     expect(player.x).toBe(35);
     expect(player.y).toBe(3);
 
-    // 2. Subsequent move on novice_town_and_meadow to (35, 4) rolls encounters
+    // 2. Subsequent move on valhalla_coliseum to (35, 4) rolls encounters
     prodRoom.rng = () => 0.0;
     (prodRoom as any).onMessageHandlers['move'](client, {
       targetX: 35,
       targetY: 4,
-      mapId: 'novice_town_and_meadow'
+      mapId: 'valhalla_coliseum'
     });
 
     expect(player.x).toBe(35);
@@ -402,6 +402,6 @@ describe('OverworldRoom', () => {
 
     const encounterMsg = client.messages.find(m => m.type === 'encounter');
     expect(encounterMsg).toBeDefined();
-    expect(encounterMsg?.payload.encounter.zoneId).toBe('whispering_meadow');
+    expect(encounterMsg?.payload.encounter.zoneId).toBe('valhalla_proving_grounds');
   });
 });
