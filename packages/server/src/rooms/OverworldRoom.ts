@@ -7,6 +7,8 @@ import {
   type MapConfig,
   type Direction,
   type TileCoord,
+  type MoveMessagePayload,
+  type PortalTransitionPayload,
   Element
 } from '@poktsonline/shared';
 
@@ -36,11 +38,11 @@ export class OverworldRoom extends Room<OverworldState> {
     }
     this.setState(new OverworldState());
 
-    this.onMessage('move', (client: Client, message: { targetX: number; targetY: number; mapId?: string }) => {
+    this.onMessage('move', (client: Client, message: MoveMessagePayload) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
       if (player.inBattle) {
-        player.inBattle = false;
+        return; // Authoritative combat lock: do not allow movement while in battle
       }
 
       // 1. Resynchronize mapId if client declared its active map and it differs from server state
@@ -102,7 +104,7 @@ export class OverworldRoom extends Room<OverworldState> {
     this.onMessage('warpTown', (client: Client) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      player.inBattle = false;
+      if (player.inBattle) return; // Cannot teleport during active combat
 
       player.mapId = 'novice_town_and_meadow';
       player.x = 10;
@@ -117,21 +119,37 @@ export class OverworldRoom extends Room<OverworldState> {
       });
     });
 
-    this.onMessage('warpPortal', (client: Client, message: { targetMapId: string; targetPosition: TileCoord; portalName?: string }) => {
+    this.onMessage('warpPortal', (client: Client, message: PortalTransitionPayload) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      player.inBattle = false;
+      if (player.inBattle) return; // Cannot teleport during active combat
 
-      player.mapId = message.targetMapId;
-      player.x = message.targetPosition.x;
-      player.y = message.targetPosition.y;
+      // Authoritative portal proximity and destination validation
+      const currentMapConfig = (this.mapConfig && this.mapConfig.id === player.mapId)
+        ? this.mapConfig
+        : getMapConfig(player.mapId);
+
+      const validPortal = currentMapConfig.portals?.find(p =>
+        p.targetMapId === message.targetMapId &&
+        p.targetPosition.x === message.targetPosition.x &&
+        p.targetPosition.y === message.targetPosition.y &&
+        (Math.abs(p.position.x - player.x) <= 1 && Math.abs(p.position.y - player.y) <= 1)
+      );
+
+      if (!validPortal) {
+        return; // Reject unauthorized teleportation
+      }
+
+      player.mapId = validPortal.targetMapId;
+      player.x = validPortal.targetPosition.x;
+      player.y = validPortal.targetPosition.y;
       player.direction = 'down';
       this.playerStepCounters.set(client.sessionId, 0);
 
       client.send('portalTransition', {
-        targetMapId: message.targetMapId,
-        targetPosition: message.targetPosition,
-        portalName: message.portalName || 'Portal Warp'
+        targetMapId: validPortal.targetMapId,
+        targetPosition: validPortal.targetPosition,
+        portalName: validPortal.name
       });
     });
 

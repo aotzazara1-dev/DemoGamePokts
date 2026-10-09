@@ -198,4 +198,27 @@ export class RosterManager {
 
     return { front, back };
   }
+
+  /**
+   * Fully restores HP and SP for the hero and all beasts in the roster.
+   */
+  public static restoreFullParty(roster: PlayerRosterState): PlayerRosterState {
+    const hero: Combatant = {
+      ...roster.hero,
+      hp: roster.hero.maxHp,
+      sp: roster.hero.maxSp
+    };
+
+    const beasts: Combatant[] = roster.beasts.map(b => ({
+      ...b,
+      hp: b.maxHp,
+      sp: b.maxSp
+    }));
+
+    return {
+      ...roster,
+      hero,
+      beasts
+    };
+  }
 }

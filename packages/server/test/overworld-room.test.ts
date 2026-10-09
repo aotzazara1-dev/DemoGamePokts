@@ -120,6 +120,19 @@ describe('OverworldRoom', () => {
     expect(player.y).toBe(5);
   });
 
+  it('rejects movement and does not update position when player is inBattle', () => {
+    const client = createMockClient('client_battle');
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
+    const player = room.state.players.get('client_battle')!;
+    player.inBattle = true;
+
+    (room as any).onMessageHandlers['move'](client, { targetX: 6, targetY: 5 });
+
+    expect(player.x).toBe(5);
+    expect(player.y).toBe(5);
+    expect(player.inBattle).toBe(true);
+  });
+
   it('triggers encounter when moving into wild zone and marks player inBattle', () => {
     // Force RNG to trigger encounter (roll 0.0 < 0.5)
     room.rng = () => 0.0;
@@ -270,7 +283,7 @@ describe('OverworldRoom', () => {
     const client = createMockClient('client_1');
     room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
 
-    // Send warpPortal directly
+    // 1. Unauthorized/invalid portal request (no portal to bamboo_forest near (5,5)) is rejected
     (room as any).onMessageHandlers['warpPortal'](client, {
       targetMapId: 'bamboo_forest',
       targetPosition: { x: 2, y: 15 },
@@ -278,14 +291,25 @@ describe('OverworldRoom', () => {
     });
 
     const player = room.state.players.get('client_1')!;
-    expect(player.mapId).toBe('bamboo_forest');
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(5);
+    expect(player.y).toBe(5);
+
+    // 2. Valid portal request (player at (5,5) is adjacent to portal_test_to_cave at (5,6))
+    (room as any).onMessageHandlers['warpPortal'](client, {
+      targetMapId: 'pebble_cave',
+      targetPosition: { x: 2, y: 15 },
+      portalName: 'Test Portal to Cave'
+    });
+
+    expect(player.mapId).toBe('pebble_cave');
     expect(player.x).toBe(2);
     expect(player.y).toBe(15);
     expect(player.inBattle).toBe(false);
 
     const portalMsg = client.messages.find(m => m.type === 'portalTransition');
     expect(portalMsg).toBeDefined();
-    expect(portalMsg?.payload.targetMapId).toBe('bamboo_forest');
+    expect(portalMsg?.payload.targetMapId).toBe('pebble_cave');
   });
 
   it('triggers encounters after battle, changing maps, and returning to original map', () => {

@@ -1,6 +1,30 @@
 import { ItemDefinition } from '../types.js';
 
 export const ITEM_DATABASE: Record<string, ItemDefinition> = {
+  item_small_herb: {
+    id: 'item_small_herb',
+    name: 'Small Herb (สมุนไพรเล็ก)',
+    type: 'hp_restore',
+    effectValue: 50,
+    description: 'A soothing wild herb that restores 50 HP to a single ally.',
+    price: 10,
+    sellPrice: 5,
+    stackMax: 99,
+    usableInCombat: true,
+    usableOnOverworld: true
+  },
+  item_ginseng: {
+    id: 'item_ginseng',
+    name: 'Ginseng (โสม)',
+    type: 'sp_restore',
+    effectValue: 40,
+    description: 'A prized mountain root that restores 40 SP to a single ally.',
+    price: 25,
+    sellPrice: 12,
+    stackMax: 99,
+    usableInCombat: true,
+    usableOnOverworld: true
+  },
   item_steamed_bun: {
     id: 'item_steamed_bun',
     name: 'Steamed Bun (ซาลาเปา)',
@@ -112,6 +136,8 @@ export function getItemDefinition(itemId: string): ItemDefinition | undefined {
 
 export function getItemIcon(itemId: string): string {
   switch (itemId) {
+    case 'item_small_herb': return '🌿';
+    case 'item_ginseng': return '🌱';
     case 'item_steamed_bun': return '🥟';
     case 'item_herbal_tea': return '🍵';
     case 'item_vitality_pill': return '💊';

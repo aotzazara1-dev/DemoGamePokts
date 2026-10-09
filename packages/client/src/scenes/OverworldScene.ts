@@ -83,7 +83,7 @@ export class OverworldScene extends Phaser.Scene {
 
   preload() {
     this.load.image('hero_sprite', '/assets/characters/hero_overworld.png');
-    this.load.image('hero_avatar', '/assets/characters/hero_avatar.png');
+    this.load.image('hero_portrait', '/assets/characters/hero_portrait.png');
   }
 
   create() {
@@ -809,9 +809,10 @@ export class OverworldScene extends Phaser.Scene {
     if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y) {
       this.currentPath = [];
       this.clearDestinationMarker();
-      this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
       if (this.network.getRoom()) {
         this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
+      } else {
+        this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
       }
       return;
     }
@@ -964,7 +965,8 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private addOtherPlayer(sessionId: string, player: PlayerNetData) {
-    const isSameMap = !player.mapId || player.mapId === this.mapConfig.id;
+    const playerMap = player.mapId || 'novice_town_and_meadow';
+    const isSameMap = playerMap === this.mapConfig.id;
     const screenPos = isoToScreen(player.x, player.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
     const container = this.add.container(screenPos.x, screenPos.y);
 
@@ -988,11 +990,25 @@ export class OverworldScene extends Phaser.Scene {
     const remote = this.otherPlayers.get(sessionId);
     if (!remote) return;
 
-    const isSameMap = !player.mapId || player.mapId === this.mapConfig.id;
+    const playerMap = player.mapId || 'novice_town_and_meadow';
+    const isSameMap = playerMap === this.mapConfig.id;
+    const wasVisible = remote.container.visible;
     remote.container.setVisible(isSameMap);
     if (!isSameMap) return;
 
     const screenPos = isoToScreen(player.x, player.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    // If player arrived from another map or warped across large distance, snap immediately
+    const dx = Math.abs(player.x - remote.tile.x);
+    const dy = Math.abs(player.y - remote.tile.y);
+    if (!wasVisible || dx > 1 || dy > 1) {
+      this.tweens.killTweensOf(remote.container);
+      remote.container.setPosition(screenPos.x, screenPos.y);
+      remote.tile = { x: player.x, y: player.y };
+      remote.container.setDepth(getIsometricDepth(player.x, player.y, 100));
+      return;
+    }
+
     this.tweens.add({
       targets: remote.container,
       x: screenPos.x,
@@ -1211,9 +1227,10 @@ export class OverworldScene extends Phaser.Scene {
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
 
         if (portal) {
-          this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
           if (this.network.getRoom()) {
             this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
+          } else {
+            this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
           }
           return;
         }
@@ -1322,12 +1339,7 @@ export class OverworldScene extends Phaser.Scene {
         this.shopModal.open(npc);
       },
       onHeal: (npc) => {
-        this.roster.hero.hp = this.roster.hero.maxHp;
-        this.roster.hero.sp = this.roster.hero.maxSp;
-        this.roster.beasts.forEach(b => {
-          b.hp = b.maxHp;
-          b.sp = b.maxSp;
-        });
+        this.roster = RosterManager.restoreFullParty(this.roster);
         this.characterModal.setHero(this.roster.hero);
         this.rosterModal.setRoster(this.roster);
         this.inventoryModal.setHero(this.roster.hero);

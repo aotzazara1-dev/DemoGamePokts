@@ -247,3 +247,22 @@ export interface LootReward {
   gold: number;
   droppedItems: ItemStack[];
 }
+
+export interface MoveMessagePayload {
+  targetX: number;
+  targetY: number;
+  mapId?: string;
+}
+
+export interface PortalTransitionPayload {
+  targetMapId: string;
+  targetPosition: TileCoord;
+  portalName?: string;
+}
+
+export interface PortalTransitionMessage {
+  mapId: string;
+  x: number;
+  y: number;
+  portalName?: string;
+}

@@ -1,4 +1,5 @@
 import { Client, Room } from 'colyseus.js';
+import { type PortalTransitionPayload, type MoveMessagePayload } from '@poktsonline/shared';
 
 export interface PlayerNetData {
   id: string;
@@ -14,11 +15,7 @@ export interface PlayerNetData {
 export type PlayerCallback = (sessionId: string, player: PlayerNetData) => void;
 export type PlayerRemoveCallback = (sessionId: string) => void;
 export type EncounterCallback = (payload: { encounter: any; playerPosition: { x: number; y: number } }) => void;
-export type PortalTransitionCallback = (payload: {
-  targetMapId: string;
-  targetPosition: { x: number; y: number };
-  portalName: string;
-}) => void;
+export type PortalTransitionCallback = (payload: PortalTransitionPayload) => void;
 
 export class OverworldNetwork {
   private client?: Client;

@@ -177,15 +177,25 @@ export class SoundManager {
     this.playTone(180, 50, 0.1, 'triangle', 0.3);
   }
 
+  private playNoteSequence(
+    frequencies: number[],
+    intervalMs: number,
+    durationSec: number,
+    type: OscillatorType = 'square',
+    volume: number = 0.2,
+    pitchShiftMultiplier: number = 1.0
+  ): void {
+    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
+    frequencies.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playTone(freq, freq * pitchShiftMultiplier, durationSec, type, volume);
+      }, idx * intervalMs);
+    });
+  }
+
   /** ✨ Magic Skill: Rapid 4-note Chiptune Arpeggio */
   public playSkill(): void {
-    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, freq * 1.05, 0.08, 'square', 0.2);
-      }, idx * 45);
-    });
+    this.playNoteSequence([523.25, 659.25, 783.99, 1046.5], 45, 0.08, 'square', 0.2, 1.05);
   }
 
   /** 🛡️ Defend / Guard: Heavy shield thud */
@@ -196,13 +206,7 @@ export class SoundManager {
 
   /** 💚 Heal: Warm upward chime sweep */
   public playHeal(): void {
-    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
-    const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, freq * 1.1, 0.12, 'sine', 0.25);
-      }, idx * 50);
-    });
+    this.playNoteSequence([440, 554.37, 659.25, 880], 50, 0.12, 'sine', 0.25, 1.1);
   }
 
   /** 💧 Spirit SP Restore: Crystal water sparkle */
@@ -212,13 +216,7 @@ export class SoundManager {
 
   /** ❤️ Revive: Heroic rising chord */
   public playRevive(): void {
-    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
-    const notes = [261.63, 329.63, 392.0, 523.25, 659.25, 1046.5]; // C4..C6
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, freq, 0.14, 'square', 0.22);
-      }, idx * 60);
-    });
+    this.playNoteSequence([261.63, 329.63, 392.0, 523.25, 659.25, 1046.5], 60, 0.14, 'square', 0.22, 1.0);
   }
 
   /** ⭐ Capture Throw: Retro laser zap */
@@ -228,13 +226,7 @@ export class SoundManager {
 
   /** ⭐ Capture Success: Fanfare sparkle chime */
   public playCaptureSuccess(): void {
-    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
-    const notes = [587.33, 739.99, 880, 1174.66]; // D5, F#5, A5, D6
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, freq * 1.05, 0.15, 'square', 0.25);
-      }, idx * 70);
-    });
+    this.playNoteSequence([587.33, 739.99, 880, 1174.66], 70, 0.15, 'square', 0.25, 1.05);
   }
 
   /** ❌ Capture Fail: Low disappointed double boop */
@@ -270,13 +262,7 @@ export class SoundManager {
 
   /** 💀 Defeat: Sad descending 8-bit game over */
   public playDefeat(): void {
-    if (this.isMuted || !this.initAudio() || !this.ctx || !this.masterGain) return;
-    const notes = [329.63, 311.13, 293.66, 277.18]; // E4, D#4, D4, C#4
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, freq * 0.95, 0.2, 'square', 0.25);
-      }, idx * 180);
-    });
+    this.playNoteSequence([329.63, 311.13, 293.66, 277.18], 180, 0.2, 'square', 0.25, 0.95);
   }
 
   /** 🖱️ UI Button Click: Crisp high blip */

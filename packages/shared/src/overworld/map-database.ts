@@ -89,6 +89,8 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
           { id: 'opt_close', label: '✕ ลาก่อน (Goodbye)', action: 'close' }
         ],
         shopItemIds: [
+          'item_small_herb',
+          'item_ginseng',
           'item_steamed_bun',
           'item_herbal_tea',
           'item_vitality_pill',
@@ -206,7 +208,7 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
           {
             beastTemplateId: 'bamboo_panda',
             name: 'Bamboo Panda',
-            element: Element.Earth,
+            element: Element.Wind,
             baseLevel: 8,
             levelVariance: 1,
             weight: 1,
@@ -238,7 +240,7 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         position: { x: 1, y: 25 },
         targetMapId: 'novice_town_and_meadow',
         targetPosition: { x: 47, y: 25 },
-        name: 'Exit to Whispering Meadow'
+        name: 'Return to Whispering Meadow'
       }
     ]
   }

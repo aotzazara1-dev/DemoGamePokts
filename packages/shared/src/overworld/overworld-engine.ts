@@ -177,4 +177,8 @@ export class OverworldEngine {
       encounterTriggered: false
     };
   }
+
+  public static getMapConfig(mapId: string): MapConfig {
+    return getMapConfig(mapId);
+  }
 }
