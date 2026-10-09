@@ -6,12 +6,16 @@ import {
   findPath,
   RosterManager,
   ProgressionEngine,
-  Element,
   type MapConfig,
   type TileCoord,
   type Combatant,
   type PlayerRosterState
 } from '@poktsonline/shared';
+import {
+  CharacterModalController,
+  RosterModalController,
+  DebugToolbarController
+} from '../ui/index.js';
 
 export class OverworldScene extends Phaser.Scene {
   private network!: OverworldNetwork;
@@ -34,9 +38,11 @@ export class OverworldScene extends Phaser.Scene {
 
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
-  private isRosterOpen: boolean = false;
-  private isCharacterModalOpen: boolean = false;
-  private selectedFormationUnitType: 'hero' | 'beast' = 'hero';
+
+  // Deep UI Controllers
+  private rosterModal!: RosterModalController;
+  private characterModal!: CharacterModalController;
+  private debugToolbar!: DebugToolbarController;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -80,7 +86,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.isRosterOpen || this.isCharacterModalOpen) return;
+      if (this.rosterModal?.isOpen() || this.characterModal?.isOpen()) return;
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -119,12 +125,9 @@ export class OverworldScene extends Phaser.Scene {
       // Restore HUD elements and buttons when returning to Overworld
       const uiOverlay = document.getElementById('ui-overlay');
       if (uiOverlay) uiOverlay.style.display = 'block';
-      const htmlBtn = document.getElementById('btn-roster');
-      if (htmlBtn) htmlBtn.style.display = 'flex';
-      const charBtn = document.getElementById('btn-character-status');
-      if (charBtn) charBtn.style.display = 'block';
-      const debugBtn = document.getElementById('btn-toggle-debug');
-      if (debugBtn) debugBtn.style.display = 'flex';
+      this.rosterModal.setButtonVisible(true);
+      this.characterModal.setButtonVisible(true);
+      this.debugToolbar.setVisible(true);
 
       const zoneDisplay = document.getElementById('zone-display');
 
@@ -185,46 +188,39 @@ export class OverworldScene extends Phaser.Scene {
         }
       }
 
-      this.updateRosterButtonLabel();
-      this.updateHeroStatusBar();
+      this.rosterModal.setRoster(this.roster);
+      this.characterModal.setHero(this.roster.hero);
     });
 
     // 7. Setup Beast Roster & Formation button, Character Profile, QA Debug Toolbar
-    this.createRosterButton();
-    this.setupRosterModalDOM();
-    this.setupCharacterModalDOM();
-    this.setupDebugToolbarDOM();
-    this.updateHeroStatusBar();
+    this.setupUIControllers();
 
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => {
         if (this.scene.isPaused()) return;
-        this.toggleRosterModal();
+        this.rosterModal.toggle();
       });
       this.input.keyboard.on('keydown-F', () => {
         if (this.scene.isPaused()) return;
-        this.toggleRosterModal();
+        this.rosterModal.toggle();
       });
       this.input.keyboard.on('keydown-C', () => {
         if (this.scene.isPaused()) return;
-        this.toggleCharacterModal();
+        this.characterModal.toggle();
       });
       this.input.keyboard.on('keydown-T', () => {
         if (this.scene.isPaused()) return;
-        const panel = document.getElementById('debug-panel');
-        if (panel) panel.classList.toggle('open');
+        this.debugToolbar.toggle();
       });
       this.input.keyboard.on('keydown-BACKTICK', () => {
         if (this.scene.isPaused()) return;
-        const panel = document.getElementById('debug-panel');
-        if (panel) panel.classList.toggle('open');
+        this.debugToolbar.toggle();
       });
       this.input.keyboard.on('keydown-ESC', () => {
         if (this.scene.isPaused()) return;
-        this.toggleRosterModal(false);
-        this.toggleCharacterModal(false);
-        const panel = document.getElementById('debug-panel');
-        if (panel) panel.classList.remove('open');
+        this.rosterModal.close();
+        this.characterModal.close();
+        this.debugToolbar.close();
       });
     }
   }
@@ -438,7 +434,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
-    if (this.isRosterOpen || this.isCharacterModalOpen) return;
+    if (this.rosterModal?.isOpen() || this.characterModal?.isOpen()) return;
 
     // 1. Mouse Hold-to-Move
     const pointer = this.input.activePointer;
@@ -617,20 +613,16 @@ export class OverworldScene extends Phaser.Scene {
     this.currentPath = [];
     this.clearDestinationMarker();
 
-    this.toggleRosterModal(false);
-    this.toggleCharacterModal(false);
-    const debugPanel = document.getElementById('debug-panel');
-    if (debugPanel) debugPanel.classList.remove('open');
+    this.rosterModal.close();
+    this.characterModal.close();
+    this.debugToolbar.close();
 
     // Hide Overworld HUD and buttons during battle
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'none';
-    const htmlBtn = document.getElementById('btn-roster');
-    if (htmlBtn) htmlBtn.style.display = 'none';
-    const charBtn = document.getElementById('btn-character-status');
-    if (charBtn) charBtn.style.display = 'none';
-    const debugBtn = document.getElementById('btn-toggle-debug');
-    if (debugBtn) debugBtn.style.display = 'none';
+    this.rosterModal.setButtonVisible(false);
+    this.characterModal.setButtonVisible(false);
+    this.debugToolbar.setVisible(false);
 
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
@@ -648,569 +640,64 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   // ==========================================
-  // BEAST ROSTER & FORMATION UI (DOM OVERLAY)
+  // UI CONTROLLERS SETUP
   // ==========================================
 
-  private createRosterButton() {
-    const htmlBtn = document.getElementById('btn-roster');
-    if (htmlBtn) {
-      htmlBtn.style.display = 'flex';
-      htmlBtn.onclick = () => this.toggleRosterModal();
-      this.updateRosterButtonLabel();
-    }
-  }
-
-  private setupRosterModalDOM() {
-    const btnClose = document.getElementById('btn-close-modal');
-    if (btnClose) btnClose.onclick = () => this.toggleRosterModal(false);
-
-    const btnConfirm = document.getElementById('btn-confirm-formation');
-    if (btnConfirm) btnConfirm.onclick = () => this.toggleRosterModal(false);
-
-    const modal = document.getElementById('roster-modal');
-    if (modal) {
-      modal.onclick = (e) => {
-        if (e.target === modal) {
-          this.toggleRosterModal(false);
-        }
-      };
-    }
-  }
-
-  private updateRosterButtonLabel() {
-    const htmlBtn = document.getElementById('btn-roster');
-    if (htmlBtn) {
-      htmlBtn.innerHTML = `🐾 BEASTS (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY}) <span style="opacity: 0.75; font-size: 11px;">[B]</span>`;
-    }
-  }
-
-  public toggleRosterModal(forceOpen?: boolean) {
-    if (this.scene.isPaused() && forceOpen !== false) return;
-    const modal = document.getElementById('roster-modal');
-    if (!modal) return;
-
-    if (forceOpen !== undefined) {
-      this.isRosterOpen = forceOpen;
-    } else {
-      this.isRosterOpen = !this.isRosterOpen;
-    }
-
-    if (this.isRosterOpen) {
-      this.currentPath = [];
-      this.clearDestinationMarker();
-      modal.classList.add('open');
-      this.renderRosterModalDOM();
-    } else {
-      modal.classList.remove('open');
-    }
-  }
-
-  private renderRosterModalDOM() {
-    const modal = document.getElementById('roster-modal');
-    if (!modal || !this.isRosterOpen) return;
-
-    // 1. Capacity header
-    const capacityHeader = document.getElementById('roster-capacity-header');
-    if (capacityHeader) {
-      capacityHeader.innerText = `BEAST ROSTER (${this.roster.beasts.length}/${RosterManager.MAX_BEAST_CAPACITY})`;
-    }
-
-    // 2. Beast List
-    const beastContainer = document.getElementById('beast-list-container');
-    if (beastContainer) {
-      beastContainer.innerHTML = '';
-      if (this.roster.beasts.length === 0) {
-        beastContainer.innerHTML = `
-          <div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px;">
-            No beasts captured yet.<br>Explore Whispering Meadow to capture wild beasts!
-          </div>
-        `;
-      } else {
-        this.roster.beasts.forEach((beast) => {
-          const isActive = beast.id === this.roster.activeBeastId;
-          const card = document.createElement('div');
-          card.className = `beast-item ${isActive ? 'active' : ''}`;
-
-          card.innerHTML = `
-            <div class="beast-info">
-              <div class="beast-name-row">
-                <span style="color: ${this.getElementColor(beast.element)};">${beast.name}</span>
-                <span style="font-size: 11px; color: #94a3b8;">Lv.${beast.level}</span>
-                <span class="badge-element badge-${beast.element}">${this.getElementIcon(beast.element)} ${beast.element}</span>
-              </div>
-              <div class="beast-bars">
-                <span>HP: ${beast.hp}/${beast.maxHp}</span> &bull; <span>SP: ${beast.sp}/${beast.maxSp}</span> &bull; <span>EXP: ${beast.exp ?? 0}/${beast.maxExp ?? ProgressionEngine.calculateExpToNextLevel(beast.level)}</span>
-              </div>
-              <div class="beast-stats-row">
-                <span>ATK: ${beast.atk}</span>
-                <span>DEF: ${beast.def}</span>
-                <span>INT: ${beast.int || 10}</span>
-                <span>AGI: ${beast.agi}</span>
-              </div>
-              ${(beast.statPoints ?? 0) > 0 ? `
-                <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px; font-size: 10px; color: #fbbf24;">
-                  <span>⭐ ${beast.statPoints} Pts:</span>
-                  <button class="beast-stat-btn" data-attr="atk" data-id="${beast.id}">+ATK</button>
-                  <button class="beast-stat-btn" data-attr="def" data-id="${beast.id}">+DEF</button>
-                  <button class="beast-stat-btn" data-attr="int" data-id="${beast.id}">+INT</button>
-                  <button class="beast-stat-btn" data-attr="agi" data-id="${beast.id}">+AGI</button>
-                </div>
-              ` : ''}
-            </div>
-            <div>
-              ${isActive 
-                ? '<div class="badge-active-beast">⭐ ACTIVE</div>' 
-                : `<button class="btn-deploy-beast" data-id="${beast.id}">⚡ Deploy</button>`
-              }
-            </div>
-          `;
-
-          const deployBtn = card.querySelector<HTMLButtonElement>('.btn-deploy-beast');
-          if (deployBtn) {
-            deployBtn.onclick = (e) => {
-              e.stopPropagation();
-              this.roster = RosterManager.setActiveBeast(this.roster, beast.id);
-              this.updateRosterButtonLabel();
-              this.renderRosterModalDOM();
-            };
-          }
-
-          const statBtns = card.querySelectorAll<HTMLButtonElement>('.beast-stat-btn');
-          statBtns.forEach(btn => {
-            btn.onclick = (e) => {
-              e.stopPropagation();
-              const attr = btn.getAttribute('data-attr') as 'atk' | 'def' | 'int' | 'agi';
-              const res = ProgressionEngine.allocateStatPoint(beast, attr);
-              if (res.success) {
-                const idx = this.roster.beasts.findIndex(b => b.id === beast.id);
-                if (idx !== -1) this.roster.beasts[idx] = res.combatant;
-                this.renderRosterModalDOM();
-              }
-            };
-          });
-
-          beastContainer.appendChild(card);
-        });
+  private setupUIControllers(): void {
+    this.characterModal = new CharacterModalController(this.roster.hero, {
+      onHeroUpdated: (hero) => {
+        this.roster.hero = hero;
+      },
+      onOpen: () => {
+        this.currentPath = [];
+        this.clearDestinationMarker();
       }
-    }
-
-    // 3. Unit Selector Buttons
-    const btnHero = document.getElementById('btn-select-hero');
-    const btnBeast = document.getElementById('btn-select-beast');
-    const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
-
-    if (btnHero) {
-      btnHero.className = `btn-unit-select ${this.selectedFormationUnitType === 'hero' ? 'selected-hero' : ''}`;
-      btnHero.onclick = () => {
-        this.selectedFormationUnitType = 'hero';
-        this.renderRosterModalDOM();
-      };
-    }
-
-    if (btnBeast) {
-      btnBeast.className = `btn-unit-select ${this.selectedFormationUnitType === 'beast' ? 'selected-beast' : ''}`;
-      btnBeast.innerText = `🦁 Move ${activeBeast?.name || 'Active Beast'}`;
-      btnBeast.onclick = () => {
-        this.selectedFormationUnitType = 'beast';
-        this.renderRosterModalDOM();
-      };
-    }
-
-    // 4. Formation Grid Slots
-    this.renderGridSlotsRow('front', document.getElementById('grid-front-row'), activeBeast);
-    this.renderGridSlotsRow('back', document.getElementById('grid-back-row'), activeBeast);
-
-    // 5. Summary Text
-    const summaryText = document.getElementById('formation-summary-text');
-    if (summaryText) {
-      summaryText.innerHTML = `
-        <b>Current Formation:</b> 
-        🧙 Hero: <span style="color: #60a5fa;">${this.roster.formation.heroSlot.row.toUpperCase()} [Col ${this.roster.formation.heroSlot.col}]</span> &bull; 
-        🦁 ${activeBeast?.name || 'Beast'}: <span style="color: #34d399;">${this.roster.formation.beastSlot.row.toUpperCase()} [Col ${this.roster.formation.beastSlot.col}]</span>
-      `;
-    }
-  }
-
-  private renderGridSlotsRow(row: 'front' | 'back', rowEl: HTMLElement | null, activeBeast?: Combatant) {
-    if (!rowEl) return;
-    rowEl.innerHTML = '';
-
-    for (let col = 0; col < 5; col++) {
-      const isHeroHere = this.roster.formation.heroSlot.row === row && this.roster.formation.heroSlot.col === col;
-      const isBeastHere = this.roster.formation.beastSlot.row === row && this.roster.formation.beastSlot.col === col;
-
-      const slotBox = document.createElement('div');
-      slotBox.className = `slot-box ${isHeroHere ? 'hero-slot' : isBeastHere ? 'beast-slot' : ''}`;
-
-      if (isHeroHere) {
-        slotBox.innerHTML = '<div>🧙 Hero</div><div style="font-size: 9px; opacity: 0.85;">Lv.5</div>';
-      } else if (isBeastHere) {
-        slotBox.innerHTML = `<div>🦁 ${activeBeast?.name?.split(' ')[0] || 'Beast'}</div><div style="font-size: 9px; opacity: 0.85;">Lv.${activeBeast?.level || 1}</div>`;
-      } else {
-        slotBox.innerHTML = `<div>Slot ${col}</div><div style="font-size: 9px; opacity: 0.5;">Empty</div>`;
-      }
-
-      slotBox.onclick = () => {
-        this.roster = RosterManager.setFormationSlot(this.roster, this.selectedFormationUnitType, { row, col });
-        this.renderRosterModalDOM();
-      };
-
-      rowEl.appendChild(slotBox);
-    }
-  }
-
-  private getElementColor(element: Element): string {
-    switch (element) {
-      case Element.Water: return '#38bdf8';
-      case Element.Fire: return '#f87171';
-      case Element.Earth: return '#fb923c';
-      case Element.Wind: return '#4ade80';
-      default: return '#e2e8f0';
-    }
-  }
-
-  private getElementIcon(element: Element): string {
-    switch (element) {
-      case Element.Water: return '💧';
-      case Element.Fire: return '🔥';
-      case Element.Earth: return '🌍';
-      case Element.Wind: return '🌪️';
-      default: return '✨';
-    }
-  }
-
-  // ==========================================
-  // HERO CHARACTER STATUS & STAT ALLOCATION UI
-  // ==========================================
-
-  private setupCharacterModalDOM() {
-    const btnStatus = document.getElementById('btn-character-status');
-    if (btnStatus) btnStatus.onclick = () => this.toggleCharacterModal();
-
-    const btnClose = document.getElementById('btn-close-char-modal');
-    if (btnClose) btnClose.onclick = () => this.toggleCharacterModal(false);
-
-    const btnDone = document.getElementById('btn-close-char-bottom');
-    if (btnDone) btnDone.onclick = () => this.toggleCharacterModal(false);
-
-    const modal = document.getElementById('character-modal');
-    if (modal) {
-      modal.onclick = (e) => {
-        if (e.target === modal) {
-          this.toggleCharacterModal(false);
-        }
-      };
-    }
-
-    // Attach click listeners to stat allocation buttons
-    const plusBtns = document.querySelectorAll<HTMLButtonElement>('#character-modal .btn-stat-plus');
-    plusBtns.forEach(btn => {
-      btn.onclick = () => {
-        const attr = btn.getAttribute('data-attr') as 'atk' | 'def' | 'int' | 'agi';
-        const res = ProgressionEngine.allocateStatPoint(this.roster.hero, attr);
-        if (res.success) {
-          this.roster.hero = res.combatant;
-          this.renderCharacterModalDOM();
-          this.updateHeroStatusBar();
-        }
-      };
     });
-  }
 
-  public toggleCharacterModal(forceOpen?: boolean) {
-    if (this.scene.isPaused() && forceOpen !== false) return;
-    const modal = document.getElementById('character-modal');
-    if (!modal) return;
-
-    if (forceOpen !== undefined) {
-      this.isCharacterModalOpen = forceOpen;
-    } else {
-      this.isCharacterModalOpen = !this.isCharacterModalOpen;
-    }
-
-    if (this.isCharacterModalOpen) {
-      this.currentPath = [];
-      this.clearDestinationMarker();
-      modal.classList.add('open');
-      this.renderCharacterModalDOM();
-    } else {
-      modal.classList.remove('open');
-    }
-  }
-
-  private renderCharacterModalDOM() {
-    const modal = document.getElementById('character-modal');
-    if (!modal || !this.isCharacterModalOpen) return;
-
-    const hero = this.roster.hero;
-    const maxExp = hero.maxExp ?? ProgressionEngine.calculateExpToNextLevel(hero.level);
-    const exp = hero.exp ?? 0;
-    const expPercent = Math.min(100, Math.floor((exp / maxExp) * 100));
-    const statPoints = hero.statPoints ?? 0;
-
-    const nameTitle = document.getElementById('char-name-title');
-    if (nameTitle) nameTitle.innerText = `${hero.name} Lv.${hero.level} [${hero.element}]`;
-
-    const expText = document.getElementById('char-exp-text');
-    if (expText) expText.innerText = `EXP: ${exp} / ${maxExp} (${expPercent}%)`;
-
-    const expBar = document.getElementById('char-exp-bar');
-    if (expBar) expBar.style.width = `${expPercent}%`;
-
-    const pointsBadge = document.getElementById('char-stat-points-val');
-    if (pointsBadge) {
-      pointsBadge.innerText = `${statPoints} Points Available`;
-      pointsBadge.style.color = statPoints > 0 ? '#fbbf24' : '#94a3b8';
-      pointsBadge.style.borderColor = statPoints > 0 ? '#fbbf24' : '#475569';
-    }
-
-    // Values
-    const elAtk = document.getElementById('val-atk');
-    if (elAtk) elAtk.innerText = `${hero.atk}`;
-
-    const elDef = document.getElementById('val-def');
-    if (elDef) elDef.innerText = `${hero.def}`;
-
-    const elInt = document.getElementById('val-int');
-    if (elInt) elInt.innerText = `${hero.int}`;
-
-    const elAgi = document.getElementById('val-agi');
-    if (elAgi) elAgi.innerText = `${hero.agi}`;
-
-    const elHp = document.getElementById('val-hp');
-    if (elHp) elHp.innerText = `${hero.hp} / ${hero.maxHp}`;
-
-    const elSp = document.getElementById('val-sp');
-    if (elSp) elSp.innerText = `${hero.sp} / ${hero.maxSp}`;
-
-    // Enable/disable plus buttons
-    const plusBtns = document.querySelectorAll<HTMLButtonElement>('#character-modal .btn-stat-plus');
-    plusBtns.forEach(btn => {
-      btn.disabled = statPoints <= 0;
+    this.rosterModal = new RosterModalController(this.roster, {
+      onRosterUpdated: (newRoster) => {
+        this.roster = newRoster;
+      },
+      onOpen: () => {
+        this.currentPath = [];
+        this.clearDestinationMarker();
+      }
     });
-  }
 
-  private updateHeroStatusBar() {
-    const hero = this.roster.hero;
-    const maxExp = hero.maxExp ?? ProgressionEngine.calculateExpToNextLevel(hero.level);
-    const exp = hero.exp ?? 0;
-    const statPoints = hero.statPoints ?? 0;
-
-    const quickInfo = document.getElementById('hero-quick-info');
-    if (quickInfo) {
-      const ptsNote = statPoints > 0 ? ` <span style="color: #fbbf24; font-weight: bold;">⭐ ${statPoints} PTS!</span>` : '';
-      quickInfo.innerHTML = `🧙 ${hero.name} Lv.${hero.level} (${exp}/${maxExp} EXP)${ptsNote}`;
-    }
-  }
-
-  // ==========================================
-  // QA DEVELOPER TOOLBAR (DEBUG CHEATS)
-  // ==========================================
-
-  private setupDebugToolbarDOM() {
-    const btnToggle = document.getElementById('btn-toggle-debug');
-    const panel = document.getElementById('debug-panel');
-    const btnClose = document.getElementById('btn-close-debug');
-
-    if (btnToggle && panel) {
-      btnToggle.onclick = () => {
-        panel.classList.toggle('open');
-      };
-    }
-
-    if (btnClose && panel) {
-      btnClose.onclick = () => {
-        panel.classList.remove('open');
-      };
-    }
-
-    const showToast = (msg: string, color: string = '#6ee7b7') => {
-      const zoneDisplay = document.getElementById('zone-display');
-      if (zoneDisplay) {
-        zoneDisplay.innerText = msg;
-        zoneDisplay.style.color = color;
-      }
-    };
-
-    // 1. +500 EXP (Hero)
-    const btnExp500 = document.getElementById('dbg-exp-500');
-    if (btnExp500) {
-      btnExp500.onclick = () => {
-        const prog = ProgressionEngine.addExpToCombatant(this.roster.hero, 500);
-        this.roster.hero = prog.combatant;
-        this.updateHeroStatusBar();
-        this.renderCharacterModalDOM();
-        showToast(`⚡ Added +500 EXP to Hero! (Total: ${this.roster.hero.exp}/${this.roster.hero.maxExp} Lv.${this.roster.hero.level})`, '#facc15');
-      };
-    }
-
-    // 2. +500 EXP (Active Beast)
-    const btnExpBeast = document.getElementById('dbg-exp-beast');
-    if (btnExpBeast) {
-      btnExpBeast.onclick = () => {
-        const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
-        if (activeBeast) {
-          const prog = ProgressionEngine.addExpToCombatant(activeBeast, 500);
-          const idx = this.roster.beasts.findIndex(b => b.id === activeBeast.id);
-          if (idx !== -1) this.roster.beasts[idx] = prog.combatant;
-          this.renderRosterModalDOM();
-          showToast(`🦁 Added +500 EXP to ${activeBeast.name}! (Lv.${prog.combatant.level})`, '#38bdf8');
-        } else {
-          showToast('No active beast deployed!', '#ef4444');
+    this.debugToolbar = new DebugToolbarController(
+      () => this.roster.hero,
+      () => this.roster,
+      {
+        onHeroUpdated: (hero) => {
+          this.roster.hero = hero;
+          this.characterModal.setHero(hero);
+        },
+        onRosterUpdated: (newRoster) => {
+          this.roster = newRoster;
+          this.rosterModal.setRoster(newRoster);
+        },
+        onInstantBattle: (payload) => {
+          this.triggerBattleTransition(payload);
+        },
+        onWarp: (tile, toastMsg, color) => {
+          this.playerTile = { ...tile };
+          const screenPos = isoToScreen(tile.x, tile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+          this.playerContainer.setPosition(screenPos.x, screenPos.y);
+          this.playerContainer.setDepth(getIsometricDepth(tile.x, tile.y, 100));
+          this.showToast(toastMsg, color);
+        },
+        onShowToast: (msg, color) => {
+          this.showToast(msg, color);
         }
-      };
-    }
-
-    // 3. Instant Level Up
-    const btnLvlUp = document.getElementById('dbg-level-up');
-    if (btnLvlUp) {
-      btnLvlUp.onclick = () => {
-        const needed = (this.roster.hero.maxExp ?? 500) - (this.roster.hero.exp ?? 0);
-        const prog = ProgressionEngine.addExpToCombatant(this.roster.hero, Math.max(1, needed));
-        this.roster.hero = prog.combatant;
-        this.updateHeroStatusBar();
-        this.renderCharacterModalDOM();
-        showToast(`🎉 Level Up! Hero is now Lv.${this.roster.hero.level}! (+${prog.statPointsGained} Stat Points)`, '#fbbf24');
-      };
-    }
-
-    // 4. +5 Stat Points
-    const btnStatPts = document.getElementById('dbg-stat-points');
-    if (btnStatPts) {
-      btnStatPts.onclick = () => {
-        this.roster.hero.statPoints = (this.roster.hero.statPoints ?? 0) + 5;
-        this.updateHeroStatusBar();
-        this.renderCharacterModalDOM();
-        showToast(`⭐ Added +5 Stat Points! Total: ${this.roster.hero.statPoints}`, '#fbbf24');
-      };
-    }
-
-    // 5. Full Heal
-    const btnHeal = document.getElementById('dbg-full-heal');
-    if (btnHeal) {
-      btnHeal.onclick = () => {
-        this.roster.hero.hp = this.roster.hero.maxHp;
-        this.roster.hero.sp = this.roster.hero.maxSp;
-        this.roster.beasts.forEach(b => {
-          b.hp = b.maxHp;
-          b.sp = b.maxSp;
-        });
-        this.renderCharacterModalDOM();
-        this.renderRosterModalDOM();
-        showToast('💖 Full Heal! Health & Spirit restored to 100% for all units.', '#4ade80');
-      };
-    }
-
-    // 6. Hurt Hero (-40 HP)
-    const btnHurt = document.getElementById('dbg-hurt-hero');
-    if (btnHurt) {
-      btnHurt.onclick = () => {
-        this.roster.hero.hp = Math.max(1, this.roster.hero.hp - 40);
-        this.renderCharacterModalDOM();
-        showToast(`🩸 Hero took 40 damage! HP: ${this.roster.hero.hp}/${this.roster.hero.maxHp}`, '#ef4444');
-      };
-    }
-
-    // 7. Add Beasts
-    const addMockBeast = (name: string, element: Element, atk: number, def: number) => {
-      const mock: Combatant = {
-        id: `beast_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        name,
-        isHero: false,
-        level: Math.max(1, this.roster.hero.level - 1),
-        element,
-        hp: 70,
-        maxHp: 70,
-        sp: 30,
-        maxSp: 30,
-        atk,
-        def,
-        int: 10,
-        agi: 14
-      };
-      const res = RosterManager.addCapturedBeast(this.roster, mock);
-      if (res.success) {
-        this.roster = res.roster;
-        this.updateRosterButtonLabel();
-        this.renderRosterModalDOM();
-        showToast(`🐾 Added ${name} [${element}] to Beast Roster!`, '#a855f7');
-      } else {
-        showToast(res.reason || 'Roster full!', '#ef4444');
       }
-    };
+    );
+  }
 
-    document.getElementById('dbg-add-fire-beast')?.addEventListener('click', () => addMockBeast('Flame Imp', Element.Fire, 24, 12));
-    document.getElementById('dbg-add-wind-beast')?.addEventListener('click', () => addMockBeast('Gale Hawk', Element.Wind, 20, 10));
-    document.getElementById('dbg-add-earth-beast')?.addEventListener('click', () => addMockBeast('Rock Boar', Element.Earth, 18, 22));
-    document.getElementById('dbg-add-water-beast')?.addEventListener('click', () => addMockBeast('Aqua Serpent', Element.Water, 22, 15));
-
-    // 8. Instant Battle Encounter
-    const btnBattle = document.getElementById('dbg-instant-battle');
-    if (btnBattle) {
-      btnBattle.onclick = () => {
-        panel?.classList.remove('open');
-        this.triggerBattleTransition({
-          encounter: {
-            wildEnemies: [
-              {
-                id: `wild_test_1`,
-                name: 'Wild Flame Imp',
-                isHero: false,
-                level: this.roster.hero.level,
-                element: Element.Fire,
-                hp: 55,
-                maxHp: 55,
-                sp: 20,
-                maxSp: 20,
-                atk: 18,
-                def: 12,
-                int: 10,
-                agi: 12
-              },
-              {
-                id: `wild_test_2`,
-                name: 'Wild Rock Boar',
-                isHero: false,
-                level: this.roster.hero.level,
-                element: Element.Earth,
-                hp: 65,
-                maxHp: 65,
-                sp: 15,
-                maxSp: 15,
-                atk: 16,
-                def: 20,
-                int: 8,
-                agi: 10
-              }
-            ]
-          }
-        });
-      };
-    }
-
-    // 9. Teleport Town
-    const btnWarpTown = document.getElementById('dbg-warp-town');
-    if (btnWarpTown) {
-      btnWarpTown.onclick = () => {
-        this.playerTile = { x: 10, y: 10 };
-        const screenPos = isoToScreen(10, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
-        this.playerContainer.setPosition(screenPos.x, screenPos.y);
-        this.playerContainer.setDepth(getIsometricDepth(10, 10, 100));
-        showToast('🏡 Teleported to Novice Town (Safe Zone)', '#6ee7b7');
-      };
-    }
-
-    // 10. Teleport Meadow
-    const btnWarpMeadow = document.getElementById('dbg-warp-meadow');
-    if (btnWarpMeadow) {
-      btnWarpMeadow.onclick = () => {
-        this.playerTile = { x: 23, y: 10 };
-        const screenPos = isoToScreen(23, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
-        this.playerContainer.setPosition(screenPos.x, screenPos.y);
-        this.playerContainer.setDepth(getIsometricDepth(23, 10, 100));
-        showToast('🌾 Teleported to Whispering Meadow (Wild Encounter Zone)', '#f59e0b');
-      };
+  private showToast(msg: string, color: string = '#6ee7b7'): void {
+    const zoneDisplay = document.getElementById('zone-display');
+    if (zoneDisplay) {
+      zoneDisplay.innerText = msg;
+      zoneDisplay.style.color = color;
     }
   }
 }
-
