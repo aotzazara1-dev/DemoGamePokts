@@ -145,6 +145,18 @@ async function runE2ESmoke() {
       if (!overworld) return { error: 'OverworldScene not found' };
 
       const cam = overworld.cameras?.main;
+      const minimapCanvas = document.getElementById('minimap-canvas');
+      const chatOverlay = document.getElementById('chat-overlay');
+      const chatInput = document.getElementById('chat-input');
+      const chatMessages = document.getElementById('chat-messages');
+
+      let chatSent = false;
+      if (chatInput && document.getElementById('chat-btn-send')) {
+        chatInput.value = 'E2E Smoke Greetings!';
+        document.getElementById('chat-btn-send').click();
+        chatSent = true;
+      }
+
       return {
         sceneActive: overworld.scene.isActive(),
         playerX: overworld.playerContainer?.x,
@@ -153,7 +165,9 @@ async function runE2ESmoke() {
         cameraScrollX: cam?.scrollX,
         cameraScrollY: cam?.scrollY,
         mapTilesCount: overworld.mapTiles?.length,
-        mapConfigId: overworld.mapConfig?.id
+        mapConfigId: overworld.mapConfig?.id,
+        minimapReady: !!minimapCanvas && minimapCanvas.width > 0,
+        chatReady: !!chatOverlay && !!chatMessages && chatSent
       };
     })()`,
     returnByValue: true
@@ -193,7 +207,17 @@ async function runE2ESmoke() {
     process.exit(1);
   }
 
-  console.log('✅ E2E Smoke Test PASSED! Game canvas renders player on map with camera focused.');
+  if (!data.minimapReady) {
+    console.error('❌ E2E Smoke Test FAILED: Minimap canvas is not loaded or ready.');
+    process.exit(1);
+  }
+
+  if (!data.chatReady) {
+    console.error('❌ E2E Smoke Test FAILED: Chat overlay is not ready or failed to send message.');
+    process.exit(1);
+  }
+
+  console.log('✅ E2E Smoke Test PASSED! Game canvas renders player on map with camera focused, minimap radar ready, and chat system active.');
   process.exit(0);
 }
 

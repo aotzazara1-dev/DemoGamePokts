@@ -13,6 +13,8 @@ import {
   type PortalTransitionPayload,
   type HeroFullSaveState,
   type SyncHeroStatePayload,
+  type ChatMessagePayload,
+  type SendChatMessagePayload,
   Element
 } from '@poktsonline/shared';
 import { AccountRepository, HeroRepository } from '../db/index.js';
@@ -40,6 +42,7 @@ export class OverworldRoom extends Room<OverworldState> {
   private accountRepo?: AccountRepository;
   private heroRepo?: HeroRepository;
   private clientHeroMap: Map<string, { heroId: string; accountId: string; fullState: HeroFullSaveState }> = new Map();
+  private clientLastChatTime: Map<string, number> = new Map();
 
   onCreate(options: { mapConfig?: MapConfig; accountRepo?: AccountRepository; heroRepo?: HeroRepository } = {}) {
     if (options.mapConfig) {
@@ -57,6 +60,32 @@ export class OverworldRoom extends Room<OverworldState> {
 
     // Run simulation tick for roaming beasts every 1500ms
     this.setSimulationInterval(() => this.tickRoamingBeasts(), 1500);
+
+    this.onMessage('sendChatMessage', (client: Client, message: SendChatMessagePayload) => {
+      if (!message || typeof message.text !== 'string') return;
+      const trimmed = message.text.trim();
+      if (trimmed.length === 0 || trimmed.length > 120) return;
+
+      const now = Date.now();
+      const lastTime = this.clientLastChatTime.get(client.sessionId) || 0;
+      if (now - lastTime < 400) return;
+      this.clientLastChatTime.set(client.sessionId, now);
+
+      const heroData = this.clientHeroMap.get(client.sessionId);
+      const playerState = this.state.players.get(client.sessionId);
+      const senderName = heroData?.fullState?.hero?.name || playerState?.name || `Hero_${client.sessionId.slice(0, 4)}`;
+
+      const chatPayload: ChatMessagePayload = {
+        id: `msg_${now}_${Math.floor(Math.random() * 10000)}`,
+        senderId: client.sessionId,
+        senderName,
+        channel: message.channel || 'map',
+        text: trimmed,
+        timestamp: now
+      };
+
+      this.broadcast('chatMessage', chatPayload);
+    });
 
     this.onMessage('syncHeroState', (client: Client, message: SyncHeroStatePayload) => {
       this.handleSaveHeroState(client, message);
@@ -413,12 +442,25 @@ export class OverworldRoom extends Room<OverworldState> {
     this.playerStepCounters.set(client.sessionId, 0);
   }
 
+  public broadcastSystemMessage(text: string) {
+    const chatPayload: ChatMessagePayload = {
+      id: `sys_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+      senderId: 'SYSTEM',
+      senderName: 'System',
+      channel: 'system',
+      text,
+      timestamp: Date.now()
+    };
+    this.broadcast('chatMessage', chatPayload);
+  }
+
   onLeave(client: Client, _consented?: boolean) {
     this.handleSaveHeroState(client);
     this.clientHeroMap.delete(client.sessionId);
     this.connectedClients.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     this.playerStepCounters.delete(client.sessionId);
+    this.clientLastChatTime.delete(client.sessionId);
   }
 
   onDispose() {
@@ -426,5 +468,6 @@ export class OverworldRoom extends Room<OverworldState> {
       this.handleSaveHeroState(client);
     });
     this.clientHeroMap.clear();
+    this.clientLastChatTime.clear();
   }
 }

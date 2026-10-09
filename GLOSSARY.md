@@ -143,3 +143,19 @@ _Avoid_: Stage, level, room, scene, world
 **Portal**:
 A designated interactive tile on the Overworld that teleports a Hero to a specified destination coordinate on another Map.
 _Avoid_: Warp gate, door, exit, teleport pad
+
+**Minimap**:
+The radar heads-up display at the top-right corner of the Overworld visualizing map terrain, Hero coordinates, Portals, NPCs, and Roaming Beasts, supporting click-to-move pathfinding.
+_Avoid_: Radar, sub-map, mini-view
+
+**Chat Message**:
+A textual communication payload transmitted over the Overworld network containing sender identity, channel type, message text, and timestamp.
+_Avoid_: Talk, whisper, text, speech
+
+**Speech Bubble**:
+A temporary floating graphic container rendered above an entity's sprite in the Overworld displaying their recently spoken Chat Message before fading out.
+_Avoid_: Text balloon, talk bubble, chat pop-up
+
+**Chat Channel**:
+The categorization route for Chat Messages (such as Map Chat broadcast to players in the current Map, or System Log notifications for combat, gold, and item events).
+_Avoid_: Chat room, tab group, talk mode

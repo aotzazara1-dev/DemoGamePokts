@@ -6,4 +6,6 @@ export * from './DialogueModalController.js';
 export * from './ShopModalController.js';
 export * from './AuthModalController.js';
 export * from './CharacterSelectModalController.js';
+export * from './MinimapController.js';
+export * from './ChatController.js';
 

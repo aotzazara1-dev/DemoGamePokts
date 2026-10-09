@@ -43,6 +43,37 @@
         </button>
       </div>
     </div>
+
+    <!-- Minimap Radar HUD -->
+    <div id="minimap-container">
+      <div class="minimap-header">
+        <span id="minimap-map-name">Novice Town</span>
+        <span id="minimap-coords">(10, 10)</span>
+      </div>
+      <div class="minimap-body">
+        <canvas id="minimap-canvas" width="140" height="140"></canvas>
+      </div>
+      <div class="minimap-legend">
+        <span class="minimap-legend-item"><span class="minimap-dot hero"></span>You</span>
+        <span class="minimap-legend-item"><span class="minimap-dot beast"></span>Foe</span>
+        <span class="minimap-legend-item"><span class="minimap-dot npc"></span>NPC</span>
+        <span class="minimap-legend-item"><span class="minimap-dot portal"></span>Gate</span>
+      </div>
+    </div>
+
+    <!-- In-Game Chat System Overlay -->
+    <div id="chat-overlay">
+      <div class="chat-tab-bar">
+        <button id="chat-tab-all" class="chat-tab-btn active" type="button">💬 All (ทั้งหมด)</button>
+        <button id="chat-tab-system" class="chat-tab-btn" type="button">📜 System (ระบบ)</button>
+      </div>
+      <div id="chat-messages" class="chat-messages-container"></div>
+      <form id="chat-input-form" class="chat-input-bar">
+        <input id="chat-input" type="text" maxlength="120" placeholder="Press [Enter] to chat..." autocomplete="off" />
+        <button id="chat-btn-send" type="submit">Send</button>
+      </form>
+    </div>
+
     <button id="btn-inventory" title="Open Inventory (Hotkey: I)">
       🎒 INVENTORY [I]
     </button>

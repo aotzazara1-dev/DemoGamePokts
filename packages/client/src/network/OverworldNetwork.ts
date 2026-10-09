@@ -1,5 +1,12 @@
 import { Client, Room } from 'colyseus.js';
-import { type PortalTransitionPayload, type MoveMessagePayload, type HeroFullSaveState, type SyncHeroStatePayload } from '@poktsonline/shared';
+import {
+  type PortalTransitionPayload,
+  type MoveMessagePayload,
+  type HeroFullSaveState,
+  type SyncHeroStatePayload,
+  type ChatMessagePayload,
+  type SendChatMessagePayload
+} from '@poktsonline/shared';
 
 export interface PlayerNetData {
   id: string;
@@ -17,6 +24,7 @@ export type PlayerRemoveCallback = (sessionId: string) => void;
 export type EncounterCallback = (payload: { encounter: any; playerPosition: { x: number; y: number } }) => void;
 export type PortalTransitionCallback = (payload: PortalTransitionPayload) => void;
 export type HeroStateLoadedCallback = (payload: HeroFullSaveState) => void;
+export type ChatMessageCallback = (payload: ChatMessagePayload) => void;
 
 export class OverworldNetwork {
   private client?: Client;
@@ -24,6 +32,7 @@ export class OverworldNetwork {
   private encounterListeners: EncounterCallback[] = [];
   private portalTransitionListeners: PortalTransitionCallback[] = [];
   private heroStateLoadedListeners: HeroStateLoadedCallback[] = [];
+  private chatMessageListeners: ChatMessageCallback[] = [];
   private lastHeroStateLoaded?: HeroFullSaveState;
 
   public async connect(
@@ -64,6 +73,9 @@ export class OverworldNetwork {
       this.lastHeroStateLoaded = payload;
       this.heroStateLoadedListeners.forEach(cb => cb(payload));
     });
+    room.onMessage('chatMessage', (payload: ChatMessagePayload) => {
+      this.chatMessageListeners.forEach(cb => cb(payload));
+    });
   }
 
   public sendMove(targetX: number, targetY: number, mapId?: string) {
@@ -97,6 +109,15 @@ export class OverworldNetwork {
 
   public onPortalTransition(callback: PortalTransitionCallback) {
     this.portalTransitionListeners.push(callback);
+  }
+
+  public sendChatMessage(text: string, channel: 'map' | 'system' = 'map') {
+    if (!this.room) return;
+    this.room.send('sendChatMessage', { text, channel });
+  }
+
+  public onChatMessage(callback: ChatMessageCallback) {
+    this.chatMessageListeners.push(callback);
   }
 
   public getSessionId(): string | undefined {

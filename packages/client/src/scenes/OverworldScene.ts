@@ -32,7 +32,9 @@ import {
   DialogueModalController,
   ShopModalController,
   AuthModalController,
-  CharacterSelectModalController
+  CharacterSelectModalController,
+  MinimapController,
+  ChatController
 } from '../ui/index.js';
 import { AuthService } from '../auth/AuthService.js';
 import { HeroService } from '../auth/HeroService.js';
@@ -79,7 +81,12 @@ export class OverworldScene extends Phaser.Scene {
   private shopModal!: ShopModalController;
   private authModal!: AuthModalController;
   private charSelectModal!: CharacterSelectModalController;
+  private minimapController?: MinimapController;
+  private chatController?: ChatController;
+  private minimapUpdateTimer: number = 0;
+  private speechBubbles: Map<string, { container: Phaser.GameObjects.Container; timerEvent: Phaser.Time.TimerEvent }> = new Map();
   private activeHeroSummary: HeroSummary | null = null;
+  private playerFacing: Direction = 'down';
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
@@ -198,10 +205,25 @@ export class OverworldScene extends Phaser.Scene {
       // Restore HUD elements and buttons when returning to Overworld
       const uiOverlay = document.getElementById('ui-overlay');
       if (uiOverlay) uiOverlay.style.display = 'block';
+      this.minimapController?.setVisible(true);
+      this.chatController?.setVisible(true);
       this.rosterModal.setButtonVisible(true);
       this.characterModal.setButtonVisible(true);
       this.inventoryModal.setButtonVisible(true);
       this.debugToolbar.setVisible(true);
+
+      if (data?.expAwarded || data?.loot) {
+        const gold = data.loot?.gold || 0;
+        const exp = data.expAwarded || 0;
+        this.chatController?.addMessage({
+          id: `sys_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          senderId: 'SYSTEM',
+          senderName: 'System',
+          channel: 'system',
+          text: `⚔️ Victory! Gained ${exp} EXP and ${gold} Gold.`,
+          timestamp: Date.now()
+        });
+      }
 
       const zoneDisplay = document.getElementById('zone-display');
 
@@ -309,31 +331,35 @@ export class OverworldScene extends Phaser.Scene {
 
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.rosterModal.toggle();
       });
       this.input.keyboard.on('keydown-F', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.rosterModal.toggle();
       });
       this.input.keyboard.on('keydown-C', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.characterModal.toggle();
       });
       this.input.keyboard.on('keydown-I', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.inventoryModal.toggle();
       });
       this.input.keyboard.on('keydown-T', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.debugToolbar.toggle();
       });
       this.input.keyboard.on('keydown-BACKTICK', () => {
-        if (this.scene.isPaused()) return;
+        if (this.scene.isPaused() || this.chatController?.isChatInputFocused()) return;
         this.debugToolbar.toggle();
       });
       this.input.keyboard.on('keydown-ESC', () => {
         if (this.scene.isPaused()) return;
+        if (this.chatController?.isChatInputFocused()) {
+          this.chatController.blurInput();
+          return;
+        }
         this.rosterModal.close();
         this.characterModal.close();
         this.inventoryModal.close();
@@ -348,6 +374,7 @@ export class OverworldScene extends Phaser.Scene {
 
   public isAnyModalOpen(): boolean {
     return !!(
+      this.chatController?.isChatInputFocused() ||
       this.rosterModal?.isOpen() ||
       this.characterModal?.isOpen() ||
       this.inventoryModal?.isOpen() ||
@@ -1245,6 +1272,15 @@ export class OverworldScene extends Phaser.Scene {
       this.playerTile = { ...targetPosition };
 
       this.renderTilemap();
+      this.minimapController?.setMapConfig(this.mapConfig);
+      this.chatController?.addMessage({
+        id: `sys_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        senderId: 'SYSTEM',
+        senderName: 'System',
+        channel: 'system',
+        text: `🗺️ Entered ${this.mapConfig.name}`,
+        timestamp: Date.now()
+      });
 
       const screenPos = isoToScreen(
         this.playerTile.x,
@@ -1368,14 +1404,17 @@ export class OverworldScene extends Phaser.Scene {
         // Up-Right: Back-Diagonal
         heroImg.setTexture('hero_back_diag');
         heroImg.setFlipX(false);
+        this.playerFacing = 'up-right';
       } else if (screenDx < -8) {
         // Up-Left: Back-Diagonal (Flipped)
         heroImg.setTexture('hero_back_diag');
         heroImg.setFlipX(true);
+        this.playerFacing = 'up-left';
       } else {
         // Straight Up: Back View
         heroImg.setTexture('hero_back');
         heroImg.setFlipX(false);
+        this.playerFacing = 'up';
       }
     }
     // Moving downwards on screen -> Front Views
@@ -1384,14 +1423,17 @@ export class OverworldScene extends Phaser.Scene {
         // Down-Right: Front-Diagonal
         heroImg.setTexture('hero_sprite');
         heroImg.setFlipX(false);
+        this.playerFacing = 'down-right';
       } else if (screenDx < -8) {
         // Down-Left: Front-Diagonal (Flipped)
         heroImg.setTexture('hero_sprite');
         heroImg.setFlipX(true);
+        this.playerFacing = 'down-left';
       } else {
         // Straight Down: Front View
         heroImg.setTexture('hero_sprite');
         heroImg.setFlipX(false);
+        this.playerFacing = 'down';
       }
     }
     // Moving horizontally -> Side Views
@@ -1399,9 +1441,11 @@ export class OverworldScene extends Phaser.Scene {
       if (screenDx > 0) {
         heroImg.setTexture('hero_side');
         heroImg.setFlipX(false);
+        this.playerFacing = 'right';
       } else if (screenDx < 0) {
         heroImg.setTexture('hero_side');
         heroImg.setFlipX(true);
+        this.playerFacing = 'left';
       }
     }
   }
@@ -1671,6 +1715,12 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
+    this.minimapUpdateTimer += delta;
+    if (this.minimapUpdateTimer >= 150) {
+      this.minimapUpdateTimer = 0;
+      this.updateMinimap();
+    }
+
     if (this.isAnyModalOpen()) return;
 
     // 1. Mouse Hold-to-Move
@@ -1966,6 +2016,8 @@ export class OverworldScene extends Phaser.Scene {
     // Hide Overworld HUD and buttons during battle
     const uiOverlay = document.getElementById('ui-overlay');
     if (uiOverlay) uiOverlay.style.display = 'none';
+    this.minimapController?.setVisible(false);
+    this.chatController?.setVisible(false);
     this.rosterModal.setButtonVisible(false);
     this.characterModal.setButtonVisible(false);
     this.inventoryModal.setButtonVisible(false);
@@ -2148,6 +2200,7 @@ export class OverworldScene extends Phaser.Scene {
       {
         onHeroSelected: async (hero) => {
           this.activeHeroSummary = hero;
+          this.chatController?.setCurrentHeroName(hero.name);
           this.showToast(`⚔️ Playing as ${hero.name} Lv.${hero.level} [${hero.element}]!`, '#38bdf8');
           await this.connectToServer({
             heroId: hero.id,
@@ -2161,6 +2214,63 @@ export class OverworldScene extends Phaser.Scene {
         onClose: () => {}
       }
     );
+
+    // Setup Minimap Radar Controller
+    const minimapCanvas = document.getElementById('minimap-canvas') as HTMLCanvasElement;
+    if (minimapCanvas) {
+      this.minimapController = new MinimapController({
+        canvas: minimapCanvas,
+        mapNameEl: document.getElementById('minimap-map-name'),
+        coordsEl: document.getElementById('minimap-coords'),
+        containerEl: document.getElementById('minimap-container'),
+        onNavigate: (tileX, tileY) => {
+          if (this.isAnyModalOpen()) return;
+          this.navigateToTile(tileX, tileY);
+        }
+      });
+      this.minimapController.setMapConfig(this.mapConfig);
+    }
+
+    // Setup In-Game Chat System Controller
+    const chatOverlay = document.getElementById('chat-overlay');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+    if (chatOverlay && chatMessages && chatInput) {
+      this.chatController = new ChatController({
+        containerEl: chatOverlay,
+        messagesContainerEl: chatMessages,
+        inputEl: chatInput,
+        formEl: document.getElementById('chat-input-form') as HTMLFormElement,
+        tabAllBtn: document.getElementById('chat-tab-all') as HTMLButtonElement,
+        tabSystemBtn: document.getElementById('chat-tab-system') as HTMLButtonElement,
+        currentHeroName: this.roster.hero.name,
+        onSendMessage: (text, channel) => {
+          this.network.sendChatMessage(text, channel);
+        },
+        isGameModalOpen: () => {
+          return !!(
+            this.authModal?.isOpen() ||
+            this.charSelectModal?.isOpen() ||
+            this.dialogueModal?.isOpen() ||
+            this.shopModal?.isOpen()
+          );
+        }
+      });
+
+      this.network.onChatMessage((payload) => {
+        this.chatController?.addMessage(payload);
+        if (payload.channel === 'map') {
+          if (payload.senderId === this.network.getSessionId()) {
+            this.showSpeechBubble(this.playerContainer, payload.text);
+          } else {
+            const remote = this.otherPlayers.get(payload.senderId);
+            if (remote && remote.container.visible) {
+              this.showSpeechBubble(remote.container, payload.text);
+            }
+          }
+        }
+      });
+    }
   }
 
   private showToast(msg: string, color: string = '#6ee7b7'): void {
@@ -2169,5 +2279,117 @@ export class OverworldScene extends Phaser.Scene {
       zoneDisplay.innerText = msg;
       zoneDisplay.style.color = color;
     }
+  }
+
+  public navigateToTile(targetX: number, targetY: number): void {
+    if (this.isAnyModalOpen() || this.isTransitioning) return;
+    this.pendingNPCInteraction = null;
+    const path = findPath(this.playerTile, { x: targetX, y: targetY }, this.mapConfig);
+    if (path && path.length > 1) {
+      this.currentPath = path.slice(1);
+      this.showDestinationMarker(targetX, targetY);
+      if (!this.isMoving && this.currentPath.length > 0) {
+        const next = this.currentPath.shift()!;
+        this.attemptMove(next.x, next.y);
+      }
+    }
+  }
+
+  private updateMinimap(): void {
+    if (!this.minimapController) return;
+
+    const beasts: { x: number; y: number }[] = [];
+    this.roamingBeasts.forEach(b => {
+      if (b.container.visible) {
+        beasts.push({ x: b.tile.x, y: b.tile.y });
+      }
+    });
+
+    const otherPlayers: { x: number; y: number }[] = [];
+    this.otherPlayers.forEach(p => {
+      if (p.container.visible) {
+        otherPlayers.push({ x: p.tile.x, y: p.tile.y });
+      }
+    });
+
+    const npcs: { x: number; y: number }[] = (this.mapConfig.npcs || []).map(n => ({ x: n.position.x, y: n.position.y }));
+    const portals: { x: number; y: number }[] = (this.mapConfig.portals || []).map(p => ({ x: p.position.x, y: p.position.y }));
+
+    this.minimapController.updatePlayer(this.playerTile, this.playerFacing);
+    this.minimapController.render({
+      beasts,
+      otherPlayers,
+      npcs,
+      portals
+    });
+  }
+
+  private showSpeechBubble(targetContainer: Phaser.GameObjects.Container, text: string): void {
+    if (!targetContainer || !targetContainer.active) return;
+    const key = targetContainer === this.playerContainer ? 'player' : (targetContainer as any).name || `${targetContainer.x}_${targetContainer.y}`;
+    const existing = this.speechBubbles.get(key);
+    if (existing) {
+      existing.timerEvent.remove();
+      existing.container.destroy();
+      this.speechBubbles.delete(key);
+    }
+
+    const bubble = this.add.container(0, -68);
+
+    const displayStr = text.length > 36 ? text.slice(0, 34) + '...' : text;
+    const bubbleText = this.add.text(0, 0, displayStr, {
+      fontSize: '11px',
+      color: '#0f172a',
+      fontStyle: 'bold',
+      align: 'center',
+      wordWrap: { width: 140 }
+    }).setOrigin(0.5, 0.5);
+
+    const paddingX = 10;
+    const paddingY = 6;
+    const bw = Math.max(36, bubbleText.width + paddingX * 2);
+    const bh = Math.max(22, bubbleText.height + paddingY * 2);
+
+    const bg = this.add.graphics();
+    bg.fillStyle(0xffffff, 0.96);
+    bg.lineStyle(1.5, 0x0284c7, 1);
+    bg.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 6);
+    bg.strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, 6);
+
+    // Tail triangle pointing down to character's head
+    bg.beginPath();
+    bg.moveTo(-5, bh / 2);
+    bg.lineTo(0, bh / 2 + 6);
+    bg.lineTo(5, bh / 2);
+    bg.closePath();
+    bg.fillPath();
+    bg.strokePath();
+
+    bubble.add([bg, bubbleText]);
+    targetContainer.add(bubble);
+
+    // Pop-in animation
+    bubble.setScale(0.3);
+    this.tweens.add({
+      targets: bubble,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 160,
+      ease: 'Back.easeOut'
+    });
+
+    const timerEvent = this.time.delayedCall(4500, () => {
+      this.tweens.add({
+        targets: bubble,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => {
+          bubble.destroy();
+          this.speechBubbles.delete(key);
+        }
+      });
+    });
+
+    this.speechBubbles.set(key, { container: bubble, timerEvent });
   }
 }
