@@ -75,6 +75,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('combat_hero', '/assets/characters/hero_battle.png');
     this.createCombatantTextures();
   }
 
@@ -336,7 +337,8 @@ export class BattleScene extends Phaser.Scene {
     }
 
     // Name & Level
-    const nameText = this.add.text(0, -38, `${unit.name} Lv.${unit.level}`, {
+    const nameY = unit.isHero ? -44 : -38;
+    const nameText = this.add.text(0, nameY, `${unit.name} Lv.${unit.level}`, {
       fontSize: '10px',
       color: isAllies ? '#e2e8f0' : '#fca5a5',
       fontStyle: 'bold'

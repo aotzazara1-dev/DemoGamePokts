@@ -82,6 +82,8 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('hero_sprite', '/assets/characters/hero_overworld.png');
+    this.load.image('hero_avatar', '/assets/characters/hero_avatar.png');
     // Generate procedural pixel-art style textures if not present
     this.createProceduralTextures();
   }
@@ -946,9 +948,10 @@ export class OverworldScene extends Phaser.Scene {
     // Shadow
     this.playerShadow = this.add.ellipse(0, 0, 24, 12, 0x000000, 0.4);
     // Sprite
-    const sprite = this.add.image(0, -18, 'hero_sprite');
+    const sprite = this.add.image(0, -22, 'hero_sprite');
+    sprite.setName('hero_sprite_image');
     // Name Tag
-    const nameText = this.add.text(0, -36, 'You (Hero)', {
+    const nameText = this.add.text(0, -48, 'You (Hero)', {
       fontSize: '11px',
       color: '#38bdf8',
       stroke: '#000000',
@@ -1166,6 +1169,15 @@ export class OverworldScene extends Phaser.Scene {
     }
 
     const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
+
+    // Turn hero sprite towards moving direction
+    const stepDx = targetX - this.playerTile.x;
+    if (stepDx !== 0 && this.playerContainer) {
+      const heroImg = this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image;
+      if (heroImg) {
+        heroImg.setFlipX(stepDx < 0);
+      }
+    }
 
     // Send to authoritative server with active mapId for robust synchronization
     this.network.sendMove(targetX, targetY, this.mapConfig.id);
