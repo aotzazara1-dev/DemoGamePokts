@@ -52,4 +52,59 @@ describe('OverworldNetwork', () => {
 
     expect(onEncounterMock).toHaveBeenCalledWith(sampleEncounter);
   });
+
+  it('sends warpTown message to room', () => {
+    const mockRoom: any = {
+      send: vi.fn(),
+      onMessage: vi.fn(),
+      state: {
+        players: {
+          onAdd: vi.fn(),
+          onRemove: vi.fn()
+        }
+      }
+    };
+
+    const network = new OverworldNetwork();
+    network.setRoom(mockRoom);
+
+    network.sendWarpTown();
+    expect(mockRoom.send).toHaveBeenCalledWith('warpTown');
+  });
+
+  it('notifies portal transition listener when server dispatches portalTransition message', () => {
+    let portalCallback: ((payload: any) => void) | null = null;
+
+    const mockRoom: any = {
+      send: vi.fn(),
+      onMessage: vi.fn((type: string, cb: any) => {
+        if (type === 'portalTransition') {
+          portalCallback = cb;
+        }
+      }),
+      state: {
+        players: {
+          onAdd: vi.fn(),
+          onRemove: vi.fn()
+        }
+      }
+    };
+
+    const network = new OverworldNetwork();
+    network.setRoom(mockRoom);
+
+    const onPortalMock = vi.fn();
+    network.onPortalTransition(onPortalMock);
+
+    expect(portalCallback).toBeDefined();
+
+    const sampleTransition = {
+      targetMapId: 'pebble_cave',
+      targetPosition: { x: 2, y: 15 },
+      portalName: 'Entrance to Pebble Cave'
+    };
+    portalCallback!(sampleTransition);
+
+    expect(onPortalMock).toHaveBeenCalledWith(sampleTransition);
+  });
 });

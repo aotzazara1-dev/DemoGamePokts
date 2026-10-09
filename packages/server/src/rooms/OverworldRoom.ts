@@ -3,6 +3,7 @@ import { OverworldState, PlayerNetworkState } from '../schema/OverworldState.js'
 import {
   OverworldEngine,
   DEFAULT_OVERWORLD_MAP,
+  getMapConfig,
   type MapConfig,
   type Direction,
   type TileCoord,
@@ -52,9 +53,27 @@ export class OverworldRoom extends Room<OverworldState> {
         stepsInCurrentZone: stepsInZone
       };
 
-      const result = OverworldEngine.movePlayer(playerState, targetTile, this.mapConfig, this.rng);
+      const currentMapConfig = (this.mapConfig && this.mapConfig.id === player.mapId)
+        ? this.mapConfig
+        : getMapConfig(player.mapId);
+      const result = OverworldEngine.movePlayer(playerState, targetTile, currentMapConfig, this.rng);
 
       if (result.success) {
+        if (result.portalTriggered && result.portal) {
+          player.mapId = result.portal.targetMapId;
+          player.x = result.portal.targetPosition.x;
+          player.y = result.portal.targetPosition.y;
+          player.direction = 'down';
+          this.playerStepCounters.set(client.sessionId, 0);
+
+          client.send('portalTransition', {
+            targetMapId: result.portal.targetMapId,
+            targetPosition: result.portal.targetPosition,
+            portalName: result.portal.name
+          });
+          return;
+        }
+
         player.x = result.newPosition.x;
         player.y = result.newPosition.y;
         player.direction = determineDirection(currentPos, result.newPosition);
@@ -70,6 +89,23 @@ export class OverworldRoom extends Room<OverworldState> {
       }
     });
 
+    this.onMessage('warpTown', (client: Client) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player || player.inBattle) return;
+
+      player.mapId = 'novice_town_and_meadow';
+      player.x = 10;
+      player.y = 10;
+      player.direction = 'down';
+      this.playerStepCounters.set(client.sessionId, 0);
+
+      client.send('portalTransition', {
+        targetMapId: 'novice_town_and_meadow',
+        targetPosition: { x: 10, y: 10 },
+        portalName: 'Town Teleport'
+      });
+    });
+
     this.onMessage('battleConcluded', (client: Client) => {
       const player = this.state.players.get(client.sessionId);
       if (player) {
@@ -78,12 +114,13 @@ export class OverworldRoom extends Room<OverworldState> {
     });
   }
 
-  onJoin(client: Client, options: { name?: string; spawnTile?: TileCoord } = {}) {
+  onJoin(client: Client, options: { name?: string; spawnTile?: TileCoord; mapId?: string } = {}) {
     const spawnX = options.spawnTile?.x ?? 10;
     const spawnY = options.spawnTile?.y ?? 10;
     const playerName = options.name ?? `Player_${client.sessionId.slice(0, 4)}`;
+    const spawnMapId = options.mapId ?? 'novice_town_and_meadow';
 
-    const player = new PlayerNetworkState(client.sessionId, playerName, spawnX, spawnY, 'down');
+    const player = new PlayerNetworkState(client.sessionId, playerName, spawnX, spawnY, 'down', spawnMapId);
     this.state.players.set(client.sessionId, player);
     this.playerStepCounters.set(client.sessionId, 0);
   }

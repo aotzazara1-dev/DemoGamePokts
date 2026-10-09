@@ -3,6 +3,8 @@ import { OverworldNetwork, type PlayerNetData } from '../network/OverworldNetwor
 import { isoToScreen, screenToIso, getIsometricDepth } from '../utils/isometric.js';
 import {
   DEFAULT_OVERWORLD_MAP,
+  getMapConfig,
+  MAP_DATABASE,
   findPath,
   RosterManager,
   ProgressionEngine,
@@ -12,7 +14,8 @@ import {
   type Combatant,
   type PlayerRosterState,
   type InventoryState,
-  type LootReward
+  type LootReward,
+  type PortalDefinition
 } from '@poktsonline/shared';
 import {
   CharacterModalController,
@@ -33,7 +36,13 @@ export class OverworldScene extends Phaser.Scene {
   private playerContainer!: Phaser.GameObjects.Container;
   private playerShadow!: Phaser.GameObjects.Ellipse;
   private isMoving = false;
+  private isTransitioning = false;
   private moveCooldown = 0;
+
+  // Map element containers for multi-map switching
+  private mapTiles: Phaser.GameObjects.Image[] = [];
+  private mapObstacles: Phaser.GameObjects.Image[] = [];
+  private mapPortals: Phaser.GameObjects.Container[] = [];
 
   // Dual-mode movement state
   private currentPath: TileCoord[] = [];
@@ -75,6 +84,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // 2. Setup Hero
     this.createPlayerHero();
+    this.updateZoneHud();
 
     // 3. Setup Camera
     this.cameras.main.setBounds(0, 0, 3200, 2400);
@@ -293,6 +303,11 @@ export class OverworldScene extends Phaser.Scene {
       this.network.onEncounter((payload) => {
         this.triggerBattleTransition(payload);
       });
+
+      // Listen for multi-map portal transitions
+      this.network.onPortalTransition((payload) => {
+        this.transitionToMap(payload.targetMapId, payload.targetPosition, payload.portalName);
+      });
     } catch (err) {
       console.warn('[OverworldScene] Could not connect to authoritative server. Running offline exploration mode.', err);
     }
@@ -341,6 +356,63 @@ export class OverworldScene extends Phaser.Scene {
       g.destroy();
     }
 
+    // Cave Slate Floor Tile (Dark subterranean stone)
+    if (!this.textures.exists('tile_cave')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x1e293b, 1);
+      g.fillPoints([
+        new Phaser.Geom.Point(32, 0),
+        new Phaser.Geom.Point(64, 16),
+        new Phaser.Geom.Point(32, 32),
+        new Phaser.Geom.Point(0, 16)
+      ]);
+      g.lineStyle(1, 0x334155, 0.8);
+      g.strokePoints([
+        new Phaser.Geom.Point(32, 0),
+        new Phaser.Geom.Point(64, 16),
+        new Phaser.Geom.Point(32, 32),
+        new Phaser.Geom.Point(0, 16)
+      ], true);
+      g.generateTexture('tile_cave', 64, 32);
+      g.destroy();
+    }
+
+    // Forest Bamboo Moss Tile (Rich emerald green)
+    if (!this.textures.exists('tile_forest')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x064e3b, 1);
+      g.fillPoints([
+        new Phaser.Geom.Point(32, 0),
+        new Phaser.Geom.Point(64, 16),
+        new Phaser.Geom.Point(32, 32),
+        new Phaser.Geom.Point(0, 16)
+      ]);
+      g.lineStyle(1, 0x059669, 0.8);
+      g.strokePoints([
+        new Phaser.Geom.Point(32, 0),
+        new Phaser.Geom.Point(64, 16),
+        new Phaser.Geom.Point(32, 32),
+        new Phaser.Geom.Point(0, 16)
+      ], true);
+      g.generateTexture('tile_forest', 64, 32);
+      g.destroy();
+    }
+
+    // Portal Rune Texture (Pulsing mystical circle)
+    if (!this.textures.exists('portal_rune')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      // Outer ring
+      g.lineStyle(2, 0x38bdf8, 1);
+      g.strokeCircle(24, 24, 20);
+      // Inner circle glow
+      g.fillStyle(0x0284c7, 0.45);
+      g.fillCircle(24, 24, 16);
+      g.lineStyle(1, 0xa5f3fc, 0.9);
+      g.strokeCircle(24, 24, 10);
+      g.generateTexture('portal_rune', 48, 48);
+      g.destroy();
+    }
+
     // Obstacle Rock
     if (!this.textures.exists('obstacle_rock')) {
       const g = this.make.graphics({ x: 0, y: 0 });
@@ -381,16 +453,33 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private renderTilemap() {
+    // Clear previous map elements
+    this.mapTiles.forEach(t => t.destroy());
+    this.mapTiles = [];
+    this.mapObstacles.forEach(o => o.destroy());
+    this.mapObstacles = [];
+    this.mapPortals.forEach(p => p.destroy());
+    this.mapPortals = [];
+
     const map = this.mapConfig;
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        const isWild = x >= 21;
-        const textureKey = isWild ? 'tile_wild' : 'tile_safe';
+        let textureKey = 'tile_safe';
+        if (map.theme === 'cave') {
+          textureKey = 'tile_cave';
+        } else if (map.theme === 'forest') {
+          textureKey = 'tile_forest';
+        } else {
+          const isWild = x >= 21;
+          textureKey = isWild ? 'tile_wild' : 'tile_safe';
+        }
+
         const screenPos = isoToScreen(x, y, this.tileWidth, this.tileHeight, this.originX, this.originY);
 
         const tile = this.add.image(screenPos.x, screenPos.y, textureKey);
         tile.setOrigin(0.5, 0.5);
         tile.setDepth(getIsometricDepth(x, y, -100));
+        this.mapTiles.push(tile);
 
         // Check obstacles
         const isObstacle = map.obstacles.some(o => o.x === x && o.y === y);
@@ -398,8 +487,130 @@ export class OverworldScene extends Phaser.Scene {
           const rock = this.add.image(screenPos.x, screenPos.y - 12, 'obstacle_rock');
           rock.setOrigin(0.5, 0.5);
           rock.setDepth(getIsometricDepth(x, y, 10));
+          this.mapObstacles.push(rock);
         }
       }
+    }
+
+    // Render Portal Markers
+    if (map.portals && map.portals.length > 0) {
+      map.portals.forEach(portal => {
+        const screenPos = isoToScreen(
+          portal.position.x,
+          portal.position.y,
+          this.tileWidth,
+          this.tileHeight,
+          this.originX,
+          this.originY
+        );
+
+        const portalContainer = this.add.container(screenPos.x, screenPos.y);
+
+        // Glowing portal rune
+        const rune = this.add.image(0, 0, 'portal_rune');
+        rune.setOrigin(0.5, 0.5);
+
+        // Pulsing glow animation
+        this.tweens.add({
+          targets: rune,
+          scale: { from: 0.85, to: 1.15 },
+          alpha: { from: 0.7, to: 1.0 },
+          duration: 900,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        // Floating portal name banner
+        const nameLabel = this.add.text(0, -28, `🌀 ${portal.name}`, {
+          fontSize: '10px',
+          fontStyle: 'bold',
+          color: '#38bdf8',
+          stroke: '#0f172a',
+          strokeThickness: 3
+        }).setOrigin(0.5, 0.5);
+
+        portalContainer.add([rune, nameLabel]);
+        portalContainer.setDepth(getIsometricDepth(portal.position.x, portal.position.y, 40));
+        this.mapPortals.push(portalContainer);
+      });
+    }
+  }
+
+  public transitionToMap(targetMapId: string, targetPosition: TileCoord, portalName?: string) {
+    if (this.isTransitioning) return;
+    this.isTransitioning = true;
+    this.currentPath = [];
+    this.clearDestinationMarker();
+
+    this.cameras.main.fadeOut(250, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.mapConfig = getMapConfig(targetMapId);
+      this.playerTile = { ...targetPosition };
+
+      this.renderTilemap();
+
+      const screenPos = isoToScreen(
+        this.playerTile.x,
+        this.playerTile.y,
+        this.tileWidth,
+        this.tileHeight,
+        this.originX,
+        this.originY
+      );
+
+      if (this.playerContainer) {
+        this.playerContainer.setPosition(screenPos.x, screenPos.y);
+        this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
+      }
+
+      this.cameras.main.centerOn(screenPos.x, screenPos.y);
+      this.updateZoneHud();
+
+      // Filter remote players for the new map
+      const room = this.network.getRoom();
+      if (room) {
+        this.otherPlayers.forEach((other, sessionId) => {
+          const p = room.state.players.get(sessionId);
+          const isSameMap = p && (!p.mapId || p.mapId === this.mapConfig.id);
+          other.container.setVisible(!!isSameMap);
+        });
+      }
+
+      if (portalName) {
+        this.showToast(`✨ Entered ${this.mapConfig.name}!`, '#38bdf8');
+      }
+
+      this.cameras.main.fadeIn(250, 0, 0, 0);
+      this.cameras.main.once('camerafadeincomplete', () => {
+        this.isTransitioning = false;
+      });
+    });
+  }
+
+  private updateZoneHud() {
+    const zoneDisplay = document.getElementById('zone-display');
+    if (!zoneDisplay) return;
+
+    const zone = this.mapConfig.zones.find(
+      z =>
+        this.playerTile.x >= z.bounds.minX &&
+        this.playerTile.x <= z.bounds.maxX &&
+        this.playerTile.y >= z.bounds.minY &&
+        this.playerTile.y <= z.bounds.maxY
+    );
+
+    if (zone) {
+      if (zone.type === 'wild') {
+        zoneDisplay.innerText = `⚔️ ${this.mapConfig.name} - ${zone.name} (WILD - Encounter Risk!)`;
+        zoneDisplay.style.color = '#f87171';
+      } else {
+        zoneDisplay.innerText = `🏡 ${this.mapConfig.name} - ${zone.name} (Safe Zone)`;
+        zoneDisplay.style.color = '#6ee7b7';
+      }
+    } else {
+      zoneDisplay.innerText = `📍 ${this.mapConfig.name}`;
+      zoneDisplay.style.color = '#38bdf8';
     }
   }
 
@@ -432,6 +643,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private addOtherPlayer(sessionId: string, player: PlayerNetData) {
+    const isSameMap = !player.mapId || player.mapId === this.mapConfig.id;
     const screenPos = isoToScreen(player.x, player.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
     const container = this.add.container(screenPos.x, screenPos.y);
 
@@ -446,6 +658,7 @@ export class OverworldScene extends Phaser.Scene {
 
     container.add([shadow, sprite, nameText]);
     container.setDepth(getIsometricDepth(player.x, player.y, 100));
+    container.setVisible(isSameMap);
 
     this.otherPlayers.set(sessionId, { container, tile: { x: player.x, y: player.y } });
   }
@@ -453,6 +666,10 @@ export class OverworldScene extends Phaser.Scene {
   private updateOtherPlayer(sessionId: string, player: PlayerNetData) {
     const remote = this.otherPlayers.get(sessionId);
     if (!remote) return;
+
+    const isSameMap = !player.mapId || player.mapId === this.mapConfig.id;
+    remote.container.setVisible(isSameMap);
+    if (!isSameMap) return;
 
     const screenPos = isoToScreen(player.x, player.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
     this.tweens.add({
@@ -591,6 +808,8 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private attemptMove(targetX: number, targetY: number) {
+    if (this.isTransitioning) return;
+
     // Client-side quick boundary check
     if (targetX < 0 || targetX >= this.mapConfig.width || targetY < 0 || targetY >= this.mapConfig.height) {
       this.currentPath = [];
@@ -608,14 +827,19 @@ export class OverworldScene extends Phaser.Scene {
     this.isMoving = true;
     this.playerTile = { x: targetX, y: targetY };
 
-    // Update Zone HUD
-    const zoneDisplay = document.getElementById('zone-display');
-    if (zoneDisplay) {
-      const isWild = targetX >= 21;
-      zoneDisplay.innerText = isWild
-        ? '⚔️ Zone: Whispering Meadow (WILD - Encounter Risk!)'
-        : '🏡 Zone: Novice Town (Safe Zone)';
-      zoneDisplay.style.color = isWild ? '#f87171' : '#6ee7b7';
+    this.updateZoneHud();
+
+    // Check if stepping on a portal
+    const portal = this.mapConfig.portals?.find(p => p.position.x === targetX && p.position.y === targetY);
+    if (portal) {
+      this.currentPath = [];
+      this.clearDestinationMarker();
+
+      // If running offline exploration without server, transition directly
+      if (!this.network.getRoom()) {
+        this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
+        return;
+      }
     }
 
     const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -633,6 +857,8 @@ export class OverworldScene extends Phaser.Scene {
       onComplete: () => {
         this.isMoving = false;
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
+
+        if (portal) return;
 
         // Check if pointer is still being held down
         const pointer = this.input.activePointer;
@@ -735,10 +961,8 @@ export class OverworldScene extends Phaser.Scene {
         },
         onWarpTown: () => {
           this.inventoryModal.close();
-          this.playerTile = { x: 10, y: 10 };
-          const screenPos = isoToScreen(10, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
-          this.playerContainer.setPosition(screenPos.x, screenPos.y);
-          this.playerContainer.setDepth(getIsometricDepth(10, 10, 100));
+          this.network.sendWarpTown();
+          this.transitionToMap('novice_town_and_meadow', { x: 10, y: 10 }, 'Town Teleport');
           this.showToast('🏡 Teleported to Novice Town via Town Scroll!', '#6ee7b7');
         },
         onOpen: () => {

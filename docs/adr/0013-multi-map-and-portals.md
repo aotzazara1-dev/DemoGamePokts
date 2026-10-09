@@ -1,0 +1,3 @@
+# Multi-Map World Expansion and Portal Teleportation
+
+We decided to support multiple interconnected Maps across the Overworld (`novice_town_and_meadow`, `pebble_cave`, `bamboo_forest`). Each Map possesses distinct tile themes, boundary dimensions, obstacles, Zones with thematic wild Beast encounter pools, and Portal tiles. Stepping onto a Portal triggers an animated transition, teleporting the Hero to a predefined destination tile on the target Map without reconnecting sockets. The Colyseus OverworldRoom synchronizes a `mapId` attribute per player so that only players present on the same Map are rendered together. Town Scrolls unconditionally teleport the player back to Novice Town on the primary map.

@@ -115,3 +115,11 @@ _Avoid_: Money, coin, cash, credits
 **Loot Table**:
 The authoritative probability distribution mapping defeated wild enemies to rewarded Gold amounts and dropped items.
 _Avoid_: Drop rate, reward list, monster loot
+
+**Map**:
+A distinct bounded 2D isometric grid environment with its own layout of obstacles, aesthetic tiles, Zones, and Portals.
+_Avoid_: Stage, level, room, scene, world
+
+**Portal**:
+A designated interactive tile on the Overworld that teleports a Hero to a specified destination coordinate on another Map.
+_Avoid_: Warp gate, door, exit, teleport pad

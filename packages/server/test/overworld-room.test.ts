@@ -6,6 +6,9 @@ describe('OverworldRoom', () => {
   let room: OverworldRoom;
 
   const testMapConfig: MapConfig = {
+    id: 'novice_town_and_meadow',
+    name: 'Test Novice Meadow',
+    theme: 'meadow',
     width: 20,
     height: 20,
     obstacles: [{ x: 5, y: 4 }],
@@ -39,6 +42,15 @@ describe('OverworldRoom', () => {
             baseAgi: 14
           }
         ]
+      }
+    ],
+    portals: [
+      {
+        id: 'portal_test_to_cave',
+        position: { x: 5, y: 6 },
+        targetMapId: 'pebble_cave',
+        targetPosition: { x: 2, y: 15 },
+        name: 'Test Portal to Cave'
       }
     ]
   };
@@ -138,5 +150,48 @@ describe('OverworldRoom', () => {
 
     room.onLeave(client as any, false);
     expect(room.state.players.has('client_1')).toBe(false);
+  });
+
+  it('triggers portalTransition and teleports player to target map when stepping on portal tile', () => {
+    const client = createMockClient('client_1');
+    // Start adjacent to portal: portal is at (5, 6)
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
+
+    // Step onto portal tile (5, 6)
+    (room as any).onMessageHandlers['move'](client, { targetX: 5, targetY: 6 });
+
+    const player = room.state.players.get('client_1')!;
+    // Player should now be on target map 'pebble_cave' at (2, 15)
+    expect(player.mapId).toBe('pebble_cave');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+    expect(player.inBattle).toBe(false);
+
+    // Verify portalTransition message sent
+    const portalMsg = client.messages.find(m => m.type === 'portalTransition');
+    expect(portalMsg).toBeDefined();
+    expect(portalMsg?.payload.targetMapId).toBe('pebble_cave');
+    expect(portalMsg?.payload.targetPosition).toEqual({ x: 2, y: 15 });
+  });
+
+  it('teleports player back to Novice Town on warpTown message', () => {
+    const client = createMockClient('client_1');
+    // Start somewhere far in a cave
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 18, y: 18 }, mapId: 'pebble_cave' });
+
+    const player = room.state.players.get('client_1')!;
+    expect(player.mapId).toBe('pebble_cave');
+
+    // Trigger warpTown
+    (room as any).onMessageHandlers['warpTown'](client);
+
+    expect(player.mapId).toBe('novice_town_and_meadow');
+    expect(player.x).toBe(10);
+    expect(player.y).toBe(10);
+
+    const warpMsg = client.messages.find(m => m.type === 'portalTransition');
+    expect(warpMsg).toBeDefined();
+    expect(warpMsg?.payload.targetMapId).toBe('novice_town_and_meadow');
+    expect(warpMsg?.payload.targetPosition).toEqual({ x: 10, y: 10 });
   });
 });

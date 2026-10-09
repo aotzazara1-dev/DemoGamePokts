@@ -6,6 +6,7 @@ export interface PlayerNetData {
   x: number;
   y: number;
   direction: string;
+  mapId?: string;
   inBattle: boolean;
   onChange?: (changes?: any) => void;
 }
@@ -13,11 +14,17 @@ export interface PlayerNetData {
 export type PlayerCallback = (sessionId: string, player: PlayerNetData) => void;
 export type PlayerRemoveCallback = (sessionId: string) => void;
 export type EncounterCallback = (payload: { encounter: any; playerPosition: { x: number; y: number } }) => void;
+export type PortalTransitionCallback = (payload: {
+  targetMapId: string;
+  targetPosition: { x: number; y: number };
+  portalName: string;
+}) => void;
 
 export class OverworldNetwork {
   private client?: Client;
   private room?: Room;
   private encounterListeners: EncounterCallback[] = [];
+  private portalTransitionListeners: PortalTransitionCallback[] = [];
 
   public async connect(
     serverUrl: string = 'ws://localhost:2567',
@@ -38,6 +45,9 @@ export class OverworldNetwork {
     room.onMessage('encounter', (payload: any) => {
       this.encounterListeners.forEach(cb => cb(payload));
     });
+    room.onMessage('portalTransition', (payload: any) => {
+      this.portalTransitionListeners.forEach(cb => cb(payload));
+    });
   }
 
   public sendMove(targetX: number, targetY: number) {
@@ -50,8 +60,17 @@ export class OverworldNetwork {
     this.room.send('battleConcluded');
   }
 
+  public sendWarpTown() {
+    if (!this.room) return;
+    this.room.send('warpTown');
+  }
+
   public onEncounter(callback: EncounterCallback) {
     this.encounterListeners.push(callback);
+  }
+
+  public onPortalTransition(callback: PortalTransitionCallback) {
+    this.portalTransitionListeners.push(callback);
   }
 
   public getSessionId(): string | undefined {

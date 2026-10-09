@@ -140,11 +140,25 @@ export interface ZoneDefinition {
   encounterPool: EncounterPoolEntry[];
 }
 
+export interface PortalDefinition {
+  id: string;
+  position: TileCoord;
+  targetMapId: string;
+  targetPosition: TileCoord;
+  name: string;
+}
+
+export type MapTheme = 'meadow' | 'cave' | 'forest';
+
 export interface MapConfig {
+  id: string;
+  name: string;
+  theme: MapTheme;
   width: number;
   height: number;
   obstacles: TileCoord[];
   zones: ZoneDefinition[];
+  portals: PortalDefinition[];
 }
 
 export interface PlayerOverworldState {
@@ -164,6 +178,8 @@ export interface MovementResult {
     zoneId: string;
     wildEnemies: Combatant[];
   };
+  portalTriggered?: boolean;
+  portal?: PortalDefinition;
   reason?: 'out_of_bounds' | 'obstacle_blocked' | 'invalid_distance';
 }
 

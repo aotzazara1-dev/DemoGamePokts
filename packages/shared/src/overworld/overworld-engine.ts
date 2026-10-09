@@ -8,60 +8,9 @@ import {
   Element
 } from '../types.js';
 
-export const DEFAULT_OVERWORLD_MAP: MapConfig = {
-  width: 50,
-  height: 50,
-  obstacles: [
-    { x: 15, y: 15 },
-    { x: 15, y: 16 },
-    { x: 16, y: 15 }
-  ],
-  zones: [
-    {
-      id: 'novice_town',
-      name: 'Novice Town',
-      type: 'safe',
-      bounds: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
-      encounterRatePerStep: 0,
-      encounterPool: []
-    },
-    {
-      id: 'whispering_meadow',
-      name: 'Whispering Meadow',
-      type: 'wild',
-      bounds: { minX: 21, maxX: 49, minY: 0, maxY: 49 },
-      encounterRatePerStep: 0.15,
-      encounterPool: [
-        {
-          beastTemplateId: 'leaf_sprite',
-          name: 'Leaf Sprite',
-          element: Element.Wind,
-          baseLevel: 3,
-          levelVariance: 1,
-          weight: 1,
-          baseHp: 35,
-          baseSp: 15,
-          baseAtk: 12,
-          baseDef: 8,
-          baseAgi: 14
-        },
-        {
-          beastTemplateId: 'rock_boar',
-          name: 'Rock Boar',
-          element: Element.Earth,
-          baseLevel: 4,
-          levelVariance: 1,
-          weight: 1,
-          baseHp: 50,
-          baseSp: 10,
-          baseAtk: 16,
-          baseDef: 14,
-          baseAgi: 8
-        }
-      ]
-    }
-  ]
-};
+import { DEFAULT_OVERWORLD_MAP, MAP_DATABASE, getMapConfig } from './map-database.js';
+
+export { DEFAULT_OVERWORLD_MAP, MAP_DATABASE, getMapConfig };
 
 export class OverworldEngine {
   /**
@@ -133,7 +82,23 @@ export class OverworldEngine {
 
     const stepsInZone = state.stepsInCurrentZone + 1;
 
-    // 5. Evaluate wild encounter roll
+    // 5. Evaluate portal trigger
+    const portal = mapConfig.portals?.find(
+      p => p.position.x === targetTile.x && p.position.y === targetTile.y
+    );
+    if (portal) {
+      return {
+        success: true,
+        newPosition: { ...targetTile },
+        previousPosition: prevPos,
+        stepsInZone,
+        encounterTriggered: false,
+        portalTriggered: true,
+        portal
+      };
+    }
+
+    // 6. Evaluate wild encounter roll
     if (targetZone && targetZone.type === 'wild' && targetZone.encounterPool.length > 0) {
       const roll = rng();
       if (roll < targetZone.encounterRatePerStep) {

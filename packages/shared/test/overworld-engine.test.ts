@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   OverworldEngine,
+  MAP_DATABASE,
+  getMapConfig,
   Element,
   type MapConfig,
   type PlayerOverworldState,
-  type ZoneDefinition
+  type ZoneDefinition,
+  type PortalDefinition
 } from '../src/index.js';
 
 describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
@@ -143,6 +146,64 @@ describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
       expect(result.success).toBe(true);
       expect(result.encounterTriggered).toBe(false);
       expect(result.encounter).toBeUndefined();
+    });
+  });
+
+  describe('Multi-Map Database & Portals', () => {
+    it('contains all 3 interconnected maps with themes and dimensions', () => {
+      expect(MAP_DATABASE['novice_town_and_meadow']).toBeDefined();
+      expect(MAP_DATABASE['pebble_cave']).toBeDefined();
+      expect(MAP_DATABASE['bamboo_forest']).toBeDefined();
+
+      expect(MAP_DATABASE['novice_town_and_meadow'].theme).toBe('meadow');
+      expect(MAP_DATABASE['pebble_cave'].theme).toBe('cave');
+      expect(MAP_DATABASE['bamboo_forest'].theme).toBe('forest');
+    });
+
+    it('validates all portals link to existing target maps and coordinates within bounds', () => {
+      Object.values(MAP_DATABASE).forEach(map => {
+        expect(map.portals).toBeDefined();
+        map.portals.forEach(portal => {
+          expect(portal.id).toBeDefined();
+          expect(portal.name).toBeDefined();
+
+          // Target map must exist
+          const targetMap = MAP_DATABASE[portal.targetMapId];
+          expect(targetMap).toBeDefined();
+
+          // Target spawn coordinate must be within target map bounds
+          expect(portal.targetPosition.x).toBeGreaterThanOrEqual(0);
+          expect(portal.targetPosition.x).toBeLessThan(targetMap.width);
+          expect(portal.targetPosition.y).toBeGreaterThanOrEqual(0);
+          expect(portal.targetPosition.y).toBeLessThan(targetMap.height);
+
+          // Target spawn coordinate must not be an obstacle
+          const isObstacle = targetMap.obstacles.some(
+            o => o.x === portal.targetPosition.x && o.y === portal.targetPosition.y
+          );
+          expect(isObstacle).toBe(false);
+        });
+      });
+    });
+
+    it('falls back to default map when requesting unknown mapId', () => {
+      const fallback = getMapConfig('non_existent_map_id');
+      expect(fallback.id).toBe('novice_town_and_meadow');
+    });
+
+    it('detects and triggers a portal when stepping on a portal tile', () => {
+      const meadowMap = MAP_DATABASE['novice_town_and_meadow'];
+      const portal = meadowMap.portals.find(p => p.id === 'portal_meadow_to_cave')!;
+      expect(portal).toBeDefined();
+
+      // Stand 1 tile next to the portal (portal is at 35, 2)
+      const state = createPlayerState(35, 1, 0);
+      const result = OverworldEngine.movePlayer(state, { x: 35, y: 2 }, meadowMap, () => 0.0);
+
+      expect(result.success).toBe(true);
+      expect(result.portalTriggered).toBe(true);
+      expect(result.portal).toEqual(portal);
+      expect(result.encounterTriggered).toBe(false);
     });
   });
 });
