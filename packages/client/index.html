@@ -93,6 +93,91 @@
       </div>
     </div>
 
+    <!-- Character Select & Multi-Hero Modal Overlay -->
+    <div id="character-select-modal">
+      <div class="char-select-card">
+        <div class="char-select-topbar">
+          <div>
+            <h2 style="font-size: 18px; margin: 0; color: #38bdf8; font-weight: 800;">👥 SELECT YOUR HERO</h2>
+            <p style="font-size: 12px; margin: 4px 0 0; color: #94a3b8;">Choose a hero to enter the Overworld or create a new one (Up to 3 heroes)</p>
+          </div>
+          <button id="btn-char-select-link" class="btn-create-slot-hero" style="display: none; border-color: #f59e0b; color: #f59e0b;">
+            🔗 Link Guest Account
+          </button>
+        </div>
+
+        <div id="character-slots-grid" class="char-slots-grid">
+          <!-- Dynamically populated 3 slots -->
+        </div>
+
+        <!-- Submodal: Create Hero -->
+        <div id="create-hero-submodal" class="submodal-backdrop" style="display: none;">
+          <div class="submodal-content">
+            <h3 style="margin: 0; color: #38bdf8; font-size: 16px;">✨ CREATE NEW HERO</h3>
+            <p style="margin: 0; font-size: 12px; color: #94a3b8;">Select your martial name and starting elemental affinity:</p>
+
+            <div id="create-hero-error" class="auth-error-banner" style="display: none;"></div>
+
+            <form id="create-hero-form" style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="auth-input-group">
+                <label for="create-hero-name">Hero Name (ชื่อตัวละคร)</label>
+                <input id="create-hero-name" type="text" placeholder="3-16 characters" required />
+              </div>
+
+              <div class="auth-input-group">
+                <label>Starting Element & Beast (ธาตุประจำตัว & สัตว์เลี้ยงเริ่มต้น)</label>
+                <div class="element-choices-grid">
+                  <button type="button" class="element-choice-btn selected" data-element="Water">
+                    <span>💧 WATER (น้ำ)</span>
+                    <span class="element-choice-sub">Starter: Aqua Fin (Swift)</span>
+                  </button>
+                  <button type="button" class="element-choice-btn" data-element="Fire">
+                    <span>🔥 FIRE (ไฟ)</span>
+                    <span class="element-choice-sub">Starter: Flame Fox (ATK)</span>
+                  </button>
+                  <button type="button" class="element-choice-btn" data-element="Earth">
+                    <span>🌍 EARTH (ดิน)</span>
+                    <span class="element-choice-sub">Starter: Rock Boar (DEF/HP)</span>
+                  </button>
+                  <button type="button" class="element-choice-btn" data-element="Wind">
+                    <span>🌪️ WIND (ลม)</span>
+                    <span class="element-choice-sub">Starter: Gale Hawk (AGI)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="submodal-actions">
+                <button id="btn-cancel-create-hero" type="button" class="btn-submodal-cancel">Cancel</button>
+                <button id="btn-submit-create-hero" type="submit" class="btn-submodal-submit">Create Hero</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Submodal: Delete Hero Confirmation -->
+        <div id="delete-hero-submodal" class="submodal-backdrop" style="display: none;">
+          <div class="submodal-content">
+            <h3 style="margin: 0; color: #f87171; font-size: 16px;">⚠️ DELETE HERO</h3>
+            <p id="delete-hero-prompt" style="margin: 0; font-size: 12px; color: #cbd5e1;"></p>
+
+            <div id="delete-hero-error" class="auth-error-banner" style="display: none;"></div>
+
+            <form id="delete-hero-form" style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="auth-input-group">
+                <label for="delete-hero-confirm-name">Confirm Hero Name</label>
+                <input id="delete-hero-confirm-name" type="text" placeholder="Type hero name to confirm" required />
+              </div>
+
+              <div class="submodal-actions">
+                <button id="btn-cancel-delete-hero" type="button" class="btn-submodal-cancel">Cancel</button>
+                <button id="btn-submit-delete-hero" type="submit" class="btn-submodal-danger">Confirm Delete</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Character Status & Stat Points Modal Overlay -->
     <div id="character-modal">
       <div class="character-card">

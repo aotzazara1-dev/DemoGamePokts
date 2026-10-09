@@ -8,6 +8,7 @@ import { OverworldRoom, DEFAULT_OVERWORLD_MAP } from './rooms/OverworldRoom.js';
 import { BattleRoom } from './rooms/BattleRoom.js';
 import { DatabaseEngine, AccountRepository, HeroRepository } from './db/index.js';
 import { createAuthRouter } from './api/auth-routes.js';
+import { createHeroRouter } from './api/hero-routes.js';
 
 export * from './schema/OverworldState.js';
 export * from './schema/BattleState.js';
@@ -16,6 +17,7 @@ export * from './rooms/BattleRoom.js';
 export * from './db/index.js';
 export * from './auth/PasswordUtils.js';
 export * from './api/auth-routes.js';
+export * from './api/hero-routes.js';
 
 const port = Number(process.env.PORT) || 2567;
 
@@ -35,6 +37,7 @@ export async function createServer(options: { dbEngine?: DatabaseEngine; dbPath?
   const heroRepo = new HeroRepository(dbEngine);
 
   app.use('/api/auth', createAuthRouter(accountRepo));
+  app.use('/api/heroes', createHeroRouter(accountRepo, heroRepo));
 
   const httpServer = http.createServer(app);
   const gameServer = new Server({

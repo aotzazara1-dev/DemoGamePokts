@@ -5,4 +5,5 @@ export * from './DebugToolbarController.js';
 export * from './DialogueModalController.js';
 export * from './ShopModalController.js';
 export * from './AuthModalController.js';
+export * from './CharacterSelectModalController.js';
 

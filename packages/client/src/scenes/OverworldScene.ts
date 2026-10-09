@@ -20,7 +20,8 @@ import {
   type InventoryState,
   type LootReward,
   type PortalDefinition,
-  type NPCDefinition
+  type NPCDefinition,
+  type HeroSummary
 } from '@poktsonline/shared';
 import {
   CharacterModalController,
@@ -29,9 +30,11 @@ import {
   DebugToolbarController,
   DialogueModalController,
   ShopModalController,
-  AuthModalController
+  AuthModalController,
+  CharacterSelectModalController
 } from '../ui/index.js';
 import { AuthService } from '../auth/AuthService.js';
+import { HeroService } from '../auth/HeroService.js';
 
 export class OverworldScene extends Phaser.Scene {
   private network!: OverworldNetwork;
@@ -74,6 +77,8 @@ export class OverworldScene extends Phaser.Scene {
   private dialogueModal!: DialogueModalController;
   private shopModal!: ShopModalController;
   private authModal!: AuthModalController;
+  private charSelectModal!: CharacterSelectModalController;
+  private activeHeroSummary: HeroSummary | null = null;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
@@ -290,6 +295,14 @@ export class OverworldScene extends Phaser.Scene {
     // 7. Setup Beast Roster & Formation button, Character Profile, Inventory, QA Debug Toolbar
     this.setupUIControllers();
 
+    // 8. Auth & Character Selection Initial Flow
+    const authService = AuthService.getInstance();
+    if (!authService.getToken()) {
+      this.authModal.open('login');
+    } else {
+      this.charSelectModal.open();
+    }
+
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => {
         if (this.scene.isPaused()) return;
@@ -324,6 +337,7 @@ export class OverworldScene extends Phaser.Scene {
         this.dialogueModal?.close();
         this.shopModal?.close();
         this.authModal?.close();
+        this.charSelectModal?.close();
       });
     }
   }
@@ -336,7 +350,8 @@ export class OverworldScene extends Phaser.Scene {
       this.debugToolbar?.isOpen() ||
       this.dialogueModal?.isOpen() ||
       this.shopModal?.isOpen() ||
-      this.authModal?.isOpen()
+      this.authModal?.isOpen() ||
+      this.charSelectModal?.isOpen()
     );
   }
 
@@ -2064,9 +2079,38 @@ export class OverworldScene extends Phaser.Scene {
     this.authModal = new AuthModalController(AuthService.getInstance(), {
       onAuthenticated: (account) => {
         this.showToast(`🎉 Logged in as ${account.username || 'Guest'}!`, '#38bdf8');
+        this.charSelectModal.open();
       },
       onClose: () => {}
     });
+
+    this.charSelectModal = new CharacterSelectModalController(
+      HeroService.getInstance(),
+      AuthService.getInstance(),
+      {
+        onHeroSelected: (hero) => {
+          this.activeHeroSummary = hero;
+          this.showToast(`⚔️ Playing as ${hero.name} Lv.${hero.level} [${hero.element}]!`, '#38bdf8');
+          if (hero.mapId && hero.mapId !== this.mapConfig.id) {
+            this.transitionToMap(hero.mapId, { x: hero.x, y: hero.y }, `Teleported to ${hero.mapId}`);
+          } else {
+            this.playerTile = { x: hero.x, y: hero.y };
+            const screenPos = isoToScreen(hero.x, hero.y, this.originX, this.originY, this.tileWidth, this.tileHeight);
+            this.playerContainer.setPosition(screenPos.x, screenPos.y);
+            this.playerContainer.setDepth(getIsometricDepth(hero.x, hero.y, 100));
+          }
+          this.roster.hero.name = hero.name;
+          this.roster.hero.element = hero.element;
+          this.roster.hero.level = hero.level;
+          this.characterModal.setHero(this.roster.hero);
+          this.characterModal.updateHeroStatusBar();
+        },
+        onOpenLinkAccount: () => {
+          this.authModal.open('link');
+        },
+        onClose: () => {}
+      }
+    );
   }
 
   private showToast(msg: string, color: string = '#6ee7b7'): void {
