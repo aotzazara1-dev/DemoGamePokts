@@ -15,6 +15,9 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 export const game = new Phaser.Game(config);
+if ((import.meta as any).env?.DEV || typeof window !== 'undefined') {
+  (window as any).__PHASER_GAME__ = game;
+}
 
 // Setup Header Sound Toggle Button
 const soundBtn = document.getElementById('header-btn-sound');

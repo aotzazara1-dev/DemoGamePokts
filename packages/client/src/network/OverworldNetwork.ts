@@ -24,6 +24,7 @@ export class OverworldNetwork {
   private encounterListeners: EncounterCallback[] = [];
   private portalTransitionListeners: PortalTransitionCallback[] = [];
   private heroStateLoadedListeners: HeroStateLoadedCallback[] = [];
+  private lastHeroStateLoaded?: HeroFullSaveState;
 
   public async connect(
     serverUrl: string = 'ws://localhost:2567',
@@ -47,6 +48,9 @@ export class OverworldNetwork {
 
   public onHeroStateLoaded(cb: HeroStateLoadedCallback) {
     this.heroStateLoadedListeners.push(cb);
+    if (this.lastHeroStateLoaded) {
+      cb(this.lastHeroStateLoaded);
+    }
   }
 
   private setupRoomListeners(room: Room) {
@@ -57,6 +61,7 @@ export class OverworldNetwork {
       this.portalTransitionListeners.forEach(cb => cb(payload));
     });
     room.onMessage('heroStateLoaded', (payload: any) => {
+      this.lastHeroStateLoaded = payload;
       this.heroStateLoadedListeners.forEach(cb => cb(payload));
     });
   }

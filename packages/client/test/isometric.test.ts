@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isoToScreen, screenToIso, getIsometricDepth } from '../src/utils/isometric.js';
+import { isoToScreen, screenToIso, getIsometricDepth, IsometricGrid } from '../src/utils/isometric.js';
 
 describe('Isometric Coordinate Math', () => {
   const TILE_WIDTH = 64;
@@ -94,5 +94,26 @@ describe('Isometric Coordinate Math', () => {
     expect(Math.round(bannerClick.tileY)).toBe(14);
     expect(Math.round(bannerClick.tileX)).not.toBe(portalTile.x);
   });
+
+  it('provides safe named method projections via IsometricGrid', () => {
+    const grid = new IsometricGrid({
+      tileWidth: TILE_WIDTH,
+      tileHeight: TILE_HEIGHT,
+      originX: ORIGIN_X,
+      originY: ORIGIN_Y
+    });
+
+    const screen = grid.toScreen(10, 10);
+    expect(screen.x).toBe(ORIGIN_X);
+    expect(screen.y).toBe(ORIGIN_Y + 320);
+
+    const iso = grid.toIso(screen.x, screen.y);
+    expect(Math.round(iso.tileX)).toBe(10);
+    expect(Math.round(iso.tileY)).toBe(10);
+
+    const depth = grid.getDepth(10, 10, 100);
+    expect(depth).toBe(20100);
+  });
 });
+
 

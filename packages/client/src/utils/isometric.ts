@@ -17,6 +17,7 @@ export interface IsometricConfig {
 
 /**
  * Projects a 2D grid tile coordinate to a 2.5D isometric screen position (standard 2:1 diamond projection).
+ * @deprecated Prefer passing `IsometricConfig` object or using `IsometricGrid` to prevent positional argument swap bugs.
  */
 export function isoToScreen(
   tileX: number,
@@ -121,3 +122,24 @@ export function screenToIso(
 export function getIsometricDepth(tileX: number, tileY: number, subLayer: number = 0): number {
   return (tileX + tileY) * 1000 + subLayer;
 }
+
+/**
+ * Stateful helper encapsulating isometric projection parameters,
+ * eliminating repeated positional argument passing and parameter swap bugs.
+ */
+export class IsometricGrid {
+  constructor(public readonly config: IsometricConfig) {}
+
+  public toScreen(tileX: number, tileY: number): ScreenCoord {
+    return isoToScreen(tileX, tileY, this.config);
+  }
+
+  public toIso(screenX: number, screenY: number): IsoTileCoord {
+    return screenToIso(screenX, screenY, this.config);
+  }
+
+  public getDepth(tileX: number, tileY: number, subLayer: number = 0): number {
+    return getIsometricDepth(tileX, tileY, subLayer);
+  }
+}
+

@@ -406,9 +406,10 @@ export class OverworldScene extends Phaser.Scene {
           this.transitionToMap(state.mapId, { x: state.x, y: state.y }, `Loaded ${state.hero.name}`);
         } else if (state.x !== undefined && state.y !== undefined) {
           this.playerTile = { x: state.x, y: state.y };
-          const screenPos = isoToScreen(state.x, state.y, this.originX, this.originY, this.tileWidth, this.tileHeight);
+          const screenPos = isoToScreen(state.x, state.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
           this.playerContainer.setPosition(screenPos.x, screenPos.y);
           this.playerContainer.setDepth(getIsometricDepth(state.x, state.y, 100));
+          this.cameras.main.centerOn(screenPos.x, screenPos.y);
         }
       });
 
