@@ -8,7 +8,8 @@ import { type BattleState, type CombatActionType } from '@poktsonline/shared';
 export function getValidTargets(
   actionType: CombatActionType,
   actorTeam: 'allies' | 'enemies',
-  battleState: BattleState
+  battleState: BattleState,
+  itemType?: string
 ): string[] {
   const opposingTeamKey = actorTeam === 'allies' ? 'enemies' : 'allies';
   const opposingTeam = battleState[opposingTeamKey];
@@ -42,6 +43,25 @@ export function getValidTargets(
       if (frontUnit && frontUnit.hp > 0) validIds.push(frontUnit.id);
       if (backUnit && backUnit.hp > 0) validIds.push(backUnit.id);
     }
+  }
+
+  if (actionType === 'item') {
+    const friendlyTeam = battleState[actorTeam];
+    for (let c = 0; c < 5; c++) {
+      const frontUnit = friendlyTeam.front[c];
+      const backUnit = friendlyTeam.back[c];
+      if (frontUnit) {
+        if (itemType === 'revive' ? frontUnit.hp <= 0 : frontUnit.hp > 0) {
+          validIds.push(frontUnit.id);
+        }
+      }
+      if (backUnit) {
+        if (itemType === 'revive' ? backUnit.hp <= 0 : backUnit.hp > 0) {
+          validIds.push(backUnit.id);
+        }
+      }
+    }
+    return validIds;
   }
 
   return validIds;

@@ -3,12 +3,15 @@ import {
   PlayerRosterState,
   Element,
   RosterManager,
-  ProgressionEngine
+  ProgressionEngine,
+  InventoryManager,
+  type InventoryState
 } from '@poktsonline/shared';
 
 export interface DebugToolbarCallbacks {
   onHeroUpdated: (hero: Combatant) => void;
   onRosterUpdated: (roster: PlayerRosterState) => void;
+  onInventoryUpdated?: (inventory: InventoryState) => void;
   onInstantBattle: (encounter: any) => void;
   onWarp: (tile: { x: number; y: number }, toastMsg: string, color?: string) => void;
   onShowToast: (msg: string, color?: string) => void;
@@ -16,21 +19,24 @@ export interface DebugToolbarCallbacks {
 
 /**
  * Deep UI Controller for Developer QA Toolbar.
- * Encapsulates all developer testing cheats (EXP, level up, heal, hurt, beast spawner, warp, battle trigger).
+ * Encapsulates all developer testing cheats (EXP, level up, heal, hurt, beast spawner, inventory, warp, battle trigger).
  */
 export class DebugToolbarController {
   private getHero: () => Combatant;
   private getRoster: () => PlayerRosterState;
+  private getInventory?: () => InventoryState;
   private callbacks: DebugToolbarCallbacks;
 
   constructor(
     getHero: () => Combatant,
     getRoster: () => PlayerRosterState,
-    callbacks: DebugToolbarCallbacks
+    callbacks: DebugToolbarCallbacks,
+    getInventory?: () => InventoryState
   ) {
     this.getHero = getHero;
     this.getRoster = getRoster;
     this.callbacks = callbacks;
+    this.getInventory = getInventory;
     this.setupDOM();
   }
 
@@ -251,6 +257,63 @@ export class DebugToolbarController {
     if (btnWarpMeadow) {
       btnWarpMeadow.onclick = () => {
         this.callbacks.onWarp({ x: 23, y: 10 }, '🌾 Teleported to Whispering Meadow (Wild Encounter Zone)', '#f59e0b');
+      };
+    }
+
+    // 11. Inventory & Gold Cheats
+    const btnBuns = document.getElementById('dbg-item-buns');
+    if (btnBuns) {
+      btnBuns.onclick = () => {
+        if (!this.getInventory) return;
+        const inv = this.getInventory();
+        const res = InventoryManager.addItem(inv, 'item_steamed_bun', 5);
+        if (res.success) {
+          this.callbacks.onInventoryUpdated?.(res.inventory);
+          this.callbacks.onShowToast('🥟 Added +5 Steamed Buns to Bag!', '#38bdf8');
+        } else {
+          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+        }
+      };
+    }
+
+    const btnTea = document.getElementById('dbg-item-tea');
+    if (btnTea) {
+      btnTea.onclick = () => {
+        if (!this.getInventory) return;
+        const inv = this.getInventory();
+        const res = InventoryManager.addItem(inv, 'item_herbal_tea', 5);
+        if (res.success) {
+          this.callbacks.onInventoryUpdated?.(res.inventory);
+          this.callbacks.onShowToast('🍵 Added +5 Herbal Tea to Bag!', '#38bdf8');
+        } else {
+          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+        }
+      };
+    }
+
+    const btnFeather = document.getElementById('dbg-item-feather');
+    if (btnFeather) {
+      btnFeather.onclick = () => {
+        if (!this.getInventory) return;
+        const inv = this.getInventory();
+        const res = InventoryManager.addItem(inv, 'item_phoenix_feather', 1);
+        if (res.success) {
+          this.callbacks.onInventoryUpdated?.(res.inventory);
+          this.callbacks.onShowToast('🪶 Added +1 Phoenix Feather to Bag!', '#fbbf24');
+        } else {
+          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+        }
+      };
+    }
+
+    const btnGold = document.getElementById('dbg-add-gold');
+    if (btnGold) {
+      btnGold.onclick = () => {
+        if (!this.getInventory) return;
+        const inv = this.getInventory();
+        const updated = InventoryManager.addGold(inv, 1000);
+        this.callbacks.onInventoryUpdated?.(updated);
+        this.callbacks.onShowToast(`🪙 Added +1,000 Gold! Total: ${updated.gold.toLocaleString()} G`, '#fbbf24');
       };
     }
   }

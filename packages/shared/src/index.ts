@@ -6,3 +6,6 @@ export * from './overworld/pathfinding.js';
 export * from './roster/roster-manager.js';
 export * from './progression/progression-engine.js';
 export * from './data/skills.js';
+export * from './inventory/item-database.js';
+export * from './inventory/inventory-manager.js';
+export * from './inventory/loot-engine.js';

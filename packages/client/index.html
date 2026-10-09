@@ -20,6 +20,8 @@
       <span class="ctrl-sep">&bull;</span>
       <span>📊 <kbd>C</kbd> Status</span>
       <span class="ctrl-sep">&bull;</span>
+      <span>🎒 <kbd>I</kbd> Bag</span>
+      <span class="ctrl-sep">&bull;</span>
       <span>🛠️ <kbd>~</kbd> QA Debug</span>
     </div>
   </header>
@@ -32,8 +34,14 @@
         <button id="btn-character-status" title="Open Character Status (Hotkey: C)" style="background: #2563eb; color: #fff; border: 1px solid #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
           📊 Status [C]
         </button>
+        <button id="btn-quick-bag" title="Open Inventory Bag (Hotkey: I)" style="background: #0284c7; color: #fff; border: 1px solid #38bdf8; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
+          🎒 Bag [I]
+        </button>
       </div>
     </div>
+    <button id="btn-inventory" title="Open Inventory (Hotkey: I)">
+      🎒 BAG [I]
+    </button>
     <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
       🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
     </button>
@@ -160,6 +168,86 @@
       </div>
     </div>
 
+    <!-- Inventory & Item Consumption Modal Overlay -->
+    <div id="inventory-modal">
+      <div class="inventory-card">
+        <div class="inventory-header">
+          <div class="inventory-header-titles">
+            <h2>🎒 กระเป๋าสัมภาระ (INVENTORY)</h2>
+            <p>จัดการไอเทมยา เสบียง และใบวาร์ป (ความจุ 20 ช่อง)</p>
+          </div>
+          <button id="btn-close-inv-modal" class="btn-close-modal" title="Close (Hotkey: Esc or I)">✕ Close</button>
+        </div>
+
+        <div class="inventory-body">
+          <!-- Left Column: 20-Slot Grid -->
+          <div class="inventory-grid-wrap">
+            <div class="inventory-grid-title">
+              <span id="inv-capacity-header">SLOTS (3 / 20)</span>
+              <span>คลิกที่ช่องเพื่อดูไอเทม</span>
+            </div>
+            <div id="inv-grid-container" class="inventory-grid">
+              <!-- Dynamically populated 20 slots -->
+            </div>
+            <div class="inventory-gold-bar">
+              <span>🪙 เหรียญทอง (GOLD)</span>
+              <span id="inv-gold-val" class="inventory-gold-val">200 Gold</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Item Inspector -->
+          <div class="inv-inspector">
+            <div id="inv-inspector-empty" class="inv-inspector-empty">
+              <div style="font-size: 32px;">🎒</div>
+              <div>เลือกไอเทมในกระเป๋าเพื่อดูรายละเอียดและใช้งาน</div>
+            </div>
+
+            <div id="inv-inspector-details" class="inv-inspector-details" style="display: none;">
+              <div class="inv-item-hero-row">
+                <div id="inv-detail-icon" class="inv-inspector-icon">🥟</div>
+                <div>
+                  <div id="inv-detail-name" class="inv-item-name">Steamed Bun</div>
+                  <span id="inv-detail-badge" class="inv-item-type-badge badge-hp-restore">HP Restore (+80)</span>
+                </div>
+              </div>
+
+              <div id="inv-detail-desc" class="inv-item-desc">
+                A hot, freshly steamed bun that restores 80 HP to a single ally.
+              </div>
+
+              <div class="inv-item-meta">
+                <span>ราคาขาย: <b id="inv-detail-price" style="color: #fbbf24;">20 G</b></span>
+                <span>จำนวนที่มี: <b id="inv-detail-qty" style="color: #38bdf8;">x5</b></span>
+              </div>
+
+              <div class="inv-target-section">
+                <div class="inv-target-title">เลือกเป้าหมายที่จะใช้:</div>
+                <div class="inv-action-row">
+                  <button id="btn-use-item-hero" class="btn-inv-use">
+                    🧙 ใช้กับ Hero (<span id="inv-hero-hp-label">120/120 HP</span>)
+                  </button>
+                  <button id="btn-use-item-beast" class="btn-inv-use">
+                    🦁 ใช้กับ Active Beast (<span id="inv-beast-hp-label">60/60 HP</span>)
+                  </button>
+                  <button id="btn-drop-item" class="btn-inv-drop">
+                    🗑️ ทิ้งไอเทม 1 ชิ้น (Drop 1)
+                  </button>
+                </div>
+              </div>
+
+              <div id="inv-feedback-msg" class="inv-feedback-msg"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roster-footer">
+          <button id="btn-close-inv-bottom" class="btn-confirm-formation">
+            ✔️ เรียบร้อย (Done)
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Beast Roster & Formation Grid Modal Overlay -->
     <div id="roster-modal">
       <div class="roster-card">
@@ -263,6 +351,14 @@
           <button id="dbg-add-wind-beast" class="btn-dbg">+Gale Hawk (🌪️)</button>
           <button id="dbg-add-earth-beast" class="btn-dbg">+Rock Boar (🌍)</button>
           <button id="dbg-add-water-beast" class="btn-dbg">+Aqua Serpent (💧)</button>
+        </div>
+
+        <div class="debug-section-title">🎒 INVENTORY & GOLD</div>
+        <div class="debug-btn-grid">
+          <button id="dbg-item-buns" class="btn-dbg">+5 ซาลาเปา (Buns)</button>
+          <button id="dbg-item-tea" class="btn-dbg">+5 ชาสมุนไพร (Tea)</button>
+          <button id="dbg-item-feather" class="btn-dbg">+1 ขนนกฟีนิกซ์</button>
+          <button id="dbg-add-gold" class="btn-dbg" style="background: #d97706;">+1,000 เหรียญทอง</button>
         </div>
 
         <div class="debug-section-title">⚔️ ENCOUNTER & TELEPORT</div>

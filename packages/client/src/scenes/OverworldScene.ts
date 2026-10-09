@@ -6,14 +6,18 @@ import {
   findPath,
   RosterManager,
   ProgressionEngine,
+  InventoryManager,
   type MapConfig,
   type TileCoord,
   type Combatant,
-  type PlayerRosterState
+  type PlayerRosterState,
+  type InventoryState,
+  type LootReward
 } from '@poktsonline/shared';
 import {
   CharacterModalController,
   RosterModalController,
+  InventoryModalController,
   DebugToolbarController
 } from '../ui/index.js';
 
@@ -39,9 +43,13 @@ export class OverworldScene extends Phaser.Scene {
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
 
+  // Inventory state (20-slot TS Online inventory & Gold)
+  private inventory: InventoryState = InventoryManager.createInitialInventory();
+
   // Deep UI Controllers
   private rosterModal!: RosterModalController;
   private characterModal!: CharacterModalController;
+  private inventoryModal!: InventoryModalController;
   private debugToolbar!: DebugToolbarController;
 
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
@@ -86,7 +94,7 @@ export class OverworldScene extends Phaser.Scene {
 
     // Click to move (Single-click Pathfinding / Hold-to-walk start)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.rosterModal?.isOpen() || this.characterModal?.isOpen()) return;
+      if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
       this.pointerDownTime = this.time.now;
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const isoCoord = screenToIso(worldPoint.x, worldPoint.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
@@ -110,13 +118,15 @@ export class OverworldScene extends Phaser.Scene {
     // 5. Connect to Colyseus Server
     this.connectToServer();
 
-    // 6. Handle returning from battle (including defeat respawn & captured beasts)
+    // 6. Handle returning from battle (including defeat respawn, captured beasts & monster loot)
     this.events.on('resume', (_sys: any, data?: {
       respawnTile?: TileCoord;
       capturedBeasts?: Combatant[];
       expAwarded?: number;
       levelUps?: any[];
       updatedAllies?: Combatant[];
+      inventory?: InventoryState;
+      loot?: LootReward;
     }) => {
       this.currentPath = [];
       this.clearDestinationMarker();
@@ -127,6 +137,7 @@ export class OverworldScene extends Phaser.Scene {
       if (uiOverlay) uiOverlay.style.display = 'block';
       this.rosterModal.setButtonVisible(true);
       this.characterModal.setButtonVisible(true);
+      this.inventoryModal.setButtonVisible(true);
       this.debugToolbar.setVisible(true);
 
       const zoneDisplay = document.getElementById('zone-display');
@@ -153,6 +164,25 @@ export class OverworldScene extends Phaser.Scene {
           const idx = this.roster.beasts.findIndex(b => b.id === activeBeast.id);
           if (idx !== -1) this.roster.beasts[idx] = progBeast.combatant;
         }
+      }
+
+      // Sync loot drop (Gold + Items)
+      if (data?.loot) {
+        if (data.loot.gold > 0) {
+          this.inventory = InventoryManager.addGold(this.inventory, data.loot.gold);
+        }
+        if (data.loot.droppedItems && data.loot.droppedItems.length > 0) {
+          data.loot.droppedItems.forEach(drop => {
+            const addRes = InventoryManager.addItem(this.inventory, drop.itemId, drop.quantity);
+            if (addRes.success) {
+              this.inventory = addRes.inventory;
+            }
+          });
+        }
+        this.inventoryModal.setInventory(this.inventory);
+      } else if (data?.inventory) {
+        this.inventory = data.inventory;
+        this.inventoryModal.setInventory(this.inventory);
       }
 
       if (data?.levelUps && data.levelUps.length > 0 && zoneDisplay) {
@@ -188,11 +218,14 @@ export class OverworldScene extends Phaser.Scene {
         }
       }
 
+      const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
       this.rosterModal.setRoster(this.roster);
       this.characterModal.setHero(this.roster.hero);
+      this.inventoryModal.setHero(this.roster.hero);
+      this.inventoryModal.setActiveBeast(activeBeast);
     });
 
-    // 7. Setup Beast Roster & Formation button, Character Profile, QA Debug Toolbar
+    // 7. Setup Beast Roster & Formation button, Character Profile, Inventory Bag, QA Debug Toolbar
     this.setupUIControllers();
 
     if (this.input.keyboard) {
@@ -208,6 +241,10 @@ export class OverworldScene extends Phaser.Scene {
         if (this.scene.isPaused()) return;
         this.characterModal.toggle();
       });
+      this.input.keyboard.on('keydown-I', () => {
+        if (this.scene.isPaused()) return;
+        this.inventoryModal.toggle();
+      });
       this.input.keyboard.on('keydown-T', () => {
         if (this.scene.isPaused()) return;
         this.debugToolbar.toggle();
@@ -220,6 +257,7 @@ export class OverworldScene extends Phaser.Scene {
         if (this.scene.isPaused()) return;
         this.rosterModal.close();
         this.characterModal.close();
+        this.inventoryModal.close();
         this.debugToolbar.close();
       });
     }
@@ -434,7 +472,7 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   override update(_time: number, delta: number) {
-    if (this.rosterModal?.isOpen() || this.characterModal?.isOpen()) return;
+    if (this.rosterModal?.isOpen() || this.characterModal?.isOpen() || this.inventoryModal?.isOpen()) return;
 
     // 1. Mouse Hold-to-Move
     const pointer = this.input.activePointer;
@@ -615,6 +653,7 @@ export class OverworldScene extends Phaser.Scene {
 
     this.rosterModal.close();
     this.characterModal.close();
+    this.inventoryModal.close();
     this.debugToolbar.close();
 
     // Hide Overworld HUD and buttons during battle
@@ -622,6 +661,7 @@ export class OverworldScene extends Phaser.Scene {
     if (uiOverlay) uiOverlay.style.display = 'none';
     this.rosterModal.setButtonVisible(false);
     this.characterModal.setButtonVisible(false);
+    this.inventoryModal.setButtonVisible(false);
     this.debugToolbar.setVisible(false);
 
     // Flash screen and spin transition
@@ -634,7 +674,8 @@ export class OverworldScene extends Phaser.Scene {
         encounter: payload.encounter,
         network: this.network,
         roster: this.roster,
-        alliesFormation: RosterManager.buildTeamFormation(this.roster)
+        alliesFormation: RosterManager.buildTeamFormation(this.roster),
+        inventory: this.inventory
       });
     });
   }
@@ -644,9 +685,12 @@ export class OverworldScene extends Phaser.Scene {
   // ==========================================
 
   private setupUIControllers(): void {
+    const getActiveBeast = () => this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
+
     this.characterModal = new CharacterModalController(this.roster.hero, {
       onHeroUpdated: (hero) => {
         this.roster.hero = hero;
+        this.inventoryModal?.setHero(hero);
       },
       onOpen: () => {
         this.currentPath = [];
@@ -657,12 +701,47 @@ export class OverworldScene extends Phaser.Scene {
     this.rosterModal = new RosterModalController(this.roster, {
       onRosterUpdated: (newRoster) => {
         this.roster = newRoster;
+        this.inventoryModal?.setActiveBeast(getActiveBeast());
       },
       onOpen: () => {
         this.currentPath = [];
         this.clearDestinationMarker();
       }
     });
+
+    this.inventoryModal = new InventoryModalController(
+      this.inventory,
+      this.roster.hero,
+      getActiveBeast(),
+      {
+        onHeroUpdated: (hero) => {
+          this.roster.hero = hero;
+          this.characterModal.setHero(hero);
+        },
+        onBeastUpdated: (beast) => {
+          const idx = this.roster.beasts.findIndex(b => b.id === beast.id);
+          if (idx !== -1) {
+            this.roster.beasts[idx] = beast;
+            this.rosterModal.setRoster(this.roster);
+          }
+        },
+        onInventoryUpdated: (inv) => {
+          this.inventory = inv;
+        },
+        onWarpTown: () => {
+          this.inventoryModal.close();
+          this.playerTile = { x: 10, y: 10 };
+          const screenPos = isoToScreen(10, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
+          this.playerContainer.setPosition(screenPos.x, screenPos.y);
+          this.playerContainer.setDepth(getIsometricDepth(10, 10, 100));
+          this.showToast('🏡 Teleported to Novice Town via Town Scroll!', '#6ee7b7');
+        },
+        onOpen: () => {
+          this.currentPath = [];
+          this.clearDestinationMarker();
+        }
+      }
+    );
 
     this.debugToolbar = new DebugToolbarController(
       () => this.roster.hero,
@@ -671,10 +750,16 @@ export class OverworldScene extends Phaser.Scene {
         onHeroUpdated: (hero) => {
           this.roster.hero = hero;
           this.characterModal.setHero(hero);
+          this.inventoryModal.setHero(hero);
         },
         onRosterUpdated: (newRoster) => {
           this.roster = newRoster;
           this.rosterModal.setRoster(newRoster);
+          this.inventoryModal.setActiveBeast(getActiveBeast());
+        },
+        onInventoryUpdated: (newInv) => {
+          this.inventory = newInv;
+          this.inventoryModal.setInventory(newInv);
         },
         onInstantBattle: (payload) => {
           this.triggerBattleTransition(payload);
@@ -689,7 +774,8 @@ export class OverworldScene extends Phaser.Scene {
         onShowToast: (msg, color) => {
           this.showToast(msg, color);
         }
-      }
+      },
+      () => this.inventory
     );
   }
 

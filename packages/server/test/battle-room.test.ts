@@ -245,5 +245,51 @@ describe('BattleRoom', () => {
     clearTimeout((expRoom as any)['_autoDisposeTimeout']);
     clearInterval((expRoom as any)['_patchInterval']);
   });
+
+  it('calculates and awards monster loot (Gold and dropped items) on victory', () => {
+    const weakEnemy: Combatant = {
+      ...mockWildEnemy,
+      hp: 1,
+      maxHp: 20,
+      level: 5
+    };
+
+    const lootRoom = new BattleRoom();
+    lootRoom.onCreate({
+      playerCombatants: [mockHero],
+      wildEnemies: [weakEnemy]
+    });
+    // Set deterministic RNG: roll 0.0 -> goldRoll 20, dropRoll 0.0 (<0.45), itemRoll 0.0 (<0.5 -> steamed bun)
+    lootRoom.rng = () => 0.0;
+
+    const client = createMockClient('client_1');
+    lootRoom.onJoin(client as any);
+
+    let battleEndPayload: any = null;
+    vi.spyOn(lootRoom, 'broadcast').mockImplementation((type: any, payload: any) => {
+      if (type === 'battleEnd') {
+        battleEndPayload = payload;
+      }
+      return true as any;
+    });
+
+    (lootRoom as any).onMessageHandlers['selectAction'](client, {
+      combatantId: 'hero_1',
+      action: { type: 'attack', targetId: 'enemy_1' }
+    });
+
+    expect(battleEndPayload).not.toBeNull();
+    expect(battleEndPayload.outcome).toBe('victory');
+    expect(battleEndPayload.loot).toBeDefined();
+    // Lv.5 * 20 = 100 gold
+    expect(battleEndPayload.loot.gold).toBe(100);
+    expect(battleEndPayload.loot.droppedItems.length).toBeGreaterThan(0);
+    expect(battleEndPayload.loot.droppedItems[0].itemId).toBe('item_steamed_bun');
+
+    lootRoom.clock?.stop();
+    clearTimeout((lootRoom as any)['_autoDisposeTimeout']);
+    clearInterval((lootRoom as any)['_patchInterval']);
+  });
 });
+
 

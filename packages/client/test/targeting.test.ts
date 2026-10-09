@@ -109,4 +109,38 @@ describe('Battle Targeting Rules', () => {
     // frontEnemy is a wild beast with front guard alive, but is in front row so eligible
     expect(captureTargets).toContain('enemy_front_2');
   });
+
+  it('allows targeting living allies with heal items, and fainted allies with revive items', () => {
+    const beast: Combatant = {
+      ...frontEnemy,
+      id: 'beast_1',
+      name: 'Allied Beast',
+      hp: 0 // fainted
+    };
+
+    const battleState: BattleState = {
+      round: 1,
+      outcome: 'ongoing',
+      allies: {
+        front: [null, null, hero, null, null],
+        back: [null, null, beast, null, null]
+      },
+      enemies: {
+        front: [null, null, frontEnemy, null, null],
+        back: [null, null, null, null, null]
+      },
+      capturedBeastIds: []
+    };
+
+    // Heal item targets living allies only
+    const healTargets = getValidTargets('item', 'allies', battleState, 'hp_restore');
+    expect(healTargets).toContain('hero_1');
+    expect(healTargets).not.toContain('beast_1');
+
+    // Revive item targets fainted allies only
+    const reviveTargets = getValidTargets('item', 'allies', battleState, 'revive');
+    expect(reviveTargets).toContain('beast_1');
+    expect(reviveTargets).not.toContain('hero_1');
+  });
 });
+

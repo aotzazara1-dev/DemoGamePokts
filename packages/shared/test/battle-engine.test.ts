@@ -376,4 +376,98 @@ describe('BattleEngine Turn Resolution (Ticket 02)', () => {
       expect(result.events.some(e => e.type === 'combo')).toBe(false);
     });
   });
+
+  describe('Item Combat Action', () => {
+    it('restores HP to a damaged ally using Steamed Bun', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', hp: 20, maxHp: 100, agi: 30 });
+      const enemy = makeUnit({ id: 'enemy', name: 'Enemy', agi: 10 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, null, null, null],
+        [null, null, enemy, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'item', itemId: 'item_steamed_bun', targetId: 'hero' },
+        enemy: { type: 'defend' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      // Steamed Bun restores 80 HP: 20 + 80 = 100
+      expect(result.nextState.allies.front[2]?.hp).toBe(100);
+      const healEvent = result.events.find(e => e.type === 'heal');
+      expect(healEvent).toBeDefined();
+      expect(healEvent?.value).toBe(80);
+    });
+
+    it('restores SP to an ally using Herbal Tea', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', sp: 10, maxSp: 50, agi: 30 });
+      const beast = makeUnit({ id: 'beast', name: 'Beast', sp: 5, maxSp: 60, agi: 25 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, beast, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'item', itemId: 'item_herbal_tea', targetId: 'beast' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      // Herbal Tea restores 50 SP: 5 + 50 = 55
+      expect(result.nextState.allies.back[2]?.sp).toBe(55);
+      const spEvent = result.events.find(e => e.type === 'sp_restore');
+      expect(spEvent).toBeDefined();
+      expect(spEvent?.value).toBe(50);
+    });
+
+    it('revives a fallen ally with Phoenix Feather', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', hp: 100, maxHp: 100, agi: 30 });
+      const faintedBeast = makeUnit({ id: 'beast', name: 'Fainted Beast', hp: 0, maxHp: 80, agi: 20 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, faintedBeast, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'item', itemId: 'item_phoenix_feather', targetId: 'beast' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      // Phoenix Feather restores 100 HP, capped at maxHp (80)
+      expect(result.nextState.allies.back[2]?.hp).toBe(80);
+      const reviveEvent = result.events.find(e => e.type === 'revive');
+      expect(reviveEvent).toBeDefined();
+      expect(reviveEvent?.value).toBe(80);
+    });
+
+    it('has no effect when using HP restore on a fainted ally', () => {
+      const hero = makeUnit({ id: 'hero', name: 'Hero', hp: 100, maxHp: 100, agi: 30 });
+      const faintedBeast = makeUnit({ id: 'beast', name: 'Fainted Beast', hp: 0, maxHp: 80, agi: 20 });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, faintedBeast, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'item', itemId: 'item_steamed_bun', targetId: 'beast' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      expect(result.nextState.allies.back[2]?.hp).toBe(0);
+      const healEvent = result.events.find(e => e.type === 'heal');
+      expect(healEvent?.value).toBe(0);
+    });
+  });
 });
+

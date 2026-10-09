@@ -6,12 +6,18 @@ import {
   BattleEngine,
   ProgressionEngine,
   ELEMENTAL_SKILLS,
+  InventoryManager,
+  LootEngine,
+  getItemDefinition,
   type SkillDefinition,
   type Combatant,
   type BattleState,
   type CombatAction,
   type CombatActionType,
-  type BattleEvent
+  type BattleEvent,
+  type InventoryState,
+  type LootReward,
+  type ItemStack
 } from '@poktsonline/shared';
 
 export class BattleScene extends Phaser.Scene {
@@ -20,14 +26,17 @@ export class BattleScene extends Phaser.Scene {
 
   // Domain state
   private battleState!: BattleState;
+  private inventory: InventoryState = InventoryManager.createInitialInventory();
   private currentTurnActorId: string = 'hero_1';
   private selectedActionType: CombatActionType | null = null;
   private selectedSkillId: string | null = null;
+  private selectedItemId: string | null = null;
   private stagedActions: Record<string, CombatAction> = {};
 
   // Timers and UI
   private actionTimerSeconds: number = 30;
   private timerProgressBar!: Phaser.GameObjects.Rectangle;
+  private itemMenuContainer?: Phaser.GameObjects.Container;
   private timerText!: Phaser.GameObjects.Text;
   private statusBannerText!: Phaser.GameObjects.Text;
   private activeActorText!: Phaser.GameObjects.Text;
@@ -56,8 +65,10 @@ export class BattleScene extends Phaser.Scene {
   init(data: any) {
     this.encounterData = data;
     this.network = data.battleNetwork || new BattleNetwork();
+    this.inventory = data.inventory || InventoryManager.createInitialInventory();
     this.stagedActions = {};
     this.selectedActionType = null;
+    this.selectedItemId = null;
     this.actionTimerSeconds = 30;
   }
 
@@ -495,8 +506,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private handleActionClick(actionType: CombatActionType) {
+    if (this.itemMenuContainer) {
+      this.itemMenuContainer.destroy();
+      this.itemMenuContainer = undefined;
+    }
+
     this.selectedActionType = actionType;
     this.selectedSkillId = null;
+    this.selectedItemId = null;
 
     if (actionType === 'defend' || actionType === 'flee' || actionType === 'pass') {
       // Immediate actions that do not require targeting an enemy
@@ -527,6 +544,21 @@ export class BattleScene extends Phaser.Scene {
 
       this.statusBannerText.setText(`Selected ${skillDef.name} (${skillDef.spCost} SP)! Select enemy target:`);
       this.statusBannerText.setColor('#38bdf8');
+    } else if (actionType === 'item') {
+      const usableItems = this.inventory.slots.filter(s => {
+        if (!s || s.quantity <= 0) return false;
+        const def = getItemDefinition(s.itemId);
+        return def && def.usableInCombat;
+      }) as ItemStack[];
+
+      if (usableItems.length === 0) {
+        this.cameras.main.shake(120, 0.005);
+        this.statusBannerText.setText('No combat-usable items in Bag!');
+        this.statusBannerText.setColor('#ef4444');
+        return;
+      }
+
+      this.showItemSelectionMenu(usableItems);
     } else {
       // Actions requiring target selection (attack, capture)
       const validTargetIds = getValidTargets(actionType, 'allies', this.battleState);
@@ -534,6 +566,108 @@ export class BattleScene extends Phaser.Scene {
 
       this.statusBannerText.setText(`Select target for ${actionType.toUpperCase()}! (Highlighted)`);
       this.statusBannerText.setColor('#facc15');
+    }
+  }
+
+  private showItemSelectionMenu(items: ItemStack[]) {
+    if (this.itemMenuContainer) {
+      this.itemMenuContainer.destroy();
+      this.itemMenuContainer = undefined;
+    }
+
+    const { width, height } = this.scale;
+    const hudY = height - 100;
+    const menuY = hudY - 76;
+
+    this.itemMenuContainer = this.add.container(width / 2, menuY);
+    this.itemMenuContainer.setDepth(500);
+
+    const btnWidth = 148;
+    const btnHeight = 36;
+    const totalW = (items.length + 1) * btnWidth + items.length * 8;
+    const startX = -totalW / 2 + btnWidth / 2;
+
+    const bgPanel = this.add.rectangle(0, 0, totalW + 24, btnHeight + 16, 0x0f172a, 0.96);
+    bgPanel.setStrokeStyle(1.5, 0x38bdf8, 0.85);
+    this.itemMenuContainer.add(bgPanel);
+
+    items.forEach((item, idx) => {
+      const def = getItemDefinition(item.itemId);
+      const icon = this.getItemIcon(item.itemId);
+      const btnX = startX + idx * (btnWidth + 8);
+      const btn = this.add.container(btnX, 0);
+
+      const btnBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x1e293b, 0.95);
+      btnBg.setStrokeStyle(1, 0x38bdf8, 0.6);
+
+      const label = this.add.text(0, 0, `${icon} ${def?.name.split(' ')[0] || item.itemId} (x${item.quantity})`, {
+        fontSize: '11px',
+        color: '#facc15',
+        fontStyle: 'bold'
+      }).setOrigin(0.5, 0.5);
+
+      btn.add([btnBg, label]);
+      btn.setSize(btnWidth, btnHeight);
+      btn.setInteractive({ useHandCursor: true });
+
+      btn.on('pointerover', () => btnBg.setFillStyle(0x0284c7, 1.0));
+      btn.on('pointerout', () => btnBg.setFillStyle(0x1e293b, 0.95));
+      btn.on('pointerdown', () => {
+        this.selectedItemId = item.itemId;
+        this.selectedActionType = 'item';
+        if (this.itemMenuContainer) {
+          this.itemMenuContainer.destroy();
+          this.itemMenuContainer = undefined;
+        }
+
+        const validTargetIds = getValidTargets('item', 'allies', this.battleState, def?.type);
+        this.highlightValidTargets(validTargetIds);
+
+        this.statusBannerText.setText(`Using ${def?.name || item.itemId}! Select friendly ally target:`);
+        this.statusBannerText.setColor('#38bdf8');
+      });
+
+      this.itemMenuContainer!.add(btn);
+    });
+
+    // Cancel Button
+    const cancelX = startX + items.length * (btnWidth + 8);
+    const cancelBtn = this.add.container(cancelX, 0);
+    const cancelBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x991b1b, 0.95);
+    cancelBg.setStrokeStyle(1, 0xf87171, 0.6);
+    const cancelLabel = this.add.text(0, 0, '✕ Cancel', {
+      fontSize: '11px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    cancelBtn.add([cancelBg, cancelLabel]);
+    cancelBtn.setSize(btnWidth, btnHeight);
+    cancelBtn.setInteractive({ useHandCursor: true });
+    cancelBtn.on('pointerover', () => cancelBg.setFillStyle(0xdc2626, 1.0));
+    cancelBtn.on('pointerout', () => cancelBg.setFillStyle(0x991b1b, 0.95));
+    cancelBtn.on('pointerdown', () => {
+      if (this.itemMenuContainer) {
+        this.itemMenuContainer.destroy();
+        this.itemMenuContainer = undefined;
+      }
+      this.selectedActionType = null;
+      this.selectedItemId = null;
+      this.statusBannerText.setText('Action Phase: Select tactical command for your units');
+      this.statusBannerText.setColor('#60a5fa');
+    });
+
+    this.itemMenuContainer.add(cancelBtn);
+  }
+
+  private getItemIcon(itemId: string): string {
+    switch (itemId) {
+      case 'item_steamed_bun': return '🥟';
+      case 'item_herbal_tea': return '🍵';
+      case 'item_vitality_pill': return '💊';
+      case 'item_phoenix_feather': return '🪶';
+      case 'item_town_scroll': return '📜';
+      default: return '📦';
     }
   }
 
@@ -565,11 +699,24 @@ export class BattleScene extends Phaser.Scene {
   private handleTargetSelected(targetId: string) {
     if (!this.selectedActionType) return;
 
-    const validTargets = getValidTargets(this.selectedActionType, 'allies', this.battleState);
+    const itemDef = this.selectedActionType === 'item' && this.selectedItemId
+      ? getItemDefinition(this.selectedItemId)
+      : undefined;
+
+    const validTargets = getValidTargets(
+      this.selectedActionType,
+      'allies',
+      this.battleState,
+      itemDef?.type
+    );
+
     if (!validTargets.includes(targetId)) {
-      // Invalid target (e.g. Back row guarded)
       this.cameras.main.shake(100, 0.005);
-      this.statusBannerText.setText('Target blocked by Front Row unit!');
+      this.statusBannerText.setText(
+        this.selectedActionType === 'item'
+          ? 'Invalid ally target for this item!'
+          : 'Target blocked by Front Row unit!'
+      );
       this.statusBannerText.setColor('#ef4444');
       return;
     }
@@ -578,8 +725,17 @@ export class BattleScene extends Phaser.Scene {
     this.stagedActions[this.currentTurnActorId] = {
       type: this.selectedActionType,
       targetId,
-      skillId: this.selectedActionType === 'skill' ? this.selectedSkillId || undefined : undefined
+      skillId: this.selectedActionType === 'skill' ? this.selectedSkillId || undefined : undefined,
+      itemId: this.selectedActionType === 'item' ? this.selectedItemId || undefined : undefined
     };
+
+    if (this.selectedActionType === 'item' && this.selectedItemId) {
+      const res = InventoryManager.removeItem(this.inventory, this.selectedItemId, 1);
+      if (res.success) {
+        this.inventory = res.inventory;
+      }
+    }
+
     this.updateActorStagingBadge(this.currentTurnActorId, this.selectedActionType);
 
     this.slotHighlightBoxes.forEach(b => b.destroy());
@@ -603,6 +759,8 @@ export class BattleScene extends Phaser.Scene {
       this.statusBannerText.setText(`Command locked! Select command for ${nextUnstaged.name}:`);
       this.statusBannerText.setColor('#38bdf8');
       this.selectedActionType = null;
+      this.selectedSkillId = null;
+      this.selectedItemId = null;
       return;
     }
 
@@ -665,7 +823,8 @@ export class BattleScene extends Phaser.Scene {
         payload.capturedBeastIds || [],
         payload.expAwarded,
         payload.levelUps,
-        payload.updatedAllies
+        payload.updatedAllies,
+        payload.loot
       );
     });
   }
@@ -715,7 +874,17 @@ export class BattleScene extends Phaser.Scene {
   private playResolutionSequence(events: BattleEvent[], finalOutcome: string) {
     if (!events || events.length === 0) {
       if (finalOutcome !== 'ongoing') {
-        this.showBattleEndBanner(finalOutcome, []);
+        let loot: LootReward | undefined;
+        if (finalOutcome === 'victory') {
+          const defeated: Combatant[] = [];
+          ['front', 'back'].forEach(r => {
+            this.battleState.enemies[r as 'front' | 'back'].forEach(e => {
+              if (e && e.hp <= 0) defeated.push(e);
+            });
+          });
+          loot = LootEngine.calculateLoot(defeated);
+        }
+        this.showBattleEndBanner(finalOutcome, [], undefined, undefined, undefined, loot);
       }
       return;
     }
@@ -731,7 +900,17 @@ export class BattleScene extends Phaser.Scene {
 
     this.time.delayedCall(delay + 600, () => {
       if (finalOutcome !== 'ongoing') {
-        this.showBattleEndBanner(finalOutcome, []);
+        let loot: LootReward | undefined;
+        if (finalOutcome === 'victory') {
+          const defeated: Combatant[] = [];
+          ['front', 'back'].forEach(r => {
+            this.battleState.enemies[r as 'front' | 'back'].forEach(e => {
+              if (e && e.hp <= 0) defeated.push(e);
+            });
+          });
+          loot = LootEngine.calculateLoot(defeated);
+        }
+        this.showBattleEndBanner(finalOutcome, [], undefined, undefined, undefined, loot);
       } else {
         // Next round
         this.actionTimerSeconds = 30;
@@ -779,6 +958,40 @@ export class BattleScene extends Phaser.Scene {
       const actor = this.combatantVisuals.get(evt.actorId);
       if (actor) {
         this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'FLEE 🏃', '#f87171');
+      }
+      return;
+    }
+
+    if (evt.type === 'heal' && target) {
+      if (evt.value && evt.value > 0) {
+        this.showFloatingCombatText(target.container.x, target.container.y - 20, `+${evt.value} HP 💚`, '#22c55e');
+        target.unit.hp = Math.min(target.unit.maxHp, target.unit.hp + evt.value);
+        this.updateHealthBar(target);
+      } else {
+        this.showFloatingCombatText(target.container.x, target.container.y - 20, 'NO EFFECT', '#94a3b8');
+      }
+      return;
+    }
+
+    if (evt.type === 'sp_restore' && target) {
+      if (evt.value && evt.value > 0) {
+        this.showFloatingCombatText(target.container.x, target.container.y - 20, `+${evt.value} SP 💧`, '#38bdf8');
+        target.unit.sp = Math.min(target.unit.maxSp, target.unit.sp + evt.value);
+        this.updateSpBar(target);
+      }
+      return;
+    }
+
+    if (evt.type === 'revive' && target) {
+      if (evt.value && evt.value > 0) {
+        this.showFloatingCombatText(target.container.x, target.container.y - 20, `REVIVED! +${evt.value} HP ❤️`, '#fbbf24');
+        target.unit.hp = evt.value;
+        this.tweens.add({
+          targets: target.container,
+          alpha: 1.0,
+          duration: 300
+        });
+        this.updateHealthBar(target);
       }
       return;
     }
@@ -876,6 +1089,17 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
+  private updateSpBar(vis: any) {
+    if (!vis.spBar) return;
+    const ratio = Math.max(0, vis.unit.sp / (vis.unit.maxSp || 1));
+    this.tweens.add({
+      targets: vis.spBar,
+      width: 48 * ratio,
+      duration: 250,
+      ease: 'Power1'
+    });
+  }
+
   private showFloatingCombatText(x: number, y: number, text: string, color: string) {
     const txt = this.add.text(x, y, text, {
       fontSize: '18px',
@@ -900,7 +1124,8 @@ export class BattleScene extends Phaser.Scene {
     capturedBeastIds: string[],
     expAwarded?: number,
     levelUps?: any[],
-    updatedAllies?: Combatant[]
+    updatedAllies?: Combatant[],
+    loot?: LootReward
   ) {
     this.battleState.outcome = outcome as any;
     const { width, height } = this.scale;
@@ -908,7 +1133,7 @@ export class BattleScene extends Phaser.Scene {
     const bannerContainer = this.add.container(width / 2, height / 2);
     bannerContainer.setDepth(1_000_000);
 
-    const bannerBg = this.add.rectangle(0, 0, 560, 260, 0x0f172a, 0.98);
+    const bannerBg = this.add.rectangle(0, 0, 580, 290, 0x0f172a, 0.98);
     bannerBg.setStrokeStyle(3, 0xd4af37, 1);
 
     const isDefeat = outcome === 'defeat';
@@ -916,7 +1141,7 @@ export class BattleScene extends Phaser.Scene {
     const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN COMBAT 💀';
     const titleColor = isWin ? '#fbbf24' : outcome === 'escaped' ? '#38bdf8' : '#ef4444';
 
-    const titleText = this.add.text(0, -85, title, {
+    const titleText = this.add.text(0, -100, title, {
       fontSize: '22px',
       color: titleColor,
       fontStyle: 'bold'
@@ -937,9 +1162,31 @@ export class BattleScene extends Phaser.Scene {
     }
 
     const expTextStr = isWin && (expAwarded ?? 0) > 0 ? `✨ Experience Gained: +${expAwarded} EXP` : '';
-    const expText = this.add.text(0, -48, expTextStr, {
-      fontSize: '14px',
+    const expText = this.add.text(0, -68, expTextStr, {
+      fontSize: '13px',
       color: '#38bdf8',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    // Loot drops (Gold + Items)
+    let lootTextStr = '';
+    if (isWin && loot) {
+      const parts: string[] = [];
+      if (loot.gold > 0) parts.push(`🪙 +${loot.gold.toLocaleString()} Gold`);
+      if (loot.droppedItems && loot.droppedItems.length > 0) {
+        const itemNames = loot.droppedItems.map(d => {
+          const def = getItemDefinition(d.itemId);
+          return `${def ? def.name.split(' ')[0] : d.itemId} x${d.quantity}`;
+        }).join(', ');
+        parts.push(`🎁 ${itemNames}`);
+      }
+      if (parts.length > 0) {
+        lootTextStr = parts.join(' | ');
+      }
+    }
+    const lootText = this.add.text(0, -42, lootTextStr, {
+      fontSize: '13px',
+      color: '#fbbf24',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
@@ -947,26 +1194,26 @@ export class BattleScene extends Phaser.Scene {
     if (levelUps && levelUps.length > 0) {
       levelUpMsg = levelUps.map(l => `🎉 LEVEL UP! ${l.name} is now Lv.${l.newLevel}! (+${l.statPointsGained} Stat Points)`).join('\n');
     }
-    const levelUpText = this.add.text(0, -16, levelUpMsg, {
+    const levelUpText = this.add.text(0, -12, levelUpMsg, {
       fontSize: '12px',
       color: '#facc15',
       fontStyle: 'bold',
       align: 'center',
-      lineSpacing: 4
+      lineSpacing: 3
     }).setOrigin(0.5, 0.5);
 
     const captureNote = capturedBeastIds.length > 0
       ? `🕸️ Captured Beast added to team roster!`
       : '';
-    const captureText = this.add.text(0, 22, captureNote, {
+    const captureText = this.add.text(0, 26, captureNote, {
       fontSize: '13px',
       color: '#a855f7',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
     // Return to Overworld or Respawn Button
-    const returnBtn = this.add.rectangle(0, 75, 250, 42, isDefeat ? 0x991b1b : 0xd97706).setInteractive({ useHandCursor: true });
-    const returnBtnText = this.add.text(0, 75, isDefeat ? 'Respawn at Novice Town' : 'Return to Overworld', {
+    const returnBtn = this.add.rectangle(0, 85, 260, 42, isDefeat ? 0x991b1b : 0xd97706).setInteractive({ useHandCursor: true });
+    const returnBtnText = this.add.text(0, 85, isDefeat ? 'Respawn at Novice Town' : 'Return to Overworld', {
       fontSize: '14px',
       color: '#ffffff',
       fontStyle: 'bold'
@@ -992,20 +1239,24 @@ export class BattleScene extends Phaser.Scene {
             capturedBeasts,
             expAwarded,
             levelUps,
-            updatedAllies
+            updatedAllies,
+            inventory: this.inventory,
+            loot
           });
         } else {
           this.scene.resume('OverworldScene', {
             capturedBeasts,
             expAwarded,
             levelUps,
-            updatedAllies
+            updatedAllies,
+            inventory: this.inventory,
+            loot
           });
         }
       });
     });
 
-    bannerContainer.add([bannerBg, titleText, expText, levelUpText, captureText, returnBtn, returnBtnText]);
+    bannerContainer.add([bannerBg, titleText, expText, lootText, levelUpText, captureText, returnBtn, returnBtnText]);
     bannerContainer.setScale(0.7);
     this.tweens.add({
       targets: bannerContainer,

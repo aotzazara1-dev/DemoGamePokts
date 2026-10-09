@@ -3,11 +3,13 @@ import { BattleRoomState, CombatantNetworkState } from '../schema/BattleState.js
 import {
   BattleEngine,
   ProgressionEngine,
+  LootEngine,
   type BattleState,
   type Combatant,
   type TeamFormation,
   type CombatAction,
-  type TeamActionsMap
+  type TeamActionsMap,
+  type LootReward
 } from '@poktsonline/shared';
 
 export interface BattleRoomOptions {
@@ -213,16 +215,21 @@ export class BattleRoom extends Room<BattleRoomState> {
       let expAwarded = 0;
       const levelUps: any[] = [];
       const updatedAllies: Combatant[] = [];
+      let loot: LootReward = { gold: 0, droppedItems: [] };
 
       if (result.nextState.outcome === 'victory') {
+        const defeatedEnemies: Combatant[] = [];
         let totalExpPool = 0;
         ['front', 'back'].forEach(r => {
           this.authoritativeBattleState.enemies[r as 'front' | 'back'].forEach(e => {
             if (e && e.hp <= 0) {
+              defeatedEnemies.push(e);
               totalExpPool += ProgressionEngine.calculateEnemyExpReward(e.level);
             }
           });
         });
+
+        loot = LootEngine.calculateLoot(defeatedEnemies, this.rng);
 
         const livingAllies: Combatant[] = [];
         ['front', 'back'].forEach(r => {
@@ -255,7 +262,8 @@ export class BattleRoom extends Room<BattleRoomState> {
         capturedBeastIds: result.nextState.capturedBeastIds,
         expAwarded,
         levelUps,
-        updatedAllies
+        updatedAllies,
+        loot
       });
       if (this.timerInterval) {
         this.timerInterval.clear();

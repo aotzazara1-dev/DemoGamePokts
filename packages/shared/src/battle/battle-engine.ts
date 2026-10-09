@@ -9,6 +9,7 @@ import {
 } from '../types.js';
 import { calculateDamage, getElementMultiplier, canTriggerCombo } from '../formulas.js';
 import { ELEMENTAL_SKILLS } from '../data/skills.js';
+import { getItemDefinition } from '../inventory/item-database.js';
 
 export class BattleEngine {
   /**
@@ -149,13 +150,67 @@ export class BattleEngine {
       }
 
       if (actor.action.type === 'item') {
-        actor.hp = Math.min(actor.maxHp, actor.hp + 80);
-        events.push({
-          type: 'heal',
-          actorId: actor.id,
-          value: 80,
-          message: `${actor.name} used an item and recovered 80 HP.`
-        });
+        const itemId = actor.action.itemId || 'item_steamed_bun';
+        const itemDef = getItemDefinition(itemId);
+        const targetId = actor.action.targetId || actor.id;
+        const targetResult = findCombatant(targetId);
+        const target = targetResult ? targetResult.unit : actor;
+
+        if (itemDef) {
+          if (itemDef.type === 'hp_restore') {
+            if (target.hp > 0) {
+              const healed = Math.min(itemDef.effectValue, target.maxHp - target.hp);
+              target.hp += healed;
+              events.push({
+                type: 'heal',
+                actorId: actor.id,
+                targetId: target.id,
+                value: healed,
+                message: `${actor.name} used ${itemDef.name} on ${target.name} recovering ${healed} HP!`
+              });
+            } else {
+              events.push({
+                type: 'heal',
+                actorId: actor.id,
+                targetId: target.id,
+                value: 0,
+                message: `${actor.name} tried to use ${itemDef.name} on fallen ${target.name}, but it had no effect!`
+              });
+            }
+          } else if (itemDef.type === 'sp_restore') {
+            if (target.hp > 0) {
+              const restored = Math.min(itemDef.effectValue, target.maxSp - target.sp);
+              target.sp += restored;
+              events.push({
+                type: 'sp_restore',
+                actorId: actor.id,
+                targetId: target.id,
+                value: restored,
+                message: `${actor.name} used ${itemDef.name} on ${target.name} recovering ${restored} SP!`
+              });
+            }
+          } else if (itemDef.type === 'revive') {
+            if (target.hp <= 0) {
+              const revivedHp = Math.min(itemDef.effectValue, target.maxHp);
+              target.hp = revivedHp;
+              events.push({
+                type: 'revive',
+                actorId: actor.id,
+                targetId: target.id,
+                value: revivedHp,
+                message: `${actor.name} used ${itemDef.name} to revive ${target.name} with ${revivedHp} HP!`
+              });
+            } else {
+              events.push({
+                type: 'heal',
+                actorId: actor.id,
+                targetId: target.id,
+                value: 0,
+                message: `${target.name} is already alive!`
+              });
+            }
+          }
+        }
         continue;
       }
 

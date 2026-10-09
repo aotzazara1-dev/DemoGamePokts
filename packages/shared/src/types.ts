@@ -69,6 +69,8 @@ export type BattleEventType =
   | 'defend'
   | 'pass'
   | 'heal'
+  | 'sp_restore'
+  | 'revive'
   | 'capture_success'
   | 'capture_fail'
   | 'faint'
@@ -178,4 +180,33 @@ export interface PlayerRosterState {
     heroSlot: FormationSlot;
     beastSlot: FormationSlot;
   };
+}
+
+export type ItemType = 'hp_restore' | 'sp_restore' | 'revive' | 'scroll';
+
+export interface ItemDefinition {
+  id: string;
+  name: string;
+  type: ItemType;
+  effectValue: number;
+  description: string;
+  price: number;
+  stackMax: number;
+  usableInCombat: boolean;
+  usableOnOverworld: boolean;
+}
+
+export interface ItemStack {
+  itemId: string;
+  quantity: number;
+}
+
+export interface InventoryState {
+  slots: (ItemStack | null)[];
+  gold: number;
+}
+
+export interface LootReward {
+  gold: number;
+  droppedItems: ItemStack[];
 }

@@ -99,3 +99,19 @@ _Avoid_: Switch, tag, substitute
 **Jam**:
 The action of an external Hero on the Overworld joining an active Battle Instance mid-combat to reinforce an ally team.
 _Avoid_: Reinforce, assist, join in
+
+**Inventory**:
+The 20-slot grid storage container carried by a Hero holding stacked consumable items and currency.
+_Avoid_: Bag, backpack, chest, storage
+
+**Item**:
+A distinct collectible possession carried in an Inventory (such as restorative consumables, combat scrolls, or utility goods).
+_Avoid_: Prop, tool, consumable object
+
+**Gold**:
+The universal trade currency earned from defeating monsters or selling items.
+_Avoid_: Money, coin, cash, credits
+
+**Loot Table**:
+The authoritative probability distribution mapping defeated wild enemies to rewarded Gold amounts and dropped items.
+_Avoid_: Drop rate, reward list, monster loot
