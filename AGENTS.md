@@ -22,11 +22,6 @@ Single-context layout using `GLOSSARY.md` and `docs/adr/`. See `docs/agents/doma
 - **Colyseus Room Authority**: `packages/server/src/rooms/` (`OverworldRoom`, `BattleRoom`).
 - **Shared Data & Types**: `packages/shared/src/` (Combat formulas, progression, inventory, map configs).
 
-## Codebase Navigation & Knowledge Graph (Graphify)
+## Codebase Navigation & Knowledge Graph
 
-- **Always Query Graph First**: Before reading raw files or grepping blindly, consult the persistent knowledge graph via `graphify query "<concept/question>"`.
-- **Relationship Tracing**: Use `graphify path "<Source>" "<Target>"` to trace call flows and dependencies.
-- **Node Deep-Dive**: Use `graphify explain "<NodeName>"` for targeted symbol summaries.
-- **Keep Graph Fresh**: When files are modified, run `graphify update .` (fast AST-only update).
-- **Knowledge Graph Files**: `graphify-out/graph.json` (database), `graphify-out/graph.html` (interactive visualizer).
-
+- See [graphify.md](file:///e:/Poktsonline/.agents/rules/graphify.md) for query, path, explain, and graph maintenance workflows.

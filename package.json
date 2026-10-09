@@ -10,9 +10,15 @@
     "test:e2e": "node scripts/test-e2e-smoke.js",
     "build": "npm run build --workspace=@poktsonline/shared && npm run build --workspace=@poktsonline/server && npm run build --workspace=@poktsonline/client",
     "server": "npm run build --workspace=@poktsonline/shared && npm run build --workspace=@poktsonline/server && node packages/server/dist/index.js",
-    "client": "npm run dev --workspace=@poktsonline/client"
+    "client": "npm run dev --workspace=@poktsonline/client",
+    "typecheck": "npm run build",
+    "check": "npm run build && npm run test",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   }

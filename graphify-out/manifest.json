@@ -1,9 +1,9 @@
 {
   "package.json": {
-    "mtime": 1791555338.090375,
-    "seen": 1791558675.807604,
-    "ast_hash": "3002121141efe18213a23605ad5b9b76",
-    "semantic_hash": "3002121141efe18213a23605ad5b9b76"
+    "mtime": 1791562383.2204432,
+    "seen": 1791562441.0981047,
+    "ast_hash": "a32f5d889ba427bd61352ffb3f5c8d30",
+    "semantic_hash": ""
   },
   "packages/client/package.json": {
     "mtime": 1791553207.085536,
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   ".scratch/ragnarok-theme/issues/05-full-system-verification-and-smoke-test.md": {
-    "mtime": 1791560339.7527592,
-    "seen": 1791560439.0289726,
-    "ast_hash": "8312d32a7583e4da4587e9452800ea7a",
+    "mtime": 1791560442.9477434,
+    "seen": 1791562441.0983038,
+    "ast_hash": "d40f68a5468ff39d708db6c9aff21a29",
     "semantic_hash": ""
   },
   ".scratch/ragnarok-theme/spec.md": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1791558689.389361,
-    "seen": 1791560439.0289862,
-    "ast_hash": "4f2f4897933643618552b5b577333b63",
+    "mtime": 1791562336.3376412,
+    "seen": 1791562441.0983152,
+    "ast_hash": "ddaea7b17c33f3b006e646e141199f5c",
     "semantic_hash": ""
   },
   "CODING_STANDARDS.md": {
@@ -1029,6 +1029,12 @@
     "mtime": 1791544946.1726165,
     "seen": 1791560439.0290592,
     "ast_hash": "c65057649b8f5eee18edbe5fb9f924d6",
+    "semantic_hash": ""
+  },
+  "docs/adr/0018-mock-boundaries-and-testing-conventions.md": {
+    "mtime": 1791562345.1414623,
+    "seen": 1791562441.098347,
+    "ast_hash": "4414810df0272c3ce603ca9d92818adc",
     "semantic_hash": ""
   }
 }
