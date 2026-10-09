@@ -809,10 +809,9 @@ export class OverworldScene extends Phaser.Scene {
     if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y) {
       this.currentPath = [];
       this.clearDestinationMarker();
+      this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
       if (this.network.getRoom()) {
         this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
-      } else {
-        this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
       }
       return;
     }
@@ -1166,6 +1165,14 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
+    const stepDx = targetX - this.playerTile.x;
+    if (stepDx !== 0 && this.playerContainer) {
+      const heroImg = this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image;
+      if (heroImg) {
+        heroImg.setFlipX(stepDx < 0);
+      }
+    }
+
     this.isMoving = true;
     this.playerTile = { x: targetX, y: targetY };
 
@@ -1186,15 +1193,6 @@ export class OverworldScene extends Phaser.Scene {
     }
 
     const nextScreenPos = isoToScreen(targetX, targetY, this.tileWidth, this.tileHeight, this.originX, this.originY);
-
-    // Turn hero sprite towards moving direction
-    const stepDx = targetX - this.playerTile.x;
-    if (stepDx !== 0 && this.playerContainer) {
-      const heroImg = this.playerContainer.getByName('hero_sprite_image') as Phaser.GameObjects.Image;
-      if (heroImg) {
-        heroImg.setFlipX(stepDx < 0);
-      }
-    }
 
     // Send to authoritative server with active mapId for robust synchronization
     this.network.sendMove(targetX, targetY, this.mapConfig.id);
@@ -1227,10 +1225,9 @@ export class OverworldScene extends Phaser.Scene {
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
 
         if (portal) {
+          this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
           if (this.network.getRoom()) {
             this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
-          } else {
-            this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
           }
           return;
         }

@@ -1249,7 +1249,10 @@ export class BattleScene extends Phaser.Scene {
       soundManager.playButtonClick();
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
-        this.scene.stop();
+        // Send battle concluded to network immediately
+        if (this.encounterData?.network?.sendBattleConcluded) {
+          this.encounterData.network.sendBattleConcluded();
+        }
 
         const capturedBeasts: Combatant[] = [];
         const wildEnemies: Combatant[] = this.encounterData?.encounter?.wildEnemies || [];
@@ -1258,26 +1261,19 @@ export class BattleScene extends Phaser.Scene {
           if (found) capturedBeasts.push(found);
         });
 
-        if (isDefeat) {
-          this.scene.resume('OverworldScene', {
-            respawnTile: { x: 10, y: 10 },
-            capturedBeasts,
-            expAwarded,
-            levelUps,
-            updatedAllies,
-            inventory: this.inventory,
-            loot
-          });
-        } else {
-          this.scene.resume('OverworldScene', {
-            capturedBeasts,
-            expAwarded,
-            levelUps,
-            updatedAllies,
-            inventory: this.inventory,
-            loot
-          });
-        }
+        const resumeData = {
+          respawnTile: isDefeat ? { x: 10, y: 10 } : undefined,
+          capturedBeasts,
+          expAwarded,
+          levelUps,
+          updatedAllies,
+          inventory: this.inventory,
+          loot
+        };
+
+        // Resume OverworldScene BEFORE shutting down BattleScene to ensure event delivery
+        this.scene.resume('OverworldScene', resumeData);
+        this.scene.stop();
       });
     });
 

@@ -42,7 +42,7 @@ export class OverworldRoom extends Room<OverworldState> {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
       if (player.inBattle) {
-        return; // Authoritative combat lock: do not allow movement while in battle
+        player.inBattle = false;
       }
 
       // 1. Resynchronize mapId if client declared its active map and it differs from server state
@@ -122,7 +122,7 @@ export class OverworldRoom extends Room<OverworldState> {
     this.onMessage('warpPortal', (client: Client, message: PortalTransitionPayload) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      if (player.inBattle) return; // Cannot teleport during active combat
+      player.inBattle = false;
 
       // Authoritative portal proximity and destination validation
       const currentMapConfig = (this.mapConfig && this.mapConfig.id === player.mapId)
@@ -133,24 +133,27 @@ export class OverworldRoom extends Room<OverworldState> {
         p.targetMapId === message.targetMapId &&
         p.targetPosition.x === message.targetPosition.x &&
         p.targetPosition.y === message.targetPosition.y &&
-        (Math.abs(p.position.x - player.x) <= 1 && Math.abs(p.position.y - player.y) <= 1)
+        (Math.abs(p.position.x - player.x) <= 2 && Math.abs(p.position.y - player.y) <= 2)
       );
 
-      if (!validPortal) {
-        return; // Reject unauthorized teleportation
+      if (validPortal) {
+        player.mapId = validPortal.targetMapId;
+        player.x = validPortal.targetPosition.x;
+        player.y = validPortal.targetPosition.y;
+        player.direction = 'down';
+        this.playerStepCounters.set(client.sessionId, 0);
+
+        client.send('portalTransition', {
+          targetMapId: validPortal.targetMapId,
+          targetPosition: validPortal.targetPosition,
+          portalName: validPortal.name
+        });
+      } else if (player.mapId === message.targetMapId) {
+        // Player already transitioned via move step resolution, sync target coordinates
+        player.x = message.targetPosition.x;
+        player.y = message.targetPosition.y;
+        this.playerStepCounters.set(client.sessionId, 0);
       }
-
-      player.mapId = validPortal.targetMapId;
-      player.x = validPortal.targetPosition.x;
-      player.y = validPortal.targetPosition.y;
-      player.direction = 'down';
-      this.playerStepCounters.set(client.sessionId, 0);
-
-      client.send('portalTransition', {
-        targetMapId: validPortal.targetMapId,
-        targetPosition: validPortal.targetPosition,
-        portalName: validPortal.name
-      });
     });
 
     this.onMessage('battleConcluded', (client: Client) => {

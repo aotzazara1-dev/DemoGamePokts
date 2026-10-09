@@ -120,7 +120,7 @@ describe('OverworldRoom', () => {
     expect(player.y).toBe(5);
   });
 
-  it('rejects movement and does not update position when player is inBattle', () => {
+  it('automatically unlocks inBattle and allows movement when client sends move', () => {
     const client = createMockClient('client_battle');
     room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
     const player = room.state.players.get('client_battle')!;
@@ -128,9 +128,9 @@ describe('OverworldRoom', () => {
 
     (room as any).onMessageHandlers['move'](client, { targetX: 6, targetY: 5 });
 
-    expect(player.x).toBe(5);
+    expect(player.x).toBe(6);
     expect(player.y).toBe(5);
-    expect(player.inBattle).toBe(true);
+    expect(player.inBattle).toBe(false);
   });
 
   it('triggers encounter when moving into wild zone and marks player inBattle', () => {
