@@ -20,7 +20,7 @@
       <span class="ctrl-sep">&bull;</span>
       <span>📊 <kbd>C</kbd> Status</span>
       <span class="ctrl-sep">&bull;</span>
-      <span>🎒 <kbd>I</kbd> Bag</span>
+      <button id="header-btn-inventory" class="header-btn" title="Open Inventory (Hotkey: I)">🎒 <kbd>I</kbd> Inventory</button>
       <span class="ctrl-sep">&bull;</span>
       <span>🛠️ <kbd>~</kbd> QA Debug</span>
     </div>
@@ -34,13 +34,13 @@
         <button id="btn-character-status" title="Open Character Status (Hotkey: C)" style="background: #2563eb; color: #fff; border: 1px solid #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
           📊 Status [C]
         </button>
-        <button id="btn-quick-bag" title="Open Inventory Bag (Hotkey: I)" style="background: #0284c7; color: #fff; border: 1px solid #38bdf8; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
-          🎒 Bag [I]
+        <button id="btn-quick-inventory" title="Open Inventory (Hotkey: I)" style="background: #0284c7; color: #fff; border: 1px solid #38bdf8; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
+          🎒 Inventory [I]
         </button>
       </div>
     </div>
     <button id="btn-inventory" title="Open Inventory (Hotkey: I)">
-      🎒 BAG [I]
+      🎒 INVENTORY [I]
     </button>
     <button id="btn-roster" title="Open Beast Roster & Formation Grid (Hotkey: B or F)">
       🐾 BEASTS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
@@ -221,8 +221,11 @@
               </div>
 
               <div class="inv-target-section">
-                <div class="inv-target-title">เลือกเป้าหมายที่จะใช้:</div>
+                <div id="inv-target-title" class="inv-target-title">เลือกเป้าหมายที่จะใช้:</div>
                 <div class="inv-action-row">
+                  <button id="btn-use-item-scroll" class="btn-inv-use" style="background: #7c3aed; display: none;">
+                    ⚡ ใช้วาร์ปกลับเมือง (Teleport to Novice Town)
+                  </button>
                   <button id="btn-use-item-hero" class="btn-inv-use">
                     🧙 ใช้กับ Hero (<span id="inv-hero-hp-label">120/120 HP</span>)
                   </button>

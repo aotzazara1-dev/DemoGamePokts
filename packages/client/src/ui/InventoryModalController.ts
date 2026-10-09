@@ -3,7 +3,8 @@ import {
   InventoryState,
   InventoryManager,
   ItemStack,
-  getItemDefinition
+  getItemDefinition,
+  getItemIcon
 } from '@poktsonline/shared';
 
 export interface InventoryModalCallbacks {
@@ -106,15 +107,22 @@ export class InventoryModalController {
   public setButtonVisible(visible: boolean): void {
     const btnInv = document.getElementById('btn-inventory');
     if (btnInv) btnInv.style.display = visible ? 'flex' : 'none';
-    const btnQuick = document.getElementById('btn-quick-bag');
+    const btnQuick = document.getElementById('btn-quick-inventory');
     if (btnQuick) btnQuick.style.display = visible ? 'inline-block' : 'none';
+    const headerBtn = document.getElementById('header-btn-inventory');
+    if (headerBtn) headerBtn.style.display = visible ? 'inline-flex' : 'none';
   }
 
   public updateHeaderBadge(): void {
     const usedSlots = this.inventory.slots.filter(s => s !== null).length;
     const btnInv = document.getElementById('btn-inventory');
     if (btnInv) {
-      btnInv.innerHTML = `🎒 BAG (${usedSlots}/${InventoryManager.INVENTORY_CAPACITY}) <span style="opacity: 0.75; font-size: 11px;">[I]</span>`;
+      btnInv.innerHTML = `🎒 INVENTORY (${usedSlots}/${InventoryManager.INVENTORY_CAPACITY}) <span style="opacity: 0.75; font-size: 11px;">[I]</span>`;
+    }
+
+    const headerBtn = document.getElementById('header-btn-inventory');
+    if (headerBtn) {
+      headerBtn.innerHTML = `🎒 Inventory [I] <span style="font-size: 10px; opacity: 0.8; margin-left: 2px;">(${usedSlots}/${InventoryManager.INVENTORY_CAPACITY})</span>`;
     }
 
     const headerCap = document.getElementById('inv-capacity-header');
@@ -154,7 +162,7 @@ export class InventoryModalController {
 
       if (slot) {
         const def = getItemDefinition(slot.itemId);
-        const icon = this.getItemIcon(slot.itemId);
+        const icon = getItemIcon(slot.itemId);
 
         slotEl.title = def ? `${def.name} (x${slot.quantity})` : slot.itemId;
         slotEl.innerHTML = `
@@ -205,7 +213,7 @@ export class InventoryModalController {
 
     // Populate details
     const iconEl = document.getElementById('inv-detail-icon');
-    if (iconEl) iconEl.innerText = this.getItemIcon(def.id);
+    if (iconEl) iconEl.innerText = getItemIcon(def.id);
 
     const nameEl = document.getElementById('inv-detail-name');
     if (nameEl) nameEl.innerText = def.name;
@@ -232,16 +240,30 @@ export class InventoryModalController {
     }
 
     const beastHpLabel = document.getElementById('inv-beast-hp-label');
+    const targetTitle = document.getElementById('inv-target-title');
+    const btnUseScroll = document.getElementById('btn-use-item-scroll') as HTMLButtonElement | null;
+    const btnUseHero = document.getElementById('btn-use-item-hero') as HTMLButtonElement | null;
     const btnUseBeast = document.getElementById('btn-use-item-beast') as HTMLButtonElement | null;
-    if (btnUseBeast) {
-      if (this.activeBeast) {
-        btnUseBeast.style.display = 'flex';
-        btnUseBeast.disabled = false;
-        if (beastHpLabel) {
-          beastHpLabel.innerText = `${this.activeBeast.name}: ${this.activeBeast.hp}/${this.activeBeast.maxHp} HP`;
+
+    if (def.type === 'scroll') {
+      if (targetTitle) targetTitle.innerText = 'ใช้งานไอเทมพิเศษ (Use Item):';
+      if (btnUseScroll) btnUseScroll.style.display = 'flex';
+      if (btnUseHero) btnUseHero.style.display = 'none';
+      if (btnUseBeast) btnUseBeast.style.display = 'none';
+    } else {
+      if (targetTitle) targetTitle.innerText = 'เลือกเป้าหมายที่จะใช้ (Target):';
+      if (btnUseScroll) btnUseScroll.style.display = 'none';
+      if (btnUseHero) btnUseHero.style.display = 'flex';
+      if (btnUseBeast) {
+        if (this.activeBeast) {
+          btnUseBeast.style.display = 'flex';
+          btnUseBeast.disabled = false;
+          if (beastHpLabel) {
+            beastHpLabel.innerText = `${this.activeBeast.name}: ${this.activeBeast.hp}/${this.activeBeast.maxHp} HP`;
+          }
+        } else {
+          btnUseBeast.style.display = 'none';
         }
-      } else {
-        btnUseBeast.style.display = 'none';
       }
     }
   }
@@ -262,16 +284,7 @@ export class InventoryModalController {
 
     // Special scroll handling (Town teleport)
     if (def.type === 'scroll') {
-      const result = InventoryManager.useItemOnCombatant(this.inventory, slot.itemId, target, false);
-      if (result.success) {
-        this.inventory = result.inventory;
-        this.showFeedback(`⚡ ${def.name} used! Teleporting back to town...`, true);
-        this.callbacks.onInventoryUpdated?.(this.inventory);
-        this.callbacks.onWarpTown?.();
-        this.render();
-      } else {
-        this.showFeedback(result.reason || 'Could not use item.', false);
-      }
+      this.handleUseScroll();
       return;
     }
 
@@ -290,6 +303,26 @@ export class InventoryModalController {
       this.render();
     } else {
       this.showFeedback(`❌ ${result.reason || 'Cannot use item!'}`, false);
+    }
+  }
+
+  private handleUseScroll(): void {
+    if (this.selectedSlotIndex === null) return;
+    const slot = this.inventory.slots[this.selectedSlotIndex];
+    if (!slot) return;
+
+    const def = getItemDefinition(slot.itemId);
+    if (!def || def.type !== 'scroll') return;
+
+    const result = InventoryManager.useItemOnCombatant(this.inventory, slot.itemId, this.hero, false);
+    if (result.success) {
+      this.inventory = result.inventory;
+      this.showFeedback(`⚡ ${def.name} used! Teleporting back to town...`, true);
+      this.callbacks.onInventoryUpdated?.(this.inventory);
+      this.callbacks.onWarpTown?.();
+      this.render();
+    } else {
+      this.showFeedback(result.reason || 'Could not use item.', false);
     }
   }
 
@@ -326,17 +359,6 @@ export class InventoryModalController {
     box.className = 'inv-feedback-msg';
   }
 
-  private getItemIcon(itemId: string): string {
-    switch (itemId) {
-      case 'item_steamed_bun': return '🥟';
-      case 'item_herbal_tea': return '🍵';
-      case 'item_vitality_pill': return '💊';
-      case 'item_phoenix_feather': return '🪶';
-      case 'item_town_scroll': return '📜';
-      default: return '📦';
-    }
-  }
-
   private getBadgeClass(type: string): string {
     switch (type) {
       case 'hp_restore': return 'badge-hp-restore';
@@ -361,8 +383,11 @@ export class InventoryModalController {
     const btnInv = document.getElementById('btn-inventory');
     if (btnInv) btnInv.onclick = () => this.toggle();
 
-    const btnQuick = document.getElementById('btn-quick-bag');
+    const btnQuick = document.getElementById('btn-quick-inventory');
     if (btnQuick) btnQuick.onclick = () => this.toggle();
+
+    const headerBtn = document.getElementById('header-btn-inventory');
+    if (headerBtn) headerBtn.onclick = () => this.toggle();
 
     const btnClose = document.getElementById('btn-close-inv-modal');
     if (btnClose) btnClose.onclick = () => this.toggle(false);
@@ -377,6 +402,11 @@ export class InventoryModalController {
           this.toggle(false);
         }
       };
+    }
+
+    const btnUseScroll = document.getElementById('btn-use-item-scroll');
+    if (btnUseScroll) {
+      btnUseScroll.onclick = () => this.handleUseScroll();
     }
 
     const btnUseHero = document.getElementById('btn-use-item-hero');

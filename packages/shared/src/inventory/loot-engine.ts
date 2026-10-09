@@ -17,7 +17,7 @@ export class LootEngine {
     const itemCounts: Record<string, number> = {};
 
     for (const enemy of defeatedEnemies) {
-      // 1. Calculate Gold: ~20-30 Gold per monster level
+      // 1. Calculate Gold: ~20-30 Gold per wild beast level
       const level = Math.max(1, enemy.level);
       const goldRoll = 20 + Math.floor(customRandom() * 11); // 20..30
       totalGold += level * goldRoll;

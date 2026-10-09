@@ -1,4 +1,4 @@
-import { type BattleState, type CombatActionType } from '@poktsonline/shared';
+import { type BattleState, type CombatActionType, type ItemType } from '@poktsonline/shared';
 
 /**
  * Evaluates valid targetable unit IDs according to TS Online 2x5 Formation Grid rules:
@@ -9,7 +9,7 @@ export function getValidTargets(
   actionType: CombatActionType,
   actorTeam: 'allies' | 'enemies',
   battleState: BattleState,
-  itemType?: string
+  itemType?: ItemType
 ): string[] {
   const opposingTeamKey = actorTeam === 'allies' ? 'enemies' : 'allies';
   const opposingTeam = battleState[opposingTeamKey];

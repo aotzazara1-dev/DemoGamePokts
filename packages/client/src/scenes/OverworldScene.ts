@@ -118,7 +118,7 @@ export class OverworldScene extends Phaser.Scene {
     // 5. Connect to Colyseus Server
     this.connectToServer();
 
-    // 6. Handle returning from battle (including defeat respawn, captured beasts & monster loot)
+    // 6. Handle returning from battle (including defeat respawn, captured beasts & wild beast loot)
     this.events.on('resume', (_sys: any, data?: {
       respawnTile?: TileCoord;
       capturedBeasts?: Combatant[];
@@ -166,6 +166,11 @@ export class OverworldScene extends Phaser.Scene {
         }
       }
 
+      // Sync inventory (combat item consumption)
+      if (data?.inventory) {
+        this.inventory = data.inventory;
+      }
+
       // Sync loot drop (Gold + Items)
       if (data?.loot) {
         if (data.loot.gold > 0) {
@@ -179,9 +184,9 @@ export class OverworldScene extends Phaser.Scene {
             }
           });
         }
-        this.inventoryModal.setInventory(this.inventory);
-      } else if (data?.inventory) {
-        this.inventory = data.inventory;
+      }
+
+      if (data?.inventory || data?.loot) {
         this.inventoryModal.setInventory(this.inventory);
       }
 
@@ -225,7 +230,7 @@ export class OverworldScene extends Phaser.Scene {
       this.inventoryModal.setActiveBeast(activeBeast);
     });
 
-    // 7. Setup Beast Roster & Formation button, Character Profile, Inventory Bag, QA Debug Toolbar
+    // 7. Setup Beast Roster & Formation button, Character Profile, Inventory, QA Debug Toolbar
     this.setupUIControllers();
 
     if (this.input.keyboard) {

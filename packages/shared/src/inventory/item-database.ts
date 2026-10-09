@@ -61,3 +61,15 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
 export function getItemDefinition(itemId: string): ItemDefinition | undefined {
   return ITEM_DATABASE[itemId];
 }
+
+export function getItemIcon(itemId: string): string {
+  switch (itemId) {
+    case 'item_steamed_bun': return '🥟';
+    case 'item_herbal_tea': return '🍵';
+    case 'item_vitality_pill': return '💊';
+    case 'item_phoenix_feather': return '🪶';
+    case 'item_town_scroll': return '📜';
+    default: return '📦';
+  }
+}
+

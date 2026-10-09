@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ITEM_DATABASE,
   getItemDefinition,
+  getItemIcon,
   InventoryManager,
   LootEngine,
   Combatant,
@@ -47,6 +48,15 @@ describe('Inventory & Consumable System', () => {
       expect(feather.type).toBe('revive');
       expect(feather.effectValue).toBe(100);
       expect(feather.usableInCombat).toBe(true);
+    });
+
+    it('returns consistent icons for defined items and fallback for unknown items', () => {
+      expect(getItemIcon('item_steamed_bun')).toBe('🥟');
+      expect(getItemIcon('item_herbal_tea')).toBe('🍵');
+      expect(getItemIcon('item_vitality_pill')).toBe('💊');
+      expect(getItemIcon('item_phoenix_feather')).toBe('🪶');
+      expect(getItemIcon('item_town_scroll')).toBe('📜');
+      expect(getItemIcon('unknown_item_id')).toBe('📦');
     });
   });
 

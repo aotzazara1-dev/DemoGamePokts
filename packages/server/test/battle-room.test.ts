@@ -246,7 +246,7 @@ describe('BattleRoom', () => {
     clearInterval((expRoom as any)['_patchInterval']);
   });
 
-  it('calculates and awards monster loot (Gold and dropped items) on victory', () => {
+  it('calculates and awards wild beast loot (Gold and dropped items) on victory', () => {
     const weakEnemy: Combatant = {
       ...mockWildEnemy,
       hp: 1,

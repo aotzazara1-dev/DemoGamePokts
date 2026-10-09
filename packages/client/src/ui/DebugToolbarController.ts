@@ -269,9 +269,9 @@ export class DebugToolbarController {
         const res = InventoryManager.addItem(inv, 'item_steamed_bun', 5);
         if (res.success) {
           this.callbacks.onInventoryUpdated?.(res.inventory);
-          this.callbacks.onShowToast('🥟 Added +5 Steamed Buns to Bag!', '#38bdf8');
+          this.callbacks.onShowToast('🥟 Added +5 Steamed Buns to Inventory!', '#38bdf8');
         } else {
-          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+          this.callbacks.onShowToast(res.reason || 'Inventory is full!', '#ef4444');
         }
       };
     }
@@ -284,9 +284,9 @@ export class DebugToolbarController {
         const res = InventoryManager.addItem(inv, 'item_herbal_tea', 5);
         if (res.success) {
           this.callbacks.onInventoryUpdated?.(res.inventory);
-          this.callbacks.onShowToast('🍵 Added +5 Herbal Tea to Bag!', '#38bdf8');
+          this.callbacks.onShowToast('🍵 Added +5 Herbal Tea to Inventory!', '#38bdf8');
         } else {
-          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+          this.callbacks.onShowToast(res.reason || 'Inventory is full!', '#ef4444');
         }
       };
     }
@@ -299,9 +299,9 @@ export class DebugToolbarController {
         const res = InventoryManager.addItem(inv, 'item_phoenix_feather', 1);
         if (res.success) {
           this.callbacks.onInventoryUpdated?.(res.inventory);
-          this.callbacks.onShowToast('🪶 Added +1 Phoenix Feather to Bag!', '#fbbf24');
+          this.callbacks.onShowToast('🪶 Added +1 Phoenix Feather to Inventory!', '#fbbf24');
         } else {
-          this.callbacks.onShowToast(res.reason || 'Bag is full!', '#ef4444');
+          this.callbacks.onShowToast(res.reason || 'Inventory is full!', '#ef4444');
         }
       };
     }

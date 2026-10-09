@@ -9,6 +9,7 @@ import {
   InventoryManager,
   LootEngine,
   getItemDefinition,
+  getItemIcon,
   type SkillDefinition,
   type Combatant,
   type BattleState,
@@ -553,7 +554,7 @@ export class BattleScene extends Phaser.Scene {
 
       if (usableItems.length === 0) {
         this.cameras.main.shake(120, 0.005);
-        this.statusBannerText.setText('No combat-usable items in Bag!');
+        this.statusBannerText.setText('No combat-usable items in Inventory!');
         this.statusBannerText.setColor('#ef4444');
         return;
       }
@@ -593,7 +594,7 @@ export class BattleScene extends Phaser.Scene {
 
     items.forEach((item, idx) => {
       const def = getItemDefinition(item.itemId);
-      const icon = this.getItemIcon(item.itemId);
+      const icon = getItemIcon(item.itemId);
       const btnX = startX + idx * (btnWidth + 8);
       const btn = this.add.container(btnX, 0);
 
@@ -658,17 +659,6 @@ export class BattleScene extends Phaser.Scene {
     });
 
     this.itemMenuContainer.add(cancelBtn);
-  }
-
-  private getItemIcon(itemId: string): string {
-    switch (itemId) {
-      case 'item_steamed_bun': return '🥟';
-      case 'item_herbal_tea': return '🍵';
-      case 'item_vitality_pill': return '💊';
-      case 'item_phoenix_feather': return '🪶';
-      case 'item_town_scroll': return '📜';
-      default: return '📦';
-    }
   }
 
   private highlightValidTargets(targetIds: string[]) {
