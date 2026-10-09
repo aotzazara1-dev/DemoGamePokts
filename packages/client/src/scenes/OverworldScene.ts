@@ -84,11 +84,12 @@ export class OverworldScene extends Phaser.Scene {
   preload() {
     this.load.image('hero_sprite', '/assets/characters/hero_overworld.png');
     this.load.image('hero_avatar', '/assets/characters/hero_avatar.png');
-    // Generate procedural pixel-art style textures if not present
-    this.createProceduralTextures();
   }
 
   create() {
+    // Generate procedural pixel-art style textures if not loaded via preload
+    this.createProceduralTextures();
+
     // 1. Render Isometric Terrain
     this.renderTilemap();
 

@@ -76,10 +76,10 @@ export class BattleScene extends Phaser.Scene {
 
   preload() {
     this.load.image('combat_hero', '/assets/characters/hero_battle.png');
-    this.createCombatantTextures();
   }
 
   create() {
+    this.createCombatantTextures();
     const { width, height } = this.scale;
 
     // Ensure Overworld HUD elements, buttons, and modals are hidden during combat
