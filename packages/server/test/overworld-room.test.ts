@@ -221,4 +221,70 @@ describe('OverworldRoom', () => {
     expect(transitions[1].payload.targetMapId).toBe('novice_town_and_meadow');
     expect(transitions[1].payload.targetPosition).toEqual({ x: 35, y: 3 });
   });
+
+  it('allows moving onto a portal and warping immediately after battleConcluded', () => {
+    room.rng = () => 0.0; // force encounter
+    const client = createMockClient('client_1');
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 10, y: 5 } });
+
+    // Step into wild zone to trigger battle
+    (room as any).onMessageHandlers['move'](client, { targetX: 11, targetY: 5 });
+    const player = room.state.players.get('client_1')!;
+    expect(player.inBattle).toBe(true);
+
+    // Battle ends: client sends battleConcluded
+    (room as any).onMessageHandlers['battleConcluded'](client);
+    expect(player.inBattle).toBe(false);
+
+    // Move towards portal at (5, 6) in novice_town_and_meadow
+    player.x = 5;
+    player.y = 5;
+    (room as any).onMessageHandlers['move'](client, { targetX: 5, targetY: 6 });
+
+    expect(player.mapId).toBe('pebble_cave');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+    const portalMsg = client.messages.find(m => m.type === 'portalTransition');
+    expect(portalMsg).toBeDefined();
+  });
+
+  it('triggers portalTransition when standing directly on portal tile and sending move (dx=0, dy=0)', () => {
+    const client = createMockClient('client_1');
+    // Spawn directly on portal tile (5, 6)
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 6 } });
+
+    // Send move to same tile (5, 6)
+    (room as any).onMessageHandlers['move'](client, { targetX: 5, targetY: 6 });
+
+    const player = room.state.players.get('client_1')!;
+    expect(player.mapId).toBe('pebble_cave');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+
+    const portalMsg = client.messages.find(m => m.type === 'portalTransition');
+    expect(portalMsg).toBeDefined();
+    expect(portalMsg?.payload.targetMapId).toBe('pebble_cave');
+  });
+
+  it('handles direct warpPortal message and updates player location', () => {
+    const client = createMockClient('client_1');
+    room.onJoin(client as any, { name: 'HeroTrainer', spawnTile: { x: 5, y: 5 } });
+
+    // Send warpPortal directly
+    (room as any).onMessageHandlers['warpPortal'](client, {
+      targetMapId: 'bamboo_forest',
+      targetPosition: { x: 2, y: 15 },
+      portalName: 'Bamboo Forest'
+    });
+
+    const player = room.state.players.get('client_1')!;
+    expect(player.mapId).toBe('bamboo_forest');
+    expect(player.x).toBe(2);
+    expect(player.y).toBe(15);
+    expect(player.inBattle).toBe(false);
+
+    const portalMsg = client.messages.find(m => m.type === 'portalTransition');
+    expect(portalMsg).toBeDefined();
+    expect(portalMsg?.payload.targetMapId).toBe('bamboo_forest');
+  });
 });

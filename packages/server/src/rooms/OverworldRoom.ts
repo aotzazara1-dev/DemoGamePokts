@@ -38,8 +38,9 @@ export class OverworldRoom extends Room<OverworldState> {
 
     this.onMessage('move', (client: Client, message: { targetX: number; targetY: number }) => {
       const player = this.state.players.get(client.sessionId);
-      if (!player || player.inBattle) {
-        return;
+      if (!player) return;
+      if (player.inBattle) {
+        player.inBattle = false;
       }
 
       const currentPos: TileCoord = { x: player.x, y: player.y };
@@ -91,7 +92,8 @@ export class OverworldRoom extends Room<OverworldState> {
 
     this.onMessage('warpTown', (client: Client) => {
       const player = this.state.players.get(client.sessionId);
-      if (!player || player.inBattle) return;
+      if (!player) return;
+      player.inBattle = false;
 
       player.mapId = 'novice_town_and_meadow';
       player.x = 10;
@@ -103,6 +105,24 @@ export class OverworldRoom extends Room<OverworldState> {
         targetMapId: 'novice_town_and_meadow',
         targetPosition: { x: 10, y: 10 },
         portalName: 'Town Teleport'
+      });
+    });
+
+    this.onMessage('warpPortal', (client: Client, message: { targetMapId: string; targetPosition: TileCoord; portalName?: string }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) return;
+      player.inBattle = false;
+
+      player.mapId = message.targetMapId;
+      player.x = message.targetPosition.x;
+      player.y = message.targetPosition.y;
+      player.direction = 'down';
+      this.playerStepCounters.set(client.sessionId, 0);
+
+      client.send('portalTransition', {
+        targetMapId: message.targetMapId,
+        targetPosition: message.targetPosition,
+        portalName: message.portalName || 'Portal Warp'
       });
     });
 

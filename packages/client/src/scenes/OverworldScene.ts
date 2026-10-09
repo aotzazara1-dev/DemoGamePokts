@@ -158,6 +158,8 @@ export class OverworldScene extends Phaser.Scene {
       inventory?: InventoryState;
       loot?: LootReward;
     }) => {
+      this.isMoving = false;
+      this.isTransitioning = false;
       this.currentPath = [];
       this.clearDestinationMarker();
       this.network.sendBattleConcluded();
@@ -802,10 +804,9 @@ export class OverworldScene extends Phaser.Scene {
     if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y) {
       this.currentPath = [];
       this.clearDestinationMarker();
-      if (!this.network.getRoom()) {
-        this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
-      } else {
-        this.network.sendMove(portal.position.x, portal.position.y);
+      this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
+      if (this.network.getRoom()) {
+        this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
       }
       return;
     }
@@ -834,6 +835,9 @@ export class OverworldScene extends Phaser.Scene {
 
   public transitionToMap(targetMapId: string, targetPosition: TileCoord, portalName?: string) {
     if (this.isTransitioning) return;
+    if (this.mapConfig && this.mapConfig.id === targetMapId && this.playerTile.x === targetPosition.x && this.playerTile.y === targetPosition.y) {
+      return;
+    }
     this.isTransitioning = true;
     this.currentPath = [];
     this.clearDestinationMarker();
@@ -1175,7 +1179,17 @@ export class OverworldScene extends Phaser.Scene {
         this.isMoving = false;
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
 
-        if (portal) return;
+        if (portal) {
+          this.time.delayedCall(250, () => {
+            if (this.playerTile.x === portal.position.x && this.playerTile.y === portal.position.y && !this.isTransitioning) {
+              this.transitionToMap(portal.targetMapId, portal.targetPosition, portal.name);
+              if (this.network.getRoom()) {
+                this.network.sendWarpPortal(portal.targetMapId, portal.targetPosition, portal.name);
+              }
+            }
+          });
+          return;
+        }
 
         // Check if reached NPC interaction distance (adjacent tile)
         if (this.pendingNPCInteraction) {

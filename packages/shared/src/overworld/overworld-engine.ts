@@ -28,7 +28,34 @@ export class OverworldEngine {
     // 1. Validate step distance (max 1 tile in cardinal/diagonal directions)
     const dx = Math.abs(targetTile.x - state.position.x);
     const dy = Math.abs(targetTile.y - state.position.y);
-    if (dx > 1 || dy > 1 || (dx === 0 && dy === 0)) {
+    if (dx > 1 || dy > 1) {
+      return {
+        success: false,
+        reason: 'invalid_distance',
+        newPosition: prevPos,
+        previousPosition: prevPos,
+        stepsInZone: state.stepsInCurrentZone,
+        encounterTriggered: false
+      };
+    }
+
+    if (dx === 0 && dy === 0) {
+      // Check if player is standing directly on a portal and re-triggering it
+      const portal = mapConfig.portals?.find(
+        p => p.position.x === targetTile.x && p.position.y === targetTile.y
+      );
+      if (portal) {
+        return {
+          success: true,
+          newPosition: { ...targetTile },
+          previousPosition: prevPos,
+          stepsInZone: state.stepsInCurrentZone,
+          encounterTriggered: false,
+          portalTriggered: true,
+          portal
+        };
+      }
+
       return {
         success: false,
         reason: 'invalid_distance',

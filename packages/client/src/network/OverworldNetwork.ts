@@ -65,6 +65,11 @@ export class OverworldNetwork {
     this.room.send('warpTown');
   }
 
+  public sendWarpPortal(targetMapId: string, targetPosition: { x: number; y: number }, portalName?: string) {
+    if (!this.room) return;
+    this.room.send('warpPortal', { targetMapId, targetPosition, portalName });
+  }
+
   public onEncounter(callback: EncounterCallback) {
     this.encounterListeners.push(callback);
   }

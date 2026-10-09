@@ -107,4 +107,27 @@ describe('OverworldNetwork', () => {
 
     expect(onPortalMock).toHaveBeenCalledWith(sampleTransition);
   });
+
+  it('sends warpPortal message to room with targetMapId and targetPosition', () => {
+    const mockRoom: any = {
+      send: vi.fn(),
+      onMessage: vi.fn(),
+      state: {
+        players: {
+          onAdd: vi.fn(),
+          onRemove: vi.fn()
+        }
+      }
+    };
+
+    const network = new OverworldNetwork();
+    network.setRoom(mockRoom);
+
+    network.sendWarpPortal('bamboo_forest', { x: 2, y: 15 }, 'Bamboo Forest');
+    expect(mockRoom.send).toHaveBeenCalledWith('warpPortal', {
+      targetMapId: 'bamboo_forest',
+      targetPosition: { x: 2, y: 15 },
+      portalName: 'Bamboo Forest'
+    });
+  });
 });

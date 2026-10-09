@@ -205,5 +205,20 @@ describe('OverworldEngine Navigation and Encounters (Ticket 03)', () => {
       expect(result.portal).toEqual(portal);
       expect(result.encounterTriggered).toBe(false);
     });
+
+    it('triggers portal when player is already standing directly on the portal tile (dx=0, dy=0)', () => {
+      const meadowMap = MAP_DATABASE['novice_town_and_meadow'];
+      const portal = meadowMap.portals.find(p => p.id === 'portal_meadow_to_cave')!;
+      expect(portal).toBeDefined();
+
+      // Player is already standing at the portal tile (35, 2)
+      const state = createPlayerState(35, 2, 0);
+      const result = OverworldEngine.movePlayer(state, { x: 35, y: 2 }, meadowMap, () => 0.0);
+
+      expect(result.success).toBe(true);
+      expect(result.portalTriggered).toBe(true);
+      expect(result.portal).toEqual(portal);
+      expect(result.encounterTriggered).toBe(false);
+    });
   });
 });
