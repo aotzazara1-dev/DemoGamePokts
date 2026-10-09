@@ -2,3 +2,4 @@ export * from './types.js';
 export * from './formulas.js';
 export * from './battle/battle-engine.js';
 export * from './overworld/overworld-engine.js';
+export * from './data/skills.js';

@@ -54,4 +54,19 @@ describe('Isometric Coordinate Math', () => {
     expect(depthOrigin).toBeLessThan(depthNear);
     expect(depthNear).toBeLessThan(depthFar);
   });
+
+  it('supports passing bundled IsometricConfig object', () => {
+    const config = {
+      tileWidth: TILE_WIDTH,
+      tileHeight: TILE_HEIGHT,
+      originX: ORIGIN_X,
+      originY: ORIGIN_Y
+    };
+
+    const screen = isoToScreen(3, 4, config);
+    const inverted = screenToIso(screen.x, screen.y, config);
+
+    expect(Math.round(inverted.tileX)).toBe(3);
+    expect(Math.round(inverted.tileY)).toBe(4);
+  });
 });

@@ -5,22 +5,25 @@ import { Element, type Combatant } from './types.js';
  * Earth > Water > Fire > Wind > Earth
  * Advantage: 1.5x, Disadvantage: 0.7x, Neutral: 1.0x
  */
+const ELEMENT_ADVANTAGES: Record<Element, Element> = {
+  [Element.Earth]: Element.Water,
+  [Element.Water]: Element.Fire,
+  [Element.Fire]: Element.Wind,
+  [Element.Wind]: Element.Earth
+};
+
 export function getElementMultiplier(attackerElement: Element, defenderElement: Element): number {
-  if (
-    (attackerElement === Element.Earth && defenderElement === Element.Water) ||
-    (attackerElement === Element.Water && defenderElement === Element.Fire) ||
-    (attackerElement === Element.Fire && defenderElement === Element.Wind) ||
-    (attackerElement === Element.Wind && defenderElement === Element.Earth)
-  ) {
+  if (attackerElement === defenderElement) {
+    return 1.0;
+  }
+
+  // Strong against defender
+  if (ELEMENT_ADVANTAGES[attackerElement] === defenderElement) {
     return 1.5;
   }
 
-  if (
-    (attackerElement === Element.Water && defenderElement === Element.Earth) ||
-    (attackerElement === Element.Fire && defenderElement === Element.Water) ||
-    (attackerElement === Element.Wind && defenderElement === Element.Fire) ||
-    (attackerElement === Element.Earth && defenderElement === Element.Wind)
-  ) {
+  // Weak against defender
+  if (ELEMENT_ADVANTAGES[defenderElement] === attackerElement) {
     return 0.7;
   }
 

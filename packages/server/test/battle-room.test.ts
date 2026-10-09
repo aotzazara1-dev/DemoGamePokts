@@ -170,4 +170,37 @@ describe('BattleRoom', () => {
     clearTimeout((captureRoom as any)['_autoDisposeTimeout']);
     clearInterval((captureRoom as any)['_patchInterval']);
   });
+
+  it('assigns valid targetId to living enemy AI attacks so enemy attacks living allies', () => {
+    // Enemy with high HP so it doesn't faint in one hit
+    const toughEnemy: Combatant = {
+      ...mockWildEnemy,
+      hp: 500,
+      maxHp: 500,
+      atk: 20
+    };
+
+    const aiRoom = new BattleRoom();
+    aiRoom.onCreate({
+      playerCombatants: [mockHero],
+      wildEnemies: [toughEnemy]
+    });
+
+    const client = createMockClient('client_1');
+    aiRoom.onJoin(client as any);
+
+    // Hero defends
+    (aiRoom as any).onMessageHandlers['selectAction'](client, {
+      combatantId: 'hero_1',
+      action: { type: 'defend' }
+    });
+
+    // Enemy AI attacked Hero, Hero took damage
+    const heroState = aiRoom.state.combatants.get('hero_1')!;
+    expect(heroState.hp).toBeLessThan(100);
+
+    aiRoom.clock?.stop();
+    clearTimeout((aiRoom as any)['_autoDisposeTimeout']);
+    clearInterval((aiRoom as any)['_patchInterval']);
+  });
 });

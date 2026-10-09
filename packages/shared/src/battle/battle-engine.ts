@@ -8,6 +8,7 @@ import {
   type BattleOutcome
 } from '../types.js';
 import { calculateDamage, getElementMultiplier, canTriggerCombo } from '../formulas.js';
+import { ELEMENTAL_SKILLS } from '../data/skills.js';
 
 export class BattleEngine {
   /**
@@ -90,9 +91,10 @@ export class BattleEngine {
             if (targetInfo && targetInfo.unit.hp > 0) {
               // Execute Combo
               const target = targetInfo.unit;
-              const combinedAtk = (uA.atk + uB.atk) * 1.8;
-              const elemFactor = getElementMultiplier(uA.element, target.element);
-              let totalDamage = Math.round(Math.max(1, combinedAtk - target.def) * elemFactor);
+              const elemFactorA = getElementMultiplier(uA.element, target.element);
+              const elemFactorB = getElementMultiplier(uB.element, target.element);
+              const avgElemFactor = (elemFactorA + elemFactorB) / 2;
+              let totalDamage = calculateDamage(uA.atk + uB.atk, target.def, avgElemFactor, 1.8);
 
               if (target.isDefending) {
                 totalDamage = Math.max(1, Math.round(totalDamage * 0.5));
@@ -149,8 +151,18 @@ export class BattleEngine {
       }
 
       if (actor.action.type === 'flee') {
+        let highestEnemyAgi = 0;
+        const enemyTeam = nextState.enemies;
+        [...enemyTeam.front, ...enemyTeam.back].forEach(u => {
+          if (u && u.hp > 0 && u.agi > highestEnemyAgi) {
+            highestEnemyAgi = u.agi;
+          }
+        });
+
+        // Dynamic flee chance: base 50% adjusted by (actor.agi - highestEnemyAgi) * 2%
+        const escapeChance = Math.min(0.9, Math.max(0.15, 0.5 + (actor.agi - highestEnemyAgi) * 0.02));
         const roll = rng();
-        if (roll >= 0.4) {
+        if (roll <= escapeChance) {
           nextState.outcome = 'escaped';
           events.push({
             type: 'flee',
@@ -245,12 +257,23 @@ export class BattleEngine {
 
       // Calculate Damage
       const isSkill = actor.action.type === 'skill';
+      let skillMultiplier = 1.3;
+      let spCost = 10;
+      let skillName = 'Elemental Strike';
+
       if (isSkill) {
-        actor.sp = Math.max(0, actor.sp - 15);
+        const skillId = actor.action.skillId;
+        if (skillId && ELEMENTAL_SKILLS[skillId]) {
+          const def = ELEMENTAL_SKILLS[skillId];
+          skillMultiplier = def.multiplier;
+          spCost = def.spCost;
+          skillName = def.name;
+        }
+        actor.sp = Math.max(0, actor.sp - spCost);
       }
 
       const elemFactor = getElementMultiplier(actor.element, target.element);
-      const effectiveAtk = isSkill ? actor.atk * 1.3 : actor.atk;
+      const effectiveAtk = isSkill ? actor.atk * skillMultiplier : actor.atk;
       let damage = calculateDamage(effectiveAtk, target.def, elemFactor, 1.0);
 
       if (target.isDefending) {
@@ -260,10 +283,12 @@ export class BattleEngine {
       target.hp = Math.max(0, target.hp - damage);
 
       events.push({
-        type: 'attack',
+        type: isSkill ? 'skill' : 'attack',
         actorId: actor.id,
         targetId: target.id,
-        message: `${actor.name} attacks ${target.name}!`
+        message: isSkill
+          ? `${actor.name} casts ${skillName} at ${target.name}!`
+          : `${actor.name} attacks ${target.name}!`
       });
 
       events.push({

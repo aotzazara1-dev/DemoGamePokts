@@ -59,6 +59,7 @@ export type TeamActionsMap = Record<string, CombatAction>;
 
 export type BattleEventType =
   | 'attack'
+  | 'skill'
   | 'damage'
   | 'blocked'
   | 'combo'

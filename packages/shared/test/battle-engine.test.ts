@@ -262,5 +262,48 @@ describe('BattleEngine Turn Resolution (Ticket 02)', () => {
       const result = BattleEngine.resolveTurn(state, actions);
       expect(result.nextState.outcome).toBe('defeat');
     });
+
+    it('evaluates flee action based on enemy AGI', () => {
+      const fastHero = makeUnit({ id: 'hero', name: 'Hero', agi: 50 });
+      const slowEnemy = makeUnit({ id: 'turtle', name: 'Turtle', agi: 10 });
+
+      const state = createBattleState(
+        [null, null, fastHero, null, null],
+        [null, null, null, null, null],
+        [null, null, slowEnemy, null, null],
+        [null, null, null, null, null]
+      );
+
+      // Fast hero fleeing slow enemy: escape chance = 0.5 + (50 - 10)*0.02 = 1.3 -> clamped to 0.9 (90%)
+      const actions: TeamActionsMap = {
+        hero: { type: 'flee' }
+      };
+
+      // Guaranteed escape with roll 0.8 (< 0.9)
+      const result = BattleEngine.resolveTurn(state, actions, () => 0.8);
+      expect(result.nextState.outcome).toBe('escaped');
+    });
+
+    it('executes elemental skill, consuming SP and applying multiplier', () => {
+      const waterHero = makeUnit({ id: 'hero', name: 'Hero', element: Element.Water, sp: 20, maxSp: 20, atk: 30 });
+      const fireEnemy = makeUnit({ id: 'imp', name: 'Flame Imp', element: Element.Fire, def: 10, hp: 100, maxHp: 100 });
+
+      const state = createBattleState(
+        [null, null, waterHero, null, null],
+        [null, null, null, null, null],
+        [null, null, fireEnemy, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: { type: 'skill', skillId: 'aqua_jet', targetId: 'imp' }
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      const skillEvent = result.events.find(e => e.type === 'skill');
+      expect(skillEvent).toBeDefined();
+      expect(result.nextState.allies.front[2]?.sp).toBe(10); // consumed 10 SP
+      expect(result.nextState.enemies.front[2]?.hp).toBeLessThan(100);
+    });
   });
 });

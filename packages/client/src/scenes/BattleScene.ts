@@ -3,6 +3,9 @@ import { BattleNetwork } from '../network/BattleNetwork.js';
 import { getValidTargets } from '../battle/targeting.js';
 import {
   Element,
+  BattleEngine,
+  ELEMENTAL_SKILLS,
+  type SkillDefinition,
   type Combatant,
   type BattleState,
   type CombatAction,
@@ -18,6 +21,7 @@ export class BattleScene extends Phaser.Scene {
   private battleState!: BattleState;
   private currentTurnActorId: string = 'hero_1';
   private selectedActionType: CombatActionType | null = null;
+  private selectedSkillId: string | null = null;
   private stagedActions: Record<string, CombatAction> = {};
 
   // Timers and UI
@@ -63,8 +67,8 @@ export class BattleScene extends Phaser.Scene {
     // 1. Dark Atmospheric Combat Arena Backdrop
     this.add.rectangle(width / 2, height / 2, width, height, 0x050a14, 0.96);
 
-    // 2. Arena Title
-    this.add.text(width / 2, 38, '⚔️ POKTSONLINE BATTLE ARENA ⚔️', {
+    // 2. Battle Instance Title
+    this.add.text(width / 2, 38, '⚔️ POKTSONLINE BATTLE INSTANCE ⚔️', {
       fontFamily: 'Segoe UI, Tahoma',
       fontSize: '22px',
       color: '#fbbf24',
@@ -404,13 +408,38 @@ export class BattleScene extends Phaser.Scene {
 
   private handleActionClick(actionType: CombatActionType) {
     this.selectedActionType = actionType;
+    this.selectedSkillId = null;
 
     if (actionType === 'defend' || actionType === 'flee') {
       // Immediate actions that do not require targeting an enemy
       this.stagedActions[this.currentTurnActorId] = { type: actionType };
       this.advanceTurnInput();
+    } else if (actionType === 'skill') {
+      const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
+      const actor = activeVis?.unit;
+      if (!actor) return;
+
+      // Select elemental skill according to actor's element
+      let skillDef: SkillDefinition = ELEMENTAL_SKILLS['aqua_jet'];
+      if (actor.element === Element.Earth) skillDef = ELEMENTAL_SKILLS['rock_throw'];
+      else if (actor.element === Element.Fire) skillDef = ELEMENTAL_SKILLS['flame_strike'];
+      else if (actor.element === Element.Wind) skillDef = ELEMENTAL_SKILLS['gale_slash'];
+
+      if (actor.sp < skillDef.spCost) {
+        this.cameras.main.shake(120, 0.005);
+        this.statusBannerText.setText(`Not enough SP! ${skillDef.name} costs ${skillDef.spCost} SP.`);
+        this.statusBannerText.setColor('#ef4444');
+        return;
+      }
+
+      this.selectedSkillId = skillDef.id;
+      const validTargetIds = getValidTargets('skill', 'allies', this.battleState);
+      this.highlightValidTargets(validTargetIds);
+
+      this.statusBannerText.setText(`Selected ${skillDef.name} (${skillDef.spCost} SP)! Select enemy target:`);
+      this.statusBannerText.setColor('#38bdf8');
     } else {
-      // Actions requiring target selection (attack, skill, capture)
+      // Actions requiring target selection (attack, capture)
       const validTargetIds = getValidTargets(actionType, 'allies', this.battleState);
       this.highlightValidTargets(validTargetIds);
 
@@ -459,7 +488,8 @@ export class BattleScene extends Phaser.Scene {
     // Target locked
     this.stagedActions[this.currentTurnActorId] = {
       type: this.selectedActionType,
-      targetId
+      targetId,
+      skillId: this.selectedActionType === 'skill' ? this.selectedSkillId || undefined : undefined
     };
 
     this.slotHighlightBoxes.forEach(b => b.destroy());
@@ -527,43 +557,45 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private executeLocalResolution() {
-    // Simulated events for smooth client demonstration
-    const events: BattleEvent[] = [];
-
-    const heroAction = this.stagedActions['hero_1'];
-    const beastAction = this.stagedActions['beast_1'];
-
-    if (heroAction && heroAction.type === 'attack') {
-      events.push({
-        type: 'attack',
-        actorId: 'hero_1',
-        targetId: heroAction.targetId,
-        value: 32,
-        message: 'Hero strikes with Water blade!'
+    // 1. Assign AI actions to living enemies
+    const fullActionsMap: Record<string, CombatAction> = { ...this.stagedActions };
+    const opposingTeam = this.battleState.enemies;
+    for (let c = 0; c < 5; c++) {
+      const frontUnit = opposingTeam.front[c];
+      const backUnit = opposingTeam.back[c];
+      [frontUnit, backUnit].forEach(unit => {
+        if (unit && unit.hp > 0 && !fullActionsMap[unit.id]) {
+          // Find living target in allies formation (frontline first, then backline)
+          let targetId: string | undefined;
+          for (let col = 0; col < 5; col++) {
+            const frontAlly = this.battleState.allies.front[col];
+            if (frontAlly && frontAlly.hp > 0) {
+              targetId = frontAlly.id;
+              break;
+            }
+          }
+          if (!targetId) {
+            for (let col = 0; col < 5; col++) {
+              const backAlly = this.battleState.allies.back[col];
+              if (backAlly && backAlly.hp > 0) {
+                targetId = backAlly.id;
+                break;
+              }
+            }
+          }
+          if (targetId) {
+            fullActionsMap[unit.id] = { type: 'attack', targetId };
+          }
+        }
       });
     }
 
-    if (beastAction && beastAction.type === 'attack') {
-      events.push({
-        type: 'combo',
-        actorId: 'beast_1',
-        targetId: beastAction.targetId,
-        value: 28,
-        message: 'Aqua Fin executes SYNCHRONIZED COMBO ATTACK! (2.0x)'
-      });
-    }
+    // 2. Deterministically resolve using pure shared BattleEngine
+    const result = BattleEngine.resolveTurn(this.battleState, fullActionsMap);
+    this.battleState = result.nextState;
 
-    if (heroAction?.type === 'capture') {
-      events.push({
-        type: 'capture_success',
-        actorId: 'hero_1',
-        targetId: heroAction.targetId,
-        message: 'Capture Net succeeded! Wild Beast tamed!'
-      });
-    }
-
-    // Play resolution
-    this.playResolutionSequence(events, 'victory');
+    // 3. Play actual events
+    this.playResolutionSequence(result.events, result.nextState.outcome);
   }
 
   private playResolutionSequence(events: BattleEvent[], finalOutcome: string) {
@@ -591,7 +623,7 @@ export class BattleScene extends Phaser.Scene {
         this.actionTimerSeconds = 30;
         this.currentTurnActorId = 'hero_1';
         this.stagedActions = {};
-        this.statusBannerText.setText('Action Phase: Round 2 started. Select commands!');
+        this.statusBannerText.setText('Action Phase: Next round started. Select commands!');
       }
     });
   }
@@ -688,8 +720,9 @@ export class BattleScene extends Phaser.Scene {
     const bannerBg = this.add.rectangle(0, 0, 520, 220, 0x0f172a, 0.98);
     bannerBg.setStrokeStyle(3, 0xd4af37, 1);
 
+    const isDefeat = outcome === 'defeat';
     const isWin = outcome === 'victory';
-    const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN BATTLE';
+    const title = isWin ? '🏆 VICTORY ACHIEVED! 🏆' : outcome === 'escaped' ? '🏃 ESCAPED FROM COMBAT' : '💀 DEFEATED IN COMBAT 💀';
     const titleColor = isWin ? '#fbbf24' : outcome === 'escaped' ? '#38bdf8' : '#ef4444';
 
     const titleText = this.add.text(0, -60, title, {
@@ -698,8 +731,12 @@ export class BattleScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    const rewardsText = this.add.text(0, -10, isWin ? '+45 EXP & +12 Gold acquired!' : 'Returned safely to overworld.', {
-      fontSize: '14px',
+    const rewardsText = this.add.text(0, -10, isWin
+      ? 'Combat concluded successfully. Returning to overworld.'
+      : isDefeat
+        ? 'All friendly units have fallen. Transported to Novice Town.'
+        : 'Disengaged safely from wild encounter.', {
+      fontSize: '13px',
       color: '#e2e8f0'
     }).setOrigin(0.5, 0.5);
 
@@ -712,21 +749,25 @@ export class BattleScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    // Return to Overworld Button
-    const returnBtn = this.add.rectangle(0, 65, 240, 42, 0xd97706).setInteractive({ useHandCursor: true });
-    const returnBtnText = this.add.text(0, 65, 'Return to Overworld', {
+    // Return to Overworld or Respawn Button
+    const returnBtn = this.add.rectangle(0, 65, 250, 42, isDefeat ? 0x991b1b : 0xd97706).setInteractive({ useHandCursor: true });
+    const returnBtnText = this.add.text(0, 65, isDefeat ? 'Respawn at Novice Town' : 'Return to Overworld', {
       fontSize: '14px',
       color: '#ffffff',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    returnBtn.on('pointerover', () => returnBtn.setFillStyle(0xf59e0b));
-    returnBtn.on('pointerout', () => returnBtn.setFillStyle(0xd97706));
+    returnBtn.on('pointerover', () => returnBtn.setFillStyle(isDefeat ? 0xb91c1c : 0xf59e0b));
+    returnBtn.on('pointerout', () => returnBtn.setFillStyle(isDefeat ? 0x991b1b : 0xd97706));
     returnBtn.on('pointerdown', () => {
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
         this.scene.stop();
-        this.scene.resume('OverworldScene');
+        if (isDefeat) {
+          this.scene.resume('OverworldScene', { respawnTile: { x: 10, y: 10 } });
+        } else {
+          this.scene.resume('OverworldScene');
+        }
       });
     });
 

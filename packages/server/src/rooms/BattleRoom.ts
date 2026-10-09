@@ -156,7 +156,27 @@ export class BattleRoom extends Room<BattleRoomState> {
     // 2. Default AI actions for living enemies
     for (const [id, c] of this.state.combatants.entries()) {
       if (c.team === 'enemies' && c.isAlive && !actionsMap[id]) {
-        actionsMap[id] = { type: 'attack' };
+        // Target frontline living ally, or backline if front is empty
+        let targetId: string | undefined;
+        for (let col = 0; col < 5; col++) {
+          const frontUnit = this.authoritativeBattleState.allies.front[col];
+          if (frontUnit && frontUnit.hp > 0) {
+            targetId = frontUnit.id;
+            break;
+          }
+        }
+        if (!targetId) {
+          for (let col = 0; col < 5; col++) {
+            const backUnit = this.authoritativeBattleState.allies.back[col];
+            if (backUnit && backUnit.hp > 0) {
+              targetId = backUnit.id;
+              break;
+            }
+          }
+        }
+        if (targetId) {
+          actionsMap[id] = { type: 'attack', targetId };
+        }
       }
     }
 

@@ -8,6 +8,13 @@ export interface IsoTileCoord {
   tileY: number;
 }
 
+export interface IsometricConfig {
+  tileWidth: number;
+  tileHeight: number;
+  originX: number;
+  originY: number;
+}
+
 /**
  * Projects a 2D grid tile coordinate to a 2.5D isometric screen position (standard 2:1 diamond projection).
  */
@@ -18,12 +25,39 @@ export function isoToScreen(
   tileHeight: number,
   originX: number,
   originY: number
+): ScreenCoord;
+export function isoToScreen(
+  tileX: number,
+  tileY: number,
+  config: IsometricConfig
+): ScreenCoord;
+export function isoToScreen(
+  tileX: number,
+  tileY: number,
+  configOrWidth: number | IsometricConfig,
+  tileHeight?: number,
+  originX?: number,
+  originY?: number
 ): ScreenCoord {
-  const halfWidth = tileWidth / 2;
-  const halfHeight = tileHeight / 2;
+  let tw: number, th: number, ox: number, oy: number;
 
-  const x = (tileX - tileY) * halfWidth + originX;
-  const y = (tileX + tileY) * halfHeight + originY;
+  if (typeof configOrWidth === 'object') {
+    tw = configOrWidth.tileWidth;
+    th = configOrWidth.tileHeight;
+    ox = configOrWidth.originX;
+    oy = configOrWidth.originY;
+  } else {
+    tw = configOrWidth;
+    th = tileHeight!;
+    ox = originX!;
+    oy = originY!;
+  }
+
+  const halfWidth = tw / 2;
+  const halfHeight = th / 2;
+
+  const x = (tileX - tileY) * halfWidth + ox;
+  const y = (tileX + tileY) * halfHeight + oy;
 
   return { x, y };
 }
@@ -38,12 +72,39 @@ export function screenToIso(
   tileHeight: number,
   originX: number,
   originY: number
+): IsoTileCoord;
+export function screenToIso(
+  screenX: number,
+  screenY: number,
+  config: IsometricConfig
+): IsoTileCoord;
+export function screenToIso(
+  screenX: number,
+  screenY: number,
+  configOrWidth: number | IsometricConfig,
+  tileHeight?: number,
+  originX?: number,
+  originY?: number
 ): IsoTileCoord {
-  const halfWidth = tileWidth / 2;
-  const halfHeight = tileHeight / 2;
+  let tw: number, th: number, ox: number, oy: number;
 
-  const relX = screenX - originX;
-  const relY = screenY - originY;
+  if (typeof configOrWidth === 'object') {
+    tw = configOrWidth.tileWidth;
+    th = configOrWidth.tileHeight;
+    ox = configOrWidth.originX;
+    oy = configOrWidth.originY;
+  } else {
+    tw = configOrWidth;
+    th = tileHeight!;
+    ox = originX!;
+    oy = originY!;
+  }
+
+  const halfWidth = tw / 2;
+  const halfHeight = th / 2;
+
+  const relX = screenX - ox;
+  const relY = screenY - oy;
 
   const termA = relX / halfWidth;
   const termB = relY / halfHeight;

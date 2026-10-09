@@ -38,8 +38,8 @@ export class OverworldScene extends Phaser.Scene {
     // 1. Render Isometric Terrain
     this.renderTilemap();
 
-    // 2. Setup Hero avatar
-    this.createPlayerAvatar();
+    // 2. Setup Hero
+    this.createPlayerHero();
 
     // 3. Setup Camera
     this.cameras.main.setBounds(0, 0, 3200, 2400);
@@ -75,12 +75,24 @@ export class OverworldScene extends Phaser.Scene {
     // 5. Connect to Colyseus Server
     this.connectToServer();
 
-    // 6. Handle returning from battle
-    this.events.on('resume', () => {
+    // 6. Handle returning from battle (including defeat respawn)
+    this.events.on('resume', (_sys: any, data?: { respawnTile?: TileCoord }) => {
       this.network.sendBattleConcluded();
       const zoneDisplay = document.getElementById('zone-display');
-      if (zoneDisplay) {
-        zoneDisplay.innerText = 'Returned to Overworld. Exploring...';
+
+      if (data?.respawnTile) {
+        this.playerTile = { ...data.respawnTile };
+        const screenPos = isoToScreen(this.playerTile.x, this.playerTile.y, this.tileWidth, this.tileHeight, this.originX, this.originY);
+        this.playerContainer.setPosition(screenPos.x, screenPos.y);
+        this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
+        if (zoneDisplay) {
+          zoneDisplay.innerText = '🏡 Respawned at Novice Town. Health & Spirit restored!';
+          zoneDisplay.style.color = '#6ee7b7';
+        }
+      } else {
+        if (zoneDisplay) {
+          zoneDisplay.innerText = 'Returned to Overworld. Exploring...';
+        }
       }
     });
   }
@@ -169,8 +181,8 @@ export class OverworldScene extends Phaser.Scene {
       g.destroy();
     }
 
-    // Hero Avatar
-    if (!this.textures.exists('hero_avatar')) {
+    // Hero Sprite
+    if (!this.textures.exists('hero_sprite')) {
       const g = this.make.graphics({ x: 0, y: 0 });
       // Cloak
       g.fillStyle(0x2563eb, 1);
@@ -181,18 +193,18 @@ export class OverworldScene extends Phaser.Scene {
       // Headband
       g.fillStyle(0xd97706, 1);
       g.fillRect(10, 6, 12, 3);
-      g.generateTexture('hero_avatar', 32, 32);
+      g.generateTexture('hero_sprite', 32, 32);
       g.destroy();
     }
 
-    // Remote Player Avatar
-    if (!this.textures.exists('remote_avatar')) {
+    // Remote Hero Sprite
+    if (!this.textures.exists('remote_hero_sprite')) {
       const g = this.make.graphics({ x: 0, y: 0 });
       g.fillStyle(0xd97706, 1);
       g.fillRect(8, 14, 16, 18);
       g.fillStyle(0xfef08a, 1);
       g.fillCircle(16, 8, 6);
-      g.generateTexture('remote_avatar', 32, 32);
+      g.generateTexture('remote_hero_sprite', 32, 32);
       g.destroy();
     }
   }
@@ -220,7 +232,7 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
-  private createPlayerAvatar() {
+  private createPlayerHero() {
     const screenPos = isoToScreen(
       this.playerTile.x,
       this.playerTile.y,
@@ -235,7 +247,7 @@ export class OverworldScene extends Phaser.Scene {
     // Shadow
     this.playerShadow = this.add.ellipse(0, 0, 24, 12, 0x000000, 0.4);
     // Sprite
-    const sprite = this.add.image(0, -18, 'hero_avatar');
+    const sprite = this.add.image(0, -18, 'hero_sprite');
     // Name Tag
     const nameText = this.add.text(0, -36, 'You (Hero)', {
       fontSize: '11px',
@@ -253,7 +265,7 @@ export class OverworldScene extends Phaser.Scene {
     const container = this.add.container(screenPos.x, screenPos.y);
 
     const shadow = this.add.ellipse(0, 0, 24, 12, 0x000000, 0.4);
-    const sprite = this.add.image(0, -18, 'remote_avatar');
+    const sprite = this.add.image(0, -18, 'remote_hero_sprite');
     const nameText = this.add.text(0, -36, player.name || 'Player', {
       fontSize: '11px',
       color: '#f59e0b',
