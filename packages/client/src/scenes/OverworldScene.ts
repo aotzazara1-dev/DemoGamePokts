@@ -75,6 +75,7 @@ export class OverworldScene extends Phaser.Scene {
   private otherPlayers: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord }> = new Map();
   private roamingBeasts: Map<string, { container: Phaser.GameObjects.Container; tile: TileCoord; entity: any }> = new Map();
   private clickedOnInteractive: boolean = false;
+  private roamingBeastRemoveBound: boolean = false;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor() {
@@ -370,21 +371,31 @@ export class OverworldScene extends Phaser.Scene {
         }
 
         if (state?.roamingBeasts) {
+          const activeIds = new Set<string>();
           state.roamingBeasts.forEach((beast: any, beastId: string) => {
+            activeIds.add(beastId);
             if (this.roamingBeasts.has(beastId)) {
               this.updateRoamingBeast(beastId, beast);
             } else {
               this.addRoamingBeast(beastId, beast);
             }
           });
+
+          // Clean up any beasts no longer in state
+          this.roamingBeasts.forEach((_, id) => {
+            if (!activeIds.has(id)) {
+              this.removeRoamingBeast(id);
+            }
+          });
+
+          if (!this.roamingBeastRemoveBound && (state.roamingBeasts as any).onRemove) {
+            this.roamingBeastRemoveBound = true;
+            (state.roamingBeasts as any).onRemove((_beast: any, beastId: string) => {
+              this.removeRoamingBeast(beastId);
+            });
+          }
         }
       });
-
-      if ((room.state as any)?.roamingBeasts) {
-        (room.state as any).roamingBeasts.onRemove((_beast: any, beastId: string) => {
-          this.removeRoamingBeast(beastId);
-        });
-      }
 
       // Listen for wild encounter triggers
       this.network.onEncounter((payload) => {
@@ -397,7 +408,6 @@ export class OverworldScene extends Phaser.Scene {
       });
     } catch (err) {
       console.warn('[OverworldScene] Could not connect to authoritative server. Running offline exploration mode.', err);
-      this.initOfflineRoamingBeasts();
     }
   }
 
@@ -1381,65 +1391,6 @@ export class OverworldScene extends Phaser.Scene {
     }
   }
 
-  private initOfflineRoamingBeasts() {
-    const beasts = RoamingBeastManager.generateMapRoamingBeasts(this.mapConfig, 6);
-    beasts.forEach((b: RoamingBeastEntity) => {
-      this.addRoamingBeast(b.id, b);
-    });
-
-    // Offline AI simulation timer
-    this.time.addEvent({
-      delay: 1500,
-      loop: true,
-      callback: () => {
-        if (this.isTransitioning) return;
-        const fakePlayer = {
-          id: 'self',
-          x: this.playerTile.x,
-          y: this.playerTile.y,
-          inBattle: false,
-          mapId: this.mapConfig.id
-        };
-
-        this.roamingBeasts.forEach((remote, beastId) => {
-          const b = remote.entity;
-          if (b.mapId !== this.mapConfig.id || b.inCombat) return;
-
-          const step = RoamingBeastManager.stepRoamingBeastAI(b, [fakePlayer], this.mapConfig);
-          b.x = step.x;
-          b.y = step.y;
-          b.direction = step.direction;
-          this.updateRoamingBeast(beastId, b);
-
-          if (step.triggeredPlayerId) {
-            b.inCombat = true;
-            this.time.delayedCall(20000, () => {
-              b.inCombat = false;
-              const zone = this.mapConfig.zones.find(z => z.id === b.zoneId);
-              if (zone) {
-                const newPos = RoamingBeastManager.findValidSpawnTile(zone, this.mapConfig);
-                if (newPos) {
-                  b.x = newPos.x;
-                  b.y = newPos.y;
-                }
-              }
-              this.updateRoamingBeast(beastId, b);
-            });
-
-            const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(b);
-            this.triggerBattleTransition({
-              encounter: {
-                zoneId: b.zoneId,
-                wildEnemies: [combatant]
-              },
-              playerPosition: { x: this.playerTile.x, y: this.playerTile.y }
-            });
-          }
-        });
-      }
-    });
-  }
-
   override update(_time: number, delta: number) {
     if (this.isAnyModalOpen()) return;
 
@@ -1608,38 +1559,19 @@ export class OverworldScene extends Phaser.Scene {
     // Send to authoritative server with active mapId for robust synchronization
     this.network.sendMove(targetX, targetY, this.mapConfig.id);
 
-    // If offline exploration mode without active server, roll encounters locally
+    // If offline exploration mode without active server, roll grass encounters locally
     if (!this.network.getRoom() && !portal) {
-      // 1. Check offline roaming beast collision
-      const touchedBeast = Array.from(this.roamingBeasts.values()).find(
-        b => b.entity.mapId === this.mapConfig.id && !b.entity.inCombat && b.tile.x === targetX && b.tile.y === targetY
-      );
-      if (touchedBeast) {
-        touchedBeast.entity.inCombat = true;
-        const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(touchedBeast.entity);
+      const offlinePlayerState = {
+        playerId: 'local_hero',
+        position: { x: this.playerTile.x, y: this.playerTile.y },
+        facingDirection: 'down' as Direction,
+        stepsInCurrentZone: 0
+      };
+      const offlineResult = OverworldEngine.movePlayer(offlinePlayerState, { x: targetX, y: targetY }, this.mapConfig);
+      if (offlineResult.encounterTriggered && offlineResult.encounter) {
         this.time.delayedCall(190, () => {
-          this.triggerBattleTransition({
-            encounter: {
-              zoneId: touchedBeast.entity.zoneId,
-              wildEnemies: [combatant]
-            },
-            playerPosition: { x: targetX, y: targetY }
-          });
+          this.triggerBattleTransition(offlineResult);
         });
-      } else {
-        // 2. Otherwise check step-based random grass encounter
-        const offlinePlayerState = {
-          playerId: 'local_hero',
-          position: { x: this.playerTile.x, y: this.playerTile.y },
-          facingDirection: 'down' as Direction,
-          stepsInCurrentZone: 0
-        };
-        const offlineResult = OverworldEngine.movePlayer(offlinePlayerState, { x: targetX, y: targetY }, this.mapConfig);
-        if (offlineResult.encounterTriggered && offlineResult.encounter) {
-          this.time.delayedCall(190, () => {
-            this.triggerBattleTransition(offlineResult);
-          });
-        }
       }
     }
 

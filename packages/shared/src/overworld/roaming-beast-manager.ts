@@ -7,6 +7,7 @@ import {
   Direction,
   EncounterPoolEntry
 } from '../types.js';
+import { findPath } from './pathfinding.js';
 
 export class RoamingBeastManager {
   /**
@@ -21,15 +22,13 @@ export class RoamingBeastManager {
         const poolEntry = zone.encounterPool[i % zone.encounterPool.length];
 
         let pos: TileCoord | null = null;
-        if (i === 0) {
-          const nearPos = { x: zone.bounds.minX + 1, y: 10 };
-          if (this.isTileWalkable(nearPos.x, nearPos.y, mapConfig, zone.id)) {
-            pos = nearPos;
-          }
-        } else if (i === 1) {
-          const nearPos = { x: zone.bounds.minX + 2, y: 13 };
-          if (this.isTileWalkable(nearPos.x, nearPos.y, mapConfig, zone.id)) {
-            pos = nearPos;
+        if (i < 2) {
+          // Dynamically place early beasts near the zone boundary edge (scaled to zone bounds)
+          const centerY = Math.floor((zone.bounds.minY + zone.bounds.maxY) / 2);
+          const nearY = Math.min(zone.bounds.maxY, Math.max(zone.bounds.minY, centerY + (i === 0 ? -1 : 1)));
+          const nearX = Math.min(zone.bounds.maxX, zone.bounds.minX + 1 + i);
+          if (this.isTileWalkable(nearX, nearY, mapConfig, zone.id)) {
+            pos = { x: nearX, y: nearY };
           }
         }
 
@@ -61,12 +60,8 @@ export class RoamingBeastManager {
       const rx = zone.bounds.minX + Math.floor(Math.random() * width);
       const ry = zone.bounds.minY + Math.floor(Math.random() * height);
 
-      const isObstacle = mapConfig.obstacles.some(o => o.x === rx && o.y === ry);
-      const isPortal = mapConfig.portals?.some(p => p.position.x === rx && p.position.y === ry);
       const isBeast = existingBeasts.some(b => b.x === rx && b.y === ry);
-      const isNpc = mapConfig.npcs?.some(n => n.position.x === rx && n.position.y === ry);
-
-      if (!isObstacle && !isPortal && !isBeast && !isNpc) {
+      if (!isBeast && this.isTileWalkable(rx, ry, mapConfig, zone.id)) {
         return { x: rx, y: ry };
       }
     }
@@ -132,7 +127,7 @@ export class RoamingBeastManager {
 
   /**
    * Simulates one AI tick for a roaming beast.
-   * - Aggro: If any eligible player on the same map is within 3 tiles, moves towards the nearest player.
+   * - Aggro: If any eligible player on the same map is within 3 tiles, moves towards the nearest player with obstacle avoidance.
    * - Collision: If the step lands on the player, triggers combat.
    * - Wander: If no player is nearby, randomly moves 1 tile within zone bounds or stays idle.
    */
@@ -162,41 +157,50 @@ export class RoamingBeastManager {
       }
     }
 
-    // 1. Aggro Pursuit (within 3 Manhattan distance)
+    // 1. Aggro Pursuit (within 3 Manhattan distance) with Obstacle Avoidance
     if (nearestPlayer && minDistance <= 3) {
       const dx = nearestPlayer.x - beast.x;
       const dy = nearestPlayer.y - beast.y;
 
-      let stepX = 0;
-      let stepY = 0;
-
-      // Prefer the larger axis
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        stepX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
-      } else {
-        stepY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
-      }
-
-      const nextX = beast.x + stepX;
-      const nextY = beast.y + stepY;
-
-      // Check if step reaches player directly (collision!)
-      if (nextX === nearestPlayer.x && nextY === nearestPlayer.y) {
+      // Immediate collision check if already adjacent
+      if (Math.abs(dx) + Math.abs(dy) === 1) {
         return {
-          x: nextX,
-          y: nextY,
-          direction: this.calcDirection(stepX, stepY),
+          x: nearestPlayer.x,
+          y: nearestPlayer.y,
+          direction: this.calcDirection(dx, dy),
           triggeredPlayerId: nearestPlayer.id
         };
       }
 
-      // If valid tile, take step
-      if (this.isTileWalkable(nextX, nextY, mapConfig, beast.zoneId)) {
-        return {
-          x: nextX,
-          y: nextY,
-          direction: this.calcDirection(stepX, stepY)
-        };
+      // Calculate path with obstacle avoidance
+      const path = findPath(
+        { x: beast.x, y: beast.y },
+        { x: nearestPlayer.x, y: nearestPlayer.y },
+        mapConfig,
+        { allowDiagonal: false, maxIterations: 60 }
+      );
+
+      if (path && path.length > 1) {
+        const next = path[1];
+        const stepX = next.x - beast.x;
+        const stepY = next.y - beast.y;
+
+        if (next.x === nearestPlayer.x && next.y === nearestPlayer.y) {
+          return {
+            x: next.x,
+            y: next.y,
+            direction: this.calcDirection(stepX, stepY),
+            triggeredPlayerId: nearestPlayer.id
+          };
+        }
+
+        if (this.isTileWalkable(next.x, next.y, mapConfig, beast.zoneId)) {
+          return {
+            x: next.x,
+            y: next.y,
+            direction: this.calcDirection(stepX, stepY)
+          };
+        }
       }
     }
 
@@ -242,7 +246,7 @@ export class RoamingBeastManager {
     };
   }
 
-  private static isTileWalkable(x: number, y: number, mapConfig: MapConfig, zoneId?: string): boolean {
+  static isTileWalkable(x: number, y: number, mapConfig: MapConfig, zoneId?: string): boolean {
     if (x < 0 || x >= mapConfig.width || y < 0 || y >= mapConfig.height) {
       return false;
     }

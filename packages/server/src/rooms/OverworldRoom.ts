@@ -50,7 +50,7 @@ export class OverworldRoom extends Room<OverworldState> {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
       if (player.inBattle) {
-        player.inBattle = false;
+        return;
       }
 
       // 1. Resynchronize mapId if client declared its active map and it differs from server state
@@ -154,7 +154,7 @@ export class OverworldRoom extends Room<OverworldState> {
     this.onMessage('warpPortal', (client: Client, message: PortalTransitionPayload) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      player.inBattle = false;
+      if (player.inBattle) return;
 
       // Authoritative portal proximity and destination validation
       const currentMapConfig = (this.mapConfig && this.mapConfig.id === player.mapId)
@@ -165,7 +165,7 @@ export class OverworldRoom extends Room<OverworldState> {
         p.targetMapId === message.targetMapId &&
         p.targetPosition.x === message.targetPosition.x &&
         p.targetPosition.y === message.targetPosition.y &&
-        (Math.abs(p.position.x - player.x) <= 2 && Math.abs(p.position.y - player.y) <= 2)
+        (Math.abs(p.position.x - player.x) <= 1 && Math.abs(p.position.y - player.y) <= 1)
       );
 
       if (validPortal) {
@@ -180,10 +180,6 @@ export class OverworldRoom extends Room<OverworldState> {
           targetPosition: validPortal.targetPosition,
           portalName: validPortal.name
         });
-      } else if (player.mapId === message.targetMapId) {
-        player.x = message.targetPosition.x;
-        player.y = message.targetPosition.y;
-        this.playerStepCounters.set(client.sessionId, 0);
       }
     });
 
@@ -242,7 +238,9 @@ export class OverworldRoom extends Room<OverworldState> {
     const now = Date.now();
 
     this.state.roamingBeasts.forEach(beast => {
-      const mapConfig = getMapConfig(beast.mapId);
+      const mapConfig = (this.mapConfig && this.mapConfig.id === beast.mapId)
+        ? this.mapConfig
+        : getMapConfig(beast.mapId);
 
       // 1. Check respawn cooldown
       if (beast.inCombat || beast.respawnAt > 0) {
