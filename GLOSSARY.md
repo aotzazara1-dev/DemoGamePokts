@@ -71,3 +71,31 @@ _Avoid_: Area, biome, map sector
 **Combat Action**:
 One of six distinct battle commands (Attack, Skill, Defend, Capture, Flee, Item) selected during the Action Phase.
 _Avoid_: Turn move, command, tactic
+
+**Skill Tree**:
+A branching progression path of elemental abilities unique to each of the four Elements.
+_Avoid_: Talent tree, ability board, mastery
+
+**Stat Point**:
+A distributable point awarded upon leveling up that permanently increases a chosen Attribute.
+_Avoid_: Ability point, attribute token, bonus stat
+
+**Party**:
+A cooperative group of up to five Heroes who travel together across the Overworld and enter Battle Instances as a united team.
+_Avoid_: Team, squad, group
+
+**Party Leader**:
+The designated Hero controlling Overworld navigation for the entire Party while other members follow in column formation.
+_Avoid_: Captain, host, party owner
+
+**Reserve Beast**:
+A carried Beast in a Hero's roster that is not currently deployed in combat but is available to be swapped into battle.
+_Avoid_: Backup pet, benched monster, sub unit
+
+**Swap**:
+A tactical Combat Action allowing a Hero to withdraw their Active Beast and deploy a Reserve Beast during a Battle Instance.
+_Avoid_: Switch, tag, substitute
+
+**Jam**:
+The action of an external Hero on the Overworld joining an active Battle Instance mid-combat to reinforce an ally team.
+_Avoid_: Reinforce, assist, join in
