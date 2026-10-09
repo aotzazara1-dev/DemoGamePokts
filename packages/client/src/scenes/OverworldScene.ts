@@ -121,6 +121,8 @@ export class OverworldScene extends Phaser.Scene {
       if (htmlBtn) htmlBtn.style.display = 'flex';
       const charBtn = document.getElementById('btn-character-status');
       if (charBtn) charBtn.style.display = 'block';
+      const debugBtn = document.getElementById('btn-toggle-debug');
+      if (debugBtn) debugBtn.style.display = 'flex';
 
       const zoneDisplay = document.getElementById('zone-display');
 
@@ -185,19 +187,26 @@ export class OverworldScene extends Phaser.Scene {
       this.updateHeroStatusBar();
     });
 
-    // 7. Setup Beast Roster & Formation button and keyboard shortcuts
+    // 7. Setup Beast Roster & Formation button, Character Profile, QA Debug Toolbar
     this.createRosterButton();
     this.setupRosterModalDOM();
     this.setupCharacterModalDOM();
+    this.setupDebugToolbarDOM();
     this.updateHeroStatusBar();
 
     if (this.input.keyboard) {
       this.input.keyboard.on('keydown-B', () => this.toggleRosterModal());
       this.input.keyboard.on('keydown-F', () => this.toggleRosterModal());
       this.input.keyboard.on('keydown-C', () => this.toggleCharacterModal());
+      this.input.keyboard.on('keydown-T', () => {
+        const panel = document.getElementById('debug-panel');
+        if (panel) panel.classList.toggle('open');
+      });
       this.input.keyboard.on('keydown-ESC', () => {
         this.toggleRosterModal(false);
         this.toggleCharacterModal(false);
+        const panel = document.getElementById('debug-panel');
+        if (panel) panel.classList.remove('open');
       });
     }
   }
@@ -592,12 +601,16 @@ export class OverworldScene extends Phaser.Scene {
 
     this.toggleRosterModal(false);
     this.toggleCharacterModal(false);
+    const debugPanel = document.getElementById('debug-panel');
+    if (debugPanel) debugPanel.classList.remove('open');
 
     // Hide HUD buttons during battle
     const htmlBtn = document.getElementById('btn-roster');
     if (htmlBtn) htmlBtn.style.display = 'none';
     const charBtn = document.getElementById('btn-character-status');
     if (charBtn) charBtn.style.display = 'none';
+    const debugBtn = document.getElementById('btn-toggle-debug');
+    if (debugBtn) debugBtn.style.display = 'none';
 
     // Flash screen and spin transition
     this.cameras.main.flash(400, 255, 255, 255);
@@ -965,6 +978,216 @@ export class OverworldScene extends Phaser.Scene {
     if (quickInfo) {
       const ptsNote = statPoints > 0 ? ` <span style="color: #fbbf24; font-weight: bold;">⭐ ${statPoints} PTS!</span>` : '';
       quickInfo.innerHTML = `🧙 ${hero.name} Lv.${hero.level} (${exp}/${maxExp} EXP)${ptsNote}`;
+    }
+  }
+
+  // ==========================================
+  // QA DEVELOPER TOOLBAR (DEBUG CHEATS)
+  // ==========================================
+
+  private setupDebugToolbarDOM() {
+    const btnToggle = document.getElementById('btn-toggle-debug');
+    const panel = document.getElementById('debug-panel');
+    const btnClose = document.getElementById('btn-close-debug');
+
+    if (btnToggle && panel) {
+      btnToggle.onclick = () => {
+        panel.classList.toggle('open');
+      };
+    }
+
+    if (btnClose && panel) {
+      btnClose.onclick = () => {
+        panel.classList.remove('open');
+      };
+    }
+
+    const showToast = (msg: string, color: string = '#6ee7b7') => {
+      const zoneDisplay = document.getElementById('zone-display');
+      if (zoneDisplay) {
+        zoneDisplay.innerText = msg;
+        zoneDisplay.style.color = color;
+      }
+    };
+
+    // 1. +500 EXP (Hero)
+    const btnExp500 = document.getElementById('dbg-exp-500');
+    if (btnExp500) {
+      btnExp500.onclick = () => {
+        const prog = ProgressionEngine.addExpToCombatant(this.roster.hero, 500);
+        this.roster.hero = prog.combatant;
+        this.updateHeroStatusBar();
+        this.renderCharacterModalDOM();
+        showToast(`⚡ Added +500 EXP to Hero! (Total: ${this.roster.hero.exp}/${this.roster.hero.maxExp} Lv.${this.roster.hero.level})`, '#facc15');
+      };
+    }
+
+    // 2. +500 EXP (Active Beast)
+    const btnExpBeast = document.getElementById('dbg-exp-beast');
+    if (btnExpBeast) {
+      btnExpBeast.onclick = () => {
+        const activeBeast = this.roster.beasts.find(b => b.id === this.roster.activeBeastId);
+        if (activeBeast) {
+          const prog = ProgressionEngine.addExpToCombatant(activeBeast, 500);
+          const idx = this.roster.beasts.findIndex(b => b.id === activeBeast.id);
+          if (idx !== -1) this.roster.beasts[idx] = prog.combatant;
+          this.renderRosterModalDOM();
+          showToast(`🦁 Added +500 EXP to ${activeBeast.name}! (Lv.${prog.combatant.level})`, '#38bdf8');
+        } else {
+          showToast('No active beast deployed!', '#ef4444');
+        }
+      };
+    }
+
+    // 3. Instant Level Up
+    const btnLvlUp = document.getElementById('dbg-level-up');
+    if (btnLvlUp) {
+      btnLvlUp.onclick = () => {
+        const needed = (this.roster.hero.maxExp ?? 500) - (this.roster.hero.exp ?? 0);
+        const prog = ProgressionEngine.addExpToCombatant(this.roster.hero, Math.max(1, needed));
+        this.roster.hero = prog.combatant;
+        this.updateHeroStatusBar();
+        this.renderCharacterModalDOM();
+        showToast(`🎉 Level Up! Hero is now Lv.${this.roster.hero.level}! (+${prog.statPointsGained} Stat Points)`, '#fbbf24');
+      };
+    }
+
+    // 4. +5 Stat Points
+    const btnStatPts = document.getElementById('dbg-stat-points');
+    if (btnStatPts) {
+      btnStatPts.onclick = () => {
+        this.roster.hero.statPoints = (this.roster.hero.statPoints ?? 0) + 5;
+        this.updateHeroStatusBar();
+        this.renderCharacterModalDOM();
+        showToast(`⭐ Added +5 Stat Points! Total: ${this.roster.hero.statPoints}`, '#fbbf24');
+      };
+    }
+
+    // 5. Full Heal
+    const btnHeal = document.getElementById('dbg-full-heal');
+    if (btnHeal) {
+      btnHeal.onclick = () => {
+        this.roster.hero.hp = this.roster.hero.maxHp;
+        this.roster.hero.sp = this.roster.hero.maxSp;
+        this.roster.beasts.forEach(b => {
+          b.hp = b.maxHp;
+          b.sp = b.maxSp;
+        });
+        this.renderCharacterModalDOM();
+        this.renderRosterModalDOM();
+        showToast('💖 Full Heal! Health & Spirit restored to 100% for all units.', '#4ade80');
+      };
+    }
+
+    // 6. Hurt Hero (-40 HP)
+    const btnHurt = document.getElementById('dbg-hurt-hero');
+    if (btnHurt) {
+      btnHurt.onclick = () => {
+        this.roster.hero.hp = Math.max(1, this.roster.hero.hp - 40);
+        this.renderCharacterModalDOM();
+        showToast(`🩸 Hero took 40 damage! HP: ${this.roster.hero.hp}/${this.roster.hero.maxHp}`, '#ef4444');
+      };
+    }
+
+    // 7. Add Beasts
+    const addMockBeast = (name: string, element: Element, atk: number, def: number) => {
+      const mock: Combatant = {
+        id: `beast_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        name,
+        isHero: false,
+        level: Math.max(1, this.roster.hero.level - 1),
+        element,
+        hp: 70,
+        maxHp: 70,
+        sp: 30,
+        maxSp: 30,
+        atk,
+        def,
+        int: 10,
+        agi: 14
+      };
+      const res = RosterManager.addCapturedBeast(this.roster, mock);
+      if (res.success) {
+        this.roster = res.roster;
+        this.updateRosterButtonLabel();
+        this.renderRosterModalDOM();
+        showToast(`🐾 Added ${name} [${element}] to Beast Roster!`, '#a855f7');
+      } else {
+        showToast(res.reason || 'Roster full!', '#ef4444');
+      }
+    };
+
+    document.getElementById('dbg-add-fire-beast')?.addEventListener('click', () => addMockBeast('Flame Imp', Element.Fire, 24, 12));
+    document.getElementById('dbg-add-wind-beast')?.addEventListener('click', () => addMockBeast('Gale Hawk', Element.Wind, 20, 10));
+    document.getElementById('dbg-add-earth-beast')?.addEventListener('click', () => addMockBeast('Rock Boar', Element.Earth, 18, 22));
+    document.getElementById('dbg-add-water-beast')?.addEventListener('click', () => addMockBeast('Aqua Serpent', Element.Water, 22, 15));
+
+    // 8. Instant Battle Encounter
+    const btnBattle = document.getElementById('dbg-instant-battle');
+    if (btnBattle) {
+      btnBattle.onclick = () => {
+        panel?.classList.remove('open');
+        this.triggerBattleTransition({
+          encounter: {
+            wildEnemies: [
+              {
+                id: `wild_test_1`,
+                name: 'Wild Flame Imp',
+                isHero: false,
+                level: this.roster.hero.level,
+                element: Element.Fire,
+                hp: 55,
+                maxHp: 55,
+                sp: 20,
+                maxSp: 20,
+                atk: 18,
+                def: 12,
+                int: 10,
+                agi: 12
+              },
+              {
+                id: `wild_test_2`,
+                name: 'Wild Rock Boar',
+                isHero: false,
+                level: this.roster.hero.level,
+                element: Element.Earth,
+                hp: 65,
+                maxHp: 65,
+                sp: 15,
+                maxSp: 15,
+                atk: 16,
+                def: 20,
+                int: 8,
+                agi: 10
+              }
+            ]
+          }
+        });
+      };
+    }
+
+    // 9. Teleport Town
+    const btnWarpTown = document.getElementById('dbg-warp-town');
+    if (btnWarpTown) {
+      btnWarpTown.onclick = () => {
+        this.playerTile = { x: 10, y: 10 };
+        const screenPos = isoToScreen(10, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
+        this.playerContainer.setPosition(screenPos.x, screenPos.y);
+        this.playerContainer.setDepth(getIsometricDepth(10, 10, 100));
+        showToast('🏡 Teleported to Novice Town (Safe Zone)', '#6ee7b7');
+      };
+    }
+
+    // 10. Teleport Meadow
+    const btnWarpMeadow = document.getElementById('dbg-warp-meadow');
+    if (btnWarpMeadow) {
+      btnWarpMeadow.onclick = () => {
+        this.playerTile = { x: 23, y: 10 };
+        const screenPos = isoToScreen(23, 10, this.tileWidth, this.tileHeight, this.originX, this.originY);
+        this.playerContainer.setPosition(screenPos.x, screenPos.y);
+        this.playerContainer.setDepth(getIsometricDepth(23, 10, 100));
+        showToast('🌾 Teleported to Whispering Meadow (Wild Encounter Zone)', '#f59e0b');
+      };
     }
   }
 }

@@ -576,6 +576,116 @@
     .beast-stat-btn:hover {
       background: #0369a1;
     }
+
+    /* Developer QA Toolbar */
+    #btn-toggle-debug {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid #64748b;
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #btn-toggle-debug:hover {
+      background: #334155;
+      color: #f1f5f9;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    #debug-panel {
+      position: absolute;
+      bottom: 46px;
+      right: 12px;
+      width: 330px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1.5px solid #38bdf8;
+      border-radius: 8px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 105;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.15s ease-out;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #debug-panel.open {
+      display: flex;
+    }
+    .debug-header {
+      padding: 8px 12px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+    }
+    .btn-debug-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 0 4px;
+    }
+    .btn-debug-close:hover {
+      color: #ef4444;
+    }
+    .debug-body {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    .debug-section-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    .debug-btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-dbg {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+    .btn-dbg:hover {
+      filter: brightness(1.2);
+      transform: translateY(-1px);
+    }
+    .btn-dbg:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
@@ -784,6 +894,49 @@
           <button id="btn-confirm-formation" class="btn-confirm-formation">
             ✔️ Confirm & Close
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Developer Debug / QA Toolbar Toggle Button -->
+    <button id="btn-toggle-debug" title="Toggle Developer QA Toolbar (Hotkey: ~ or T)">
+      🛠️ QA DEBUG [~]
+    </button>
+
+    <!-- Developer Debug Panel Drawer -->
+    <div id="debug-panel">
+      <div class="debug-header">
+        <span>🛠️ QA DEVELOPER TOOLBAR</span>
+        <button id="btn-close-debug" class="btn-debug-close">✕</button>
+      </div>
+      <div class="debug-body">
+        <div class="debug-section-title">🌟 EXP & LEVEL UP</div>
+        <div class="debug-btn-grid">
+          <button id="dbg-exp-500" class="btn-dbg">+500 EXP (Hero)</button>
+          <button id="dbg-exp-beast" class="btn-dbg">+500 EXP (Beast)</button>
+          <button id="dbg-level-up" class="btn-dbg" style="background: #d97706; grid-column: span 2;">⭐ Level Up ทันที</button>
+          <button id="dbg-stat-points" class="btn-dbg" style="grid-column: span 2;">⭐ +5 Stat Points</button>
+        </div>
+
+        <div class="debug-section-title">❤️ HEALTH & SPIRIT</div>
+        <div class="debug-btn-grid">
+          <button id="dbg-full-heal" class="btn-dbg" style="background: #059669;">💖 ฟื้นฟูเลือด/มานาเต็ม</button>
+          <button id="dbg-hurt-hero" class="btn-dbg" style="background: #991b1b;">🩸 ลดเลือด -40 HP</button>
+        </div>
+
+        <div class="debug-section-title">🦁 SPAWN BEASTS</div>
+        <div class="debug-btn-grid">
+          <button id="dbg-add-fire-beast" class="btn-dbg">+Flame Imp (🔥)</button>
+          <button id="dbg-add-wind-beast" class="btn-dbg">+Gale Hawk (🌪️)</button>
+          <button id="dbg-add-earth-beast" class="btn-dbg">+Rock Boar (🌍)</button>
+          <button id="dbg-add-water-beast" class="btn-dbg">+Aqua Serpent (💧)</button>
+        </div>
+
+        <div class="debug-section-title">⚔️ ENCOUNTER & TELEPORT</div>
+        <div class="debug-btn-grid">
+          <button id="dbg-instant-battle" class="btn-dbg" style="background: #7c3aed; grid-column: span 2;">⚔️ ตัดเข้าสู้ทันที (Instant Battle)</button>
+          <button id="dbg-warp-town" class="btn-dbg">🏡 วาร์ปกลับเมือง</button>
+          <button id="dbg-warp-meadow" class="btn-dbg">🌾 วาร์ปไปทุ่งหญ้า</button>
         </div>
       </div>
     </div>
