@@ -770,6 +770,45 @@
           <div class="inventory-body">
             <!-- Left Column: 20-Slot Grid -->
             <div class="inventory-grid-wrap">
+              <div class="inventory-category-tabs">
+                <button
+                  type="button"
+                  id="inv-tab-all"
+                  class="inv-tab-btn active"
+                  data-category="all"
+                >
+                  <span>🎒 ทั้งหมด</span>
+                  <span class="inv-tab-count">(0)</span>
+                </button>
+                <button
+                  type="button"
+                  id="inv-tab-consumable"
+                  class="inv-tab-btn"
+                  data-category="consumable"
+                >
+                  <span>🧪 ของใช้</span>
+                  <span class="inv-tab-count">(0)</span>
+                </button>
+                <button
+                  type="button"
+                  id="inv-tab-equipment"
+                  class="inv-tab-btn"
+                  data-category="equipment"
+                >
+                  <span>⚔️ สวมใส่</span>
+                  <span class="inv-tab-count">(0)</span>
+                </button>
+                <button
+                  type="button"
+                  id="inv-tab-material"
+                  class="inv-tab-btn"
+                  data-category="material"
+                >
+                  <span>💎 แมททีเรียล</span>
+                  <span class="inv-tab-count">(0)</span>
+                </button>
+              </div>
+
               <div class="inventory-grid-title">
                 <span id="inv-capacity-header">SLOTS (3 / 20)</span>
                 <span>คลิกที่ช่องเพื่อดูไอเทม</span>
@@ -803,11 +842,26 @@
                     <div id="inv-detail-name" class="inv-item-name">
                       Steamed Bun
                     </div>
-                    <span
-                      id="inv-detail-badge"
-                      class="inv-item-type-badge badge-hp-restore"
-                      >HP Restore (+80)</span
+                    <div
+                      style="
+                        display: flex;
+                        gap: 6px;
+                        align-items: center;
+                        margin-top: 4px;
+                        flex-wrap: wrap;
+                      "
                     >
+                      <span
+                        id="inv-detail-cat-badge"
+                        class="inv-category-badge badge-cat-consumable"
+                        >🧪 ของใช้</span
+                      >
+                      <span
+                        id="inv-detail-badge"
+                        class="inv-item-type-badge badge-hp-restore"
+                        >HP Restore (+80)</span
+                      >
+                    </div>
                   </div>
                 </div>
 

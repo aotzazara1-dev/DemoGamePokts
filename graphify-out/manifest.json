@@ -78,9 +78,9 @@
     "semantic_hash": "5e39e13e793e92ccd4db53e5d71e2f9f"
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791617385.3798666,
-    "seen": 1791617459.2949371,
-    "ast_hash": "ce710e680dc2a1394e37c2bf45161edf",
+    "mtime": 1791617468.0758977,
+    "seen": 1791618680.768697,
+    "ast_hash": "dc3c50d14aeaeab069151c7455dd434e",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -120,9 +120,9 @@
     "semantic_hash": "1213febf44fb34c193838677ce255a9a"
   },
   "packages/client/src/ui/InventoryModalController.ts": {
-    "mtime": 1791616398.5443475,
-    "seen": 1791617459.294949,
-    "ast_hash": "6f73a72758f81f1361a154225d617aa8",
+    "mtime": 1791618627.503381,
+    "seen": 1791618680.7687109,
+    "ast_hash": "0b7fb8c95ee66b253fd0ac9cb4e59f8f",
     "semantic_hash": ""
   },
   "packages/client/src/ui/MinimapController.ts": {
@@ -144,9 +144,9 @@
     "semantic_hash": "045831d5be7b385ad3e433113539a9ec"
   },
   "packages/client/src/ui/index.ts": {
-    "mtime": 1791617237.8496041,
-    "seen": 1791617459.2949548,
-    "ast_hash": "d5d1aec12a7fd2fc9a7e20a5e026e688",
+    "mtime": 1791617468.218282,
+    "seen": 1791618680.7687166,
+    "ast_hash": "2720196ba0b5cfd2f661dc6ed24d3f6a",
     "semantic_hash": ""
   },
   "packages/client/src/utils/isometric.ts": {
@@ -408,9 +408,9 @@
     "semantic_hash": "b3184937275138a599ab12ffb5dc8040"
   },
   "packages/shared/src/inventory/item-database.ts": {
-    "mtime": 1791616398.842224,
-    "seen": 1791617459.2950237,
-    "ast_hash": "d443e6f57eb8b53ddee09b7417ed4bf8",
+    "mtime": 1791618507.4222019,
+    "seen": 1791618680.7687905,
+    "ast_hash": "db974500cc1cf3838fff16b84aac3800",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/loot-engine.ts": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791616398.8649123,
-    "seen": 1791617459.2950354,
-    "ast_hash": "09e23db8b672ca99773a696d289df903",
+    "mtime": 1791618499.6413703,
+    "seen": 1791618680.768803,
+    "ast_hash": "2effaeb7a9d62af29a50ebdf26dd4497",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -480,9 +480,9 @@
     "semantic_hash": "53c4c21e88c72d25412a037b7cf7d2b5"
   },
   "packages/shared/test/inventory.test.ts": {
-    "mtime": 1791559986.4919245,
-    "seen": 1791560439.0288944,
-    "ast_hash": "325644d13224de3fc4a2b11a4450d608",
+    "mtime": 1791618525.24919,
+    "seen": 1791618680.7688105,
+    "ast_hash": "7f1205505c80f8e7f3e513e40a7056d2",
     "semantic_hash": ""
   },
   "packages/shared/test/overworld-engine.test.ts": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791617295.8201685,
-    "seen": 1791617459.2952015,
-    "ast_hash": "a94fb999bc3d562923f24152e1b9071b",
+    "mtime": 1791618561.4104688,
+    "seen": 1791618680.7689388,
+    "ast_hash": "da6e2e7ee7ae2b900795379bef7aa933",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "packages/client/test/equipment-ui.test.ts": {
-    "mtime": 1791617399.729568,
-    "seen": 1791617459.2949648,
-    "ast_hash": "f9f45adf0deb0a085010c1054bae4df3",
+    "mtime": 1791617468.2507625,
+    "seen": 1791618680.768726,
+    "ast_hash": "6d1f8666a42f98e8f6bf2e44b8abb37f",
     "semantic_hash": ""
   },
   "packages/shared/src/equipment/equipment-manager.ts": {
@@ -1098,21 +1098,33 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/EquipmentModalController.ts": {
-    "mtime": 1791617233.0273795,
-    "seen": 1791617459.2949476,
-    "ast_hash": "b394f0bf7ffd72de6f8d872c7588d30e",
+    "mtime": 1791617468.2116024,
+    "seen": 1791618680.7687092,
+    "ast_hash": "fe502e4fb7b4f76a8184abba7af25202",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/06-dedicated-equipment-modal-and-hotkey.md": {
-    "mtime": 1791617448.3573415,
-    "seen": 1791617459.295063,
-    "ast_hash": "f90832a4c56c7ffc07aa76d9567d9cce",
+    "mtime": 1791617467.2973828,
+    "seen": 1791618680.7688336,
+    "ast_hash": "b451372885a195e45a4a4f8dee032816",
     "semantic_hash": ""
   },
   "packages/client/prototype-equipment.html": {
-    "mtime": 1791617180.5731792,
-    "seen": 1791617459.2952027,
-    "ast_hash": "749e7b45bf6aae890a11b1eb5029beb3",
+    "mtime": 1791617467.7475152,
+    "seen": 1791618680.76894,
+    "ast_hash": "174dc880b641f2d308da425435423b70",
+    "semantic_hash": ""
+  },
+  "packages/client/test/inventory-ui.test.ts": {
+    "mtime": 1791618639.6400418,
+    "seen": 1791618680.7687275,
+    "ast_hash": "f899cbdb204e0f068b3238f0defaef17",
+    "semantic_hash": ""
+  },
+  ".scratch/inventory-system/issues/05-category-tabs-filtering.md": {
+    "mtime": 1791618667.121424,
+    "seen": 1791618680.7688425,
+    "ast_hash": "26138c372aacdcf489278dbda65dd822",
     "semantic_hash": ""
   }
 }

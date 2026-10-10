@@ -1,4 +1,4 @@
-import { ItemDefinition } from "../types.js";
+import { ItemCategory, ItemDefinition } from "../types.js";
 
 export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   item_small_herb: {
@@ -389,5 +389,36 @@ export function getItemIcon(itemId: string): string {
       return "🌿";
     default:
       return "📦";
+  }
+}
+
+export function getItemCategory(
+  itemOrId: string | ItemDefinition
+): "consumable" | "equipment" | "material" {
+  const def =
+    typeof itemOrId === "string" ? getItemDefinition(itemOrId) : itemOrId;
+  if (!def) return "consumable";
+  if (def.category && def.category !== "all") {
+    return def.category;
+  }
+  if (def.type === "equipment") {
+    return "equipment";
+  }
+  if (def.type === "loot" || def.type === "material") {
+    return "material";
+  }
+  return "consumable";
+}
+
+export function getItemCategoryLabel(category: ItemCategory): string {
+  switch (category) {
+    case "consumable":
+      return "ของใช้ (Consumable)";
+    case "equipment":
+      return "สวมใส่ (Equipment)";
+    case "material":
+      return "แมททีเรียล (Material)";
+    default:
+      return "ทั้งหมด (All)";
   }
 }

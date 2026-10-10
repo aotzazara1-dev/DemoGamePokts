@@ -235,13 +235,22 @@ export interface EquipmentStats {
   maxSp?: number;
 }
 
+export type ItemCategory = "all" | "consumable" | "equipment" | "material";
+
 export type ItemType =
-  "hp_restore" | "sp_restore" | "revive" | "scroll" | "loot" | "equipment";
+  | "hp_restore"
+  | "sp_restore"
+  | "revive"
+  | "scroll"
+  | "loot"
+  | "equipment"
+  | "material";
 
 export interface ItemDefinition {
   id: string;
   name: string;
   type: ItemType;
+  category?: ItemCategory;
   effectValue: number;
   description: string;
   price: number;
