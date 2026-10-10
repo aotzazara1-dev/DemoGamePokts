@@ -1,4 +1,5 @@
 import { Element } from "../types.js";
+import { TREE_SKILLS } from "./tree-skills.js";
 
 export type SkillCategory = "attack" | "heal" | "buff" | "debuff";
 
@@ -14,6 +15,7 @@ export interface SkillDefinition {
 }
 
 export const SKILL_DATABASE: Record<string, SkillDefinition> = {
+  ...TREE_SKILLS,
   // --- SIGNATURE SKILLS (ขุนพลซิกเนเจอร์) ---
   skill_sky_piercer: {
     id: "skill_sky_piercer",

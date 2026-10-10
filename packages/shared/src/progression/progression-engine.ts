@@ -1,10 +1,11 @@
-import { type Combatant } from '../types.js';
+import { type Combatant } from "../types.js";
 
 export interface LevelUpResult {
   combatant: Combatant;
   leveledUp: boolean;
   levelsGained: number;
   statPointsGained: number;
+  skillPointsGained: number;
   oldLevel: number;
   newLevel: number;
 }
@@ -12,7 +13,7 @@ export interface LevelUpResult {
 export interface StatAllocationResult {
   success: boolean;
   combatant: Combatant;
-  allocatedAttribute?: 'atk' | 'def' | 'int' | 'agi';
+  allocatedAttribute?: "atk" | "def" | "int" | "agi";
   reason?: string;
 }
 
@@ -40,9 +41,12 @@ export class ProgressionEngine {
    * On Level Up:
    * - Max HP +15, Max SP +5
    * - Full HP/SP restoration
-   * - Hero gains +3 Stat Points, Beasts gain +2 Stat Points per level
+   * - Hero gains +3 Stat Points and +1 Skill Point per level; Beasts gain +2 Stat Points per level
    */
-  public static addExpToCombatant(combatant: Combatant, expGained: number): LevelUpResult {
+  public static addExpToCombatant(
+    combatant: Combatant,
+    expGained: number
+  ): LevelUpResult {
     let currentExp = (combatant.exp ?? 0) + Math.max(0, Math.floor(expGained));
     let level = combatant.level;
     let maxHp = combatant.maxHp;
@@ -50,9 +54,11 @@ export class ProgressionEngine {
     let hp = combatant.hp;
     let sp = combatant.sp;
     let statPoints = combatant.statPoints ?? 0;
+    let skillPoints = combatant.skillPoints ?? 0;
 
     let levelsGained = 0;
     let statPointsGained = 0;
+    let skillPointsGained = 0;
     let maxExp = this.calculateExpToNextLevel(level);
 
     while (currentExp >= maxExp) {
@@ -71,6 +77,12 @@ export class ProgressionEngine {
       statPoints += pts;
       statPointsGained += pts;
 
+      // Skill Points: +1 per level for Heroes
+      if (combatant.isHero) {
+        skillPoints += 1;
+        skillPointsGained += 1;
+      }
+
       maxExp = this.calculateExpToNextLevel(level);
     }
 
@@ -83,7 +95,9 @@ export class ProgressionEngine {
       maxHp,
       sp,
       maxSp,
-      statPoints
+      statPoints,
+      skillPoints,
+      unlockedSkillIds: combatant.unlockedSkillIds || [],
     };
 
     return {
@@ -91,8 +105,9 @@ export class ProgressionEngine {
       leveledUp: levelsGained > 0,
       levelsGained,
       statPointsGained,
+      skillPointsGained,
       oldLevel: combatant.level,
-      newLevel: level
+      newLevel: level,
     };
   }
 
@@ -105,37 +120,37 @@ export class ProgressionEngine {
    */
   public static allocateStatPoint(
     combatant: Combatant,
-    attribute: 'atk' | 'def' | 'int' | 'agi'
+    attribute: "atk" | "def" | "int" | "agi"
   ): StatAllocationResult {
     const points = combatant.statPoints ?? 0;
     if (points <= 0) {
       return {
         success: false,
         combatant,
-        reason: 'No Stat Points available for allocation.'
+        reason: "No Stat Points available for allocation.",
       };
     }
 
     const updated: Combatant = {
       ...combatant,
-      statPoints: points - 1
+      statPoints: points - 1,
     };
 
     switch (attribute) {
-      case 'atk':
+      case "atk":
         updated.atk += 1;
         break;
-      case 'def':
+      case "def":
         updated.def += 1;
         updated.maxHp += 10;
         updated.hp = Math.min(updated.maxHp, updated.hp + 10);
         break;
-      case 'int':
+      case "int":
         updated.int += 1;
         updated.maxSp += 5;
         updated.sp = Math.min(updated.maxSp, updated.sp + 5);
         break;
-      case 'agi':
+      case "agi":
         updated.agi += 1;
         break;
     }
@@ -143,7 +158,7 @@ export class ProgressionEngine {
     return {
       success: true,
       combatant: updated,
-      allocatedAttribute: attribute
+      allocatedAttribute: attribute,
     };
   }
 }

@@ -51,6 +51,27 @@ export interface Combatant extends Attributes {
   equipment?: EntityEquipment;
   baseAttributes?: Attributes;
   skillSlots?: CombatantSkillSlot[];
+  skillPoints?: number;
+  unlockedSkillIds?: string[];
+}
+
+export type SkillTreeBranchId = "branch_a" | "branch_b";
+
+export interface SkillTreeNode {
+  skillId: string;
+  branch?: SkillTreeBranchId;
+  tier: number; // 1, 2, 3 (branch tiers) or 4 (capstone ultimate)
+  requiredLevel: number;
+  requiredSkillId?: string;
+  skillPointCost: number;
+  isUltimate?: boolean;
+}
+
+export interface ElementalSkillTreeConfig {
+  element: Element;
+  branchAName: string;
+  branchBName: string;
+  nodes: SkillTreeNode[];
 }
 
 export interface TeamFormation {

@@ -9,3 +9,4 @@ export * from "./CharacterSelectModalController.js";
 export * from "./MinimapController.js";
 export * from "./ChatController.js";
 export * from "./EquipmentModalController.js";
+export * from "./SkillTreeModalController.js";

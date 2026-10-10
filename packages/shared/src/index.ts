@@ -18,3 +18,5 @@ export * from "./skills/skill-manager.js";
 export * from "./inventory/skill-tomes.js";
 export * from "./inventory/shop-manager.js";
 export * from "./battle/battle-skill-executor.js";
+export * from "./data/skill-trees.js";
+export * from "./skills/skill-tree-manager.js";

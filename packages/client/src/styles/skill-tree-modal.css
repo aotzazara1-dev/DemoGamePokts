@@ -1,0 +1,299 @@
+/* Elemental Skill Tree Modal Styles (ADR 0008) */
+#skill-tree-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+#skill-tree-modal.open {
+  display: flex;
+}
+
+.skill-tree-card {
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 12px;
+  width: 920px;
+  max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  position: relative;
+}
+
+.st-header {
+  padding: 14px 20px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.st-title-group h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+.st-title-group p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.st-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.st-points-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #fbbf24;
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: bold;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.st-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.st-branches-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.st-branch-col {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-branch-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: #facc15;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #334155;
+}
+
+.st-branch-connector {
+  text-align: center;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.st-node-card {
+  background: #1e293b;
+  border: 1.5px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.st-node-unlockable {
+  border-color: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.st-node-learned {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.st-node-locked {
+  opacity: 0.65;
+}
+
+.st-node-ultimate {
+  border-color: #c084fc;
+  box-shadow: 0 0 15px rgba(192, 132, 252, 0.35);
+  background: linear-gradient(
+    180deg,
+    rgba(88, 28, 135, 0.2) 0%,
+    rgba(30, 41, 59, 0.8) 100%
+  );
+}
+
+.st-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.st-card-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #f1f5f9;
+}
+
+.st-card-desc {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+.st-card-reqs {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.st-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.st-badge-learned {
+  color: #10b981;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.st-badge-locked {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.st-btn-unlock {
+  background: #d97706;
+  border: 1px solid #fbbf24;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.st-btn-unlock:hover {
+  background: #b45309;
+}
+
+.st-btn-equip {
+  background: #0284c7;
+  border: 1px solid #38bdf8;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.st-btn-equip:hover {
+  background: #0369a1;
+}
+
+.st-ultimate-box {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.st-ultimate-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #c084fc;
+}
+
+/* Equip Overlay Modal */
+#st-equip-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.92);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.st-equip-panel {
+  background: #1e293b;
+  border: 2px solid #38bdf8;
+  border-radius: 8px;
+  padding: 20px;
+  width: 480px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.st-equip-slots-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.st-slot-item {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.st-slot-available:hover {
+  border-color: #38bdf8;
+  background: #1e293b;
+}
+
+.st-slot-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #475569;
+}
+
+.st-slot-num {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+.st-slot-curr {
+  font-size: 12px;
+  color: #f1f5f9;
+}

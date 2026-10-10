@@ -113,6 +113,9 @@ export class DatabaseEngine {
         stat_points INTEGER NOT NULL DEFAULT 0,
         allocated_stats TEXT NOT NULL,
         equipment TEXT DEFAULT '{}',
+        skill_points INTEGER NOT NULL DEFAULT 0,
+        unlocked_skill_ids TEXT DEFAULT '[]',
+        skill_slots TEXT DEFAULT '[]',
         map_id TEXT NOT NULL,
         x INTEGER NOT NULL,
         y INTEGER NOT NULL,
@@ -146,12 +149,19 @@ export class DatabaseEngine {
       );
     `);
 
-    // Migration for existing databases
-    try {
-      this.db.run('ALTER TABLE heroes ADD COLUMN equipment TEXT DEFAULT "{}"');
-    } catch {
-      // Column already exists
-    }
+    // Migrations for existing databases
+    [
+      'ALTER TABLE heroes ADD COLUMN equipment TEXT DEFAULT "{}"',
+      "ALTER TABLE heroes ADD COLUMN skill_points INTEGER NOT NULL DEFAULT 0",
+      'ALTER TABLE heroes ADD COLUMN unlocked_skill_ids TEXT DEFAULT "[]"',
+      'ALTER TABLE heroes ADD COLUMN skill_slots TEXT DEFAULT "[]"',
+    ].forEach((sql) => {
+      try {
+        this.db!.run(sql);
+      } catch {
+        // Column already exists
+      }
+    });
 
     if (this.filePath) {
       this.persist();

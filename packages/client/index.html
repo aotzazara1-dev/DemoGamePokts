@@ -23,6 +23,14 @@
         <span>📊 <kbd>C</kbd> Status</span>
         <span class="ctrl-sep">&bull;</span>
         <button
+          id="header-btn-skill-tree"
+          class="header-btn"
+          title="Open Elemental Skill Tree (Hotkey: K)"
+        >
+          🌳 <kbd>K</kbd> Tree
+        </button>
+        <span class="ctrl-sep">&bull;</span>
+        <button
           id="header-btn-equipment"
           class="header-btn"
           title="Open Equipment & Arms (Hotkey: E)"
@@ -125,6 +133,23 @@
             "
           >
             🎒 Inventory [I]
+          </button>
+          <button
+            id="btn-skill-tree"
+            title="Open Elemental Skill Tree (Hotkey: K)"
+            style="
+              background: #059669;
+              color: #fff;
+              border: 1px solid #34d399;
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-size: 11px;
+              font-weight: bold;
+              cursor: pointer;
+              pointer-events: auto;
+            "
+          >
+            🌳 Tree [K]
           </button>
         </div>
       </div>
@@ -746,6 +771,94 @@
             >
               ✔️ เรียบร้อย (Done)
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elemental Skill Tree Modal Overlay (ADR 0008) -->
+      <div id="skill-tree-modal">
+        <div class="skill-tree-card">
+          <div class="st-header">
+            <div class="st-title-group">
+              <h2 id="skill-tree-title">
+                🌳 พฤกษาเวทสายธาตุ (ELEMENTAL SKILL TREE)
+              </h2>
+              <p>
+                ปลดล็อกและพัฒนาสกิลประจำธาตุของตัวละครหลัก
+                พร้อมจัดการติดตั้งลงช่องสกิล
+              </p>
+            </div>
+            <div class="st-header-right">
+              <span id="skill-tree-points-badge" class="st-points-badge"
+                >⭐ 0 Skill Points Available</span
+              >
+              <button
+                id="btn-close-skill-tree"
+                class="btn-close-modal"
+                title="Close (Hotkey: Esc or K)"
+              >
+                ✕ Close
+              </button>
+            </div>
+          </div>
+
+          <div class="st-body">
+            <!-- 2 Branches Grid -->
+            <div class="st-branches-container">
+              <div id="skill-tree-branch-a" class="st-branch-col">
+                <!-- Dynamically populated Branch A -->
+              </div>
+              <div id="skill-tree-branch-b" class="st-branch-col">
+                <!-- Dynamically populated Branch B -->
+              </div>
+            </div>
+
+            <!-- Ultimate Capstone Box -->
+            <div class="st-ultimate-box">
+              <div class="st-ultimate-title">
+                ⚡ ท่าไม้ตายสูงสุดประจำธาตุ (CAPSTONE ULTIMATE - LV.30)
+              </div>
+              <div
+                id="skill-tree-ultimate-container"
+                style="width: 100%; max-width: 480px"
+              >
+                <!-- Dynamically populated Ultimate node -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Equip Slot Selector Overlay -->
+          <div id="st-equip-overlay" style="display: none">
+            <div class="st-equip-panel">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <h3
+                  id="st-equip-title"
+                  style="margin: 0; color: #38bdf8; font-size: 14px"
+                >
+                  เลือกช่องสกิลที่ต้องการติดตั้ง
+                </h3>
+                <button
+                  id="btn-close-st-equip"
+                  class="btn-close-modal"
+                  style="padding: 2px 6px; font-size: 11px"
+                >
+                  ✕ ยกเลิก
+                </button>
+              </div>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8">
+                คลิกเลือกช่องเสริม (Slot 1-4) เพื่อติดตั้งสกิลนี้ลงในสนามรบ
+                (ช่อง Slot 0 ถูกล็อกสำหรับสกิลซิกเนเจอร์):
+              </p>
+              <div id="st-equip-slots" class="st-equip-slots-list">
+                <!-- Dynamically populated 5 slots -->
+              </div>
+            </div>
           </div>
         </div>
       </div>

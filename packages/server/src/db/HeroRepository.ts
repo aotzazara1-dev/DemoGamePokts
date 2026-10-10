@@ -9,9 +9,9 @@ import {
   type ItemStack,
   type InventoryState,
   type PlayerRosterState,
-  type EntityEquipment,
   InventoryManager,
   EquipmentManager,
+  SkillManager,
 } from "@poktsonline/shared";
 import { DatabaseEngine } from "./DatabaseEngine.js";
 
@@ -78,33 +78,28 @@ export class HeroRepository {
     const direction: Direction = "down";
     const gold = 200;
 
-    const baseAttributes = {
-      hp: 100,
-      maxHp: 100,
-      sp: 40,
-      maxSp: 40,
-      atk: 25,
-      def: 15,
-      int: 10,
-      agi: 20,
-    };
-
+    const baseAttributes = { hp: 100, maxHp: 100, sp: 40, maxSp: 40, atk: 25, def: 15, int: 10, agi: 20 };
     const heroEquipment = EquipmentManager.createEmptyEquipment();
+    const starterSlots = SkillManager.createStarterSkillSlots(heroId, payload.element, true);
 
     // 1. Insert Hero Record
     this.db.run(
       `INSERT INTO heroes (
-        id, account_id, name, element, level, exp, stat_points,
-        allocated_stats, equipment, map_id, x, y, direction, gold, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id, account_id, name, element, level, exp, stat_points, skill_points,
+        unlocked_skill_ids, skill_slots, allocated_stats, equipment,
+        map_id, x, y, direction, gold, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         heroId,
         accountId,
         trimmedName,
         payload.element,
-        1, // level
-        0, // exp
-        0, // stat points
+        1,
+        0,
+        0,
+        0, // skill_points
+        JSON.stringify([]), // unlocked_skill_ids
+        JSON.stringify(starterSlots), // skill_slots
         JSON.stringify(baseAttributes),
         JSON.stringify(heroEquipment),
         mapId,
@@ -173,30 +168,24 @@ export class HeroRepository {
     ]);
     if (!heroRow) return null;
 
-    let baseAttrs = {
-      hp: 100,
-      maxHp: 100,
-      sp: 40,
-      maxSp: 40,
-      atk: 25,
-      def: 15,
-      int: 10,
-      agi: 20,
-    };
-    try {
-      baseAttrs = JSON.parse(heroRow.allocated_stats);
-    } catch {
-      // fallback
-    }
+    let baseAttrs = { hp: 100, maxHp: 100, sp: 40, maxSp: 40, atk: 25, def: 15, int: 10, agi: 20 };
+    try { baseAttrs = JSON.parse(heroRow.allocated_stats); } catch {}
 
     let heroEquipment = EquipmentManager.createEmptyEquipment();
     try {
-      if (heroRow.equipment) {
-        heroEquipment = { ...heroEquipment, ...JSON.parse(heroRow.equipment) };
+      if (heroRow.equipment) heroEquipment = { ...heroEquipment, ...JSON.parse(heroRow.equipment) };
+    } catch {}
+
+    let unlockedSkillIds: string[] = [];
+    try { if (heroRow.unlocked_skill_ids) unlockedSkillIds = JSON.parse(heroRow.unlocked_skill_ids); } catch {}
+
+    let skillSlots: any[] | undefined;
+    try {
+      if (heroRow.skill_slots) {
+        const parsed = JSON.parse(heroRow.skill_slots);
+        if (Array.isArray(parsed) && parsed.length > 0) skillSlots = parsed;
       }
-    } catch {
-      // fallback
-    }
+    } catch {}
 
     const rawHeroCombatant: Combatant = {
       id: heroRow.id,
@@ -206,6 +195,9 @@ export class HeroRepository {
       element: heroRow.element as Element,
       exp: heroRow.exp,
       statPoints: heroRow.stat_points,
+      skillPoints: heroRow.skill_points ?? 0,
+      unlockedSkillIds,
+      skillSlots: skillSlots || SkillManager.ensureSkillSlots({ id: heroRow.id, element: heroRow.element, isHero: true } as any),
       ...baseAttrs,
     };
 
@@ -325,13 +317,18 @@ export class HeroRepository {
     // 1. Update Hero
     this.db.run(
       `UPDATE heroes SET
-        level = ?, exp = ?, stat_points = ?, allocated_stats = ?, equipment = ?,
+        level = ?, exp = ?, stat_points = ?, skill_points = ?,
+        unlocked_skill_ids = ?, skill_slots = ?,
+        allocated_stats = ?, equipment = ?,
         map_id = ?, x = ?, y = ?, direction = ?, gold = ?
       WHERE id = ?`,
       [
         state.hero.level,
         state.hero.exp ?? 0,
         state.hero.statPoints ?? 0,
+        state.hero.skillPoints ?? 0,
+        JSON.stringify(state.hero.unlockedSkillIds || []),
+        JSON.stringify(state.hero.skillSlots || []),
         JSON.stringify(heroAttrs),
         JSON.stringify(state.hero.equipment || {}),
         state.mapId,

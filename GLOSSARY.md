@@ -97,8 +97,12 @@ One of six distinct battle commands (Attack, Skill, Defend, Capture, Flee, Item)
 _Avoid_: Turn move, command, tactic
 
 **Skill Tree**:
-A branching progression path of elemental abilities unique to each of the four Elements.
+A branching progression path of elemental abilities unique to each of the four Elements consisting of two specialized tactical branches and a capstone ultimate.
 _Avoid_: Talent tree, ability board, mastery
+
+**Skill Point**:
+A progression point awarded to a Hero upon leveling up used to unlock nodes in their Elemental Skill Tree.
+_Avoid_: Talent point, mastery point, skill coin
 
 **Stat Point**:
 A distributable point awarded upon leveling up that permanently increases a chosen Attribute.

@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791617468.0758977,
-    "seen": 1791618680.768697,
-    "ast_hash": "dc3c50d14aeaeab069151c7455dd434e",
+    "mtime": 1791627254.595403,
+    "seen": 1791627398.680633,
+    "ast_hash": "f54616a476f2ea3df7d315818460830e",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/index.ts": {
-    "mtime": 1791617468.218282,
-    "seen": 1791618680.7687166,
-    "ast_hash": "2720196ba0b5cfd2f661dc6ed24d3f6a",
+    "mtime": 1791626987.3915553,
+    "seen": 1791627398.6806574,
+    "ast_hash": "48571887488f81ea2322bea84b9d1b49",
     "semantic_hash": ""
   },
   "packages/client/src/utils/isometric.ts": {
@@ -258,15 +258,15 @@
     "semantic_hash": "7db43d65e4876cca1da6bb276a732c59"
   },
   "packages/server/src/db/DatabaseEngine.ts": {
-    "mtime": 1791616398.6386096,
-    "seen": 1791617459.2949858,
-    "ast_hash": "d69a4e56d5d307cdc7b2e4bee8465d42",
+    "mtime": 1791626887.7054348,
+    "seen": 1791627398.6806948,
+    "ast_hash": "33684bcf8db813745a11ce5cbedf1953",
     "semantic_hash": ""
   },
   "packages/server/src/db/HeroRepository.ts": {
-    "mtime": 1791616398.6755316,
-    "seen": 1791617459.294987,
-    "ast_hash": "c49817c3a4c1a1cd9ccb1179b5e15856",
+    "mtime": 1791626934.580753,
+    "seen": 1791627398.6806965,
+    "ast_hash": "fee1b52f167689103e95b5a4308e57ee",
     "semantic_hash": ""
   },
   "packages/server/src/db/index.ts": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/data/skills.ts": {
-    "mtime": 1791625338.694365,
-    "seen": 1791625489.0179195,
-    "ast_hash": "3959167de555821417e998462d8e5fe0",
+    "mtime": 1791626781.430607,
+    "seen": 1791627398.6807325,
+    "ast_hash": "720a7bdfd69fe29dc75ce2724aa2220e",
     "semantic_hash": ""
   },
   "packages/shared/src/formulas.ts": {
@@ -396,9 +396,9 @@
     "semantic_hash": "d54460a2af1cc58258cd88468749adaa"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1791623725.616945,
-    "seen": 1791625327.342756,
-    "ast_hash": "7b1b985e08ecc41eb89b8d8d082ce3f0",
+    "mtime": 1791626834.0174282,
+    "seen": 1791627398.6807382,
+    "ast_hash": "c95a5693018db8f0caaaded0496999ff",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/inventory-manager.ts": {
@@ -444,10 +444,10 @@
     "semantic_hash": "6ae3701c586df43a024ac8a9fca55cdf"
   },
   "packages/shared/src/progression/progression-engine.ts": {
-    "mtime": 1791532557.9269507,
-    "seen": 1791558675.8076959,
-    "ast_hash": "747d2079ebaafa7f459b5264b3cb780a",
-    "semantic_hash": "747d2079ebaafa7f459b5264b3cb780a"
+    "mtime": 1791626821.7027998,
+    "seen": 1791627398.6807551,
+    "ast_hash": "44aa2e42455903b0aa2ed5587652c911",
+    "semantic_hash": ""
   },
   "packages/shared/src/roster/roster-manager.ts": {
     "mtime": 1791559993.855029,
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791623394.0111952,
-    "seen": 1791623636.4420688,
-    "ast_hash": "333d9e4d5b839668b0bef854f5e41f68",
+    "mtime": 1791626767.1141088,
+    "seen": 1791627398.6807609,
+    "ast_hash": "11041758787e99efed3409e52375ca10",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791620396.9430444,
-    "seen": 1791623636.4421794,
-    "ast_hash": "701571d0dc5c2a0e7f8490d4d2ff70a9",
+    "mtime": 1791626761.5703049,
+    "seen": 1791627398.6808834,
+    "ast_hash": "b7795c1d3a97094eb298dc10a9f99a8f",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0008-elemental-skill-trees.md": {
-    "mtime": 1791523733.1864579,
-    "seen": 1791560439.0290058,
-    "ast_hash": "34756e0664a4919910467def774eeba6",
+    "mtime": 1791626755.7020924,
+    "seen": 1791627398.680897,
+    "ast_hash": "f95230178636115a68760fd1886f9619",
     "semantic_hash": ""
   },
   "docs/adr/0009-manual-stat-allocation.md": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791618689.968862,
-    "seen": 1791620382.6808863,
-    "ast_hash": "f024f794a1556a9a56c3d419ebebd44f",
+    "mtime": 1791627038.181182,
+    "seen": 1791627398.6809273,
+    "ast_hash": "60cae1a2661ae64316da5ef11f8cf07c",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1215,6 +1215,84 @@
     "mtime": 1791623729.4234781,
     "seen": 1791625327.3427618,
     "ast_hash": "e7b3e82b20a6945234fdd447488666cf",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/SkillTreeModalController.ts": {
+    "mtime": 1791626980.3327487,
+    "seen": 1791627398.6806557,
+    "ast_hash": "bb620fe642816c4618119d06213356cb",
+    "semantic_hash": ""
+  },
+  "packages/client/test/skill-tree-ui.test.ts": {
+    "mtime": 1791627364.39562,
+    "seen": 1791627398.6806805,
+    "ast_hash": "5f66e892805736c1b114b08cba775c3d",
+    "semantic_hash": ""
+  },
+  "packages/server/test/hero-skill-tree-persistence.test.ts": {
+    "mtime": 1791626944.9014657,
+    "seen": 1791627398.6807148,
+    "ast_hash": "83dd729065f1fd15565a308d72e2df6a",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/data/skill-trees.ts": {
+    "mtime": 1791626788.3856914,
+    "seen": 1791627398.6807308,
+    "ast_hash": "e544fd83b3da8d8d6b37e0c39e536177",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/data/tree-skills.ts": {
+    "mtime": 1791626776.0473313,
+    "seen": 1791627398.6807337,
+    "ast_hash": "676bd62711234e33e7a9bb5d7c9452ed",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/skills/skill-tree-manager.ts": {
+    "mtime": 1791626861.7197528,
+    "seen": 1791627398.6807592,
+    "ast_hash": "e6eab79e785f010cd63bac4177651ef3",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/skill-tree-catalog.test.ts": {
+    "mtime": 1791626803.7273467,
+    "seen": 1791627398.6807785,
+    "ast_hash": "bb35fd113915622a3107d4903699e6c1",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/skill-tree-manager.test.ts": {
+    "mtime": 1791626865.419362,
+    "seen": 1791627398.6807797,
+    "ast_hash": "82fc2d7ac1bce597db72bd84ee306ab9",
+    "semantic_hash": ""
+  },
+  ".scratch/elemental-skill-tree/issues/01-shared-elemental-skill-tree-catalog-and-types.md": {
+    "mtime": 1791626737.8654056,
+    "seen": 1791627398.680791,
+    "ast_hash": "9913c7516f5dbf9dc0f81530ceaabbd6",
+    "semantic_hash": ""
+  },
+  ".scratch/elemental-skill-tree/issues/02-skill-tree-manager-and-progression-engine.md": {
+    "mtime": 1791626741.5212255,
+    "seen": 1791627398.6807919,
+    "ast_hash": "7a85cc99d30e1c4799c169f2e0fa8ce1",
+    "semantic_hash": ""
+  },
+  ".scratch/elemental-skill-tree/issues/03-server-persistence-and-hero-state.md": {
+    "mtime": 1791626744.4207222,
+    "seen": 1791627398.680793,
+    "ast_hash": "f2c69924d66e7cc27e9dabe5e719530a",
+    "semantic_hash": ""
+  },
+  ".scratch/elemental-skill-tree/issues/04-client-skill-tree-modal-controller-and-hud.md": {
+    "mtime": 1791626748.2825408,
+    "seen": 1791627398.6807945,
+    "ast_hash": "c8d50fa11b8d210f7e0e13077cea1b61",
+    "semantic_hash": ""
+  },
+  ".scratch/elemental-skill-tree/spec.md": {
+    "mtime": 1791626734.0960083,
+    "seen": 1791627398.6807954,
+    "ast_hash": "ed1fc9c8a3b4c6dc829410ca4e39d542",
     "semantic_hash": ""
   }
 }
