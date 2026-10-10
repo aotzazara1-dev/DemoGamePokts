@@ -1,0 +1,87 @@
+/**
+ * In-Combat Beast Swapping Modal Styles (ADR 0011 / Ticket 02)
+ * Modular styles for beast swap card selection and status indicators.
+ */
+
+.battle-swap-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.battle-swap-modal {
+  background: #0f172a;
+  border: 1.5px solid #0284c7;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: monospace;
+}
+
+.battle-swap-title {
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.battle-swap-cards {
+  display: flex;
+  gap: 10px;
+}
+
+.battle-swap-card {
+  width: 148px;
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.battle-swap-card:hover {
+  background: #0369a1;
+  transform: translateY(-2px);
+}
+
+.battle-swap-card.disabled {
+  background: #18181b;
+  border-color: #52525b;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.battle-swap-card-name {
+  color: #f1f5f9;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.battle-swap-card-bar-container {
+  width: 100%;
+  height: 4px;
+  background: #0f172a;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.battle-swap-card-hp-bar {
+  height: 100%;
+  background: #22c55e;
+}
+
+.battle-swap-card-sp-bar {
+  height: 100%;
+  background: #38bdf8;
+}

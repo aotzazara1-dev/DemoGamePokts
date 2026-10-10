@@ -49,14 +49,20 @@ export class BattleEngine {
 
     // 2. Assign actions & reset defending stance
     const allLivingUnits: Combatant[] = [];
+    const actedUnitIds = new Set<string>();
+    const hasHeroSwap = Object.entries(actions).some(([id, a]) => a.type === 'swap' && findCombatant(id)?.unit.isHero);
     ['allies', 'enemies'].forEach(teamKey => {
       const team = nextState[teamKey as 'allies' | 'enemies'];
       ['front', 'back'].forEach(rowKey => {
-        const row = team[rowKey as 'front' | 'back'];
-        row.forEach(slot => {
+        team[rowKey as 'front' | 'back'].forEach(slot => {
           if (slot && slot.hp > 0) {
             slot.isDefending = false;
-            if (actions[slot.id]) slot.action = actions[slot.id];
+            if (teamKey === 'allies' && !slot.isHero && hasHeroSwap) {
+              actedUnitIds.add(slot.id);
+              slot.action = undefined;
+            } else if (actions[slot.id]) {
+              slot.action = actions[slot.id];
+            }
             if (slot.action?.type === 'defend') {
               slot.isDefending = true;
               events.push({ type: 'defend', actorId: slot.id, message: `${slot.name} assumes a defensive guard!` });
@@ -69,9 +75,6 @@ export class BattleEngine {
 
     // 3. Initiative order: sort all units by AGI descending
     allLivingUnits.sort((a, b) => b.agi - a.agi);
-
-    // Track units that have already acted (e.g. executed as part of a Combo)
-    const actedUnitIds = new Set<string>();
 
     // 4. Check for combo between allied units
     const allyLiving = allLivingUnits.filter(u => findCombatant(u.id)?.team === 'allies');
@@ -234,12 +237,8 @@ export class BattleEngine {
 
       if (actor.action.type === 'swap') {
         BattleSwapExecutor.executeSwap({
-          nextState,
-          actor,
-          swapBeastId: actor.action.swapBeastId || '',
-          reserveBeasts: effectiveReserves,
-          events,
-          actedUnitIds
+          nextState, actor, swapBeastId: actor.action.swapBeastId || '',
+          reserveBeasts: effectiveReserves, events, actedUnitIds
         });
         continue;
       }
@@ -247,12 +246,8 @@ export class BattleEngine {
       // Action requires a valid target
       const targetId = actor.action.targetId;
       if (!targetId) continue;
-
       const targetInfo = findCombatant(targetId);
-      if (!targetInfo || targetInfo.unit.hp <= 0) {
-        continue;
-      }
-
+      if (!targetInfo || targetInfo.unit.hp <= 0) continue;
       const target = targetInfo.unit;
 
       // Handle Capture action

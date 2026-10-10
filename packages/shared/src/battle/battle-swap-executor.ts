@@ -1,5 +1,8 @@
 import type { Combatant, BattleState, BattleEvent } from "../types.js";
 
+/** Center-out column priority for deploying combatants into formation */
+export const FORMATION_CENTER_OUT_COLUMNS = [2, 1, 3, 0, 4] as const;
+
 export interface ExecuteSwapParams {
   nextState: BattleState;
   actor: Combatant;
@@ -10,7 +13,7 @@ export interface ExecuteSwapParams {
 }
 
 /**
- * Deep module encapsulating authoritative In-Combat Companion Swapping (ADR 0011).
+ * Deep module encapsulating authoritative In-Combat Beast Swapping (ADR 0011).
  * Isolates validation, grid substitution, and reserve sync from BattleEngine.
  */
 export class BattleSwapExecutor {
@@ -29,7 +32,7 @@ export class BattleSwapExecutor {
       events.push({
         type: "swap",
         actorId: actor.id,
-        message: `${actor.name} tried to swap companions, but only Heroes can command a swap!`,
+        message: `${actor.name} tried to swap beasts, but only Heroes can command a swap!`,
       });
       return false;
     }
@@ -40,7 +43,7 @@ export class BattleSwapExecutor {
       events.push({
         type: "swap",
         actorId: actor.id,
-        message: `Swap failed: Companion ${swapBeastId} was not found in reserve!`,
+        message: `Swap failed: Reserve Beast ${swapBeastId} was not found in reserve!`,
       });
       return false;
     }
@@ -53,7 +56,7 @@ export class BattleSwapExecutor {
         type: "swap",
         actorId: actor.id,
         targetId: candidate.id,
-        message: `Cannot summon fallen companion ${candidate.name}!`,
+        message: `Cannot summon fallen Reserve Beast ${candidate.name}!`,
       });
       return false;
     }
@@ -100,7 +103,7 @@ export class BattleSwapExecutor {
 
     // Fallback: If no existing beast found, find first open slot in back row
     if (!foundSlot) {
-      for (const c of [2, 1, 3, 0, 4]) {
+      for (const c of FORMATION_CENTER_OUT_COLUMNS) {
         if (!nextState.allies.back[c]) {
           targetRow = "back";
           targetCol = c;
@@ -120,6 +123,8 @@ export class BattleSwapExecutor {
     // Update reserves list in-place
     reserveBeasts.splice(candidateIdx, 1);
     if (oldBeast) {
+      oldBeast.action = undefined;
+      actedUnitIds.add(oldBeast.id);
       reserveBeasts.push(oldBeast);
     }
     nextState.alliesReserve = reserveBeasts;

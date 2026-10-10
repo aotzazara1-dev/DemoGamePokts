@@ -76,15 +76,7 @@ export class BattleScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     // Ensure Overworld HUD elements, buttons, and modals are hidden during combat
-    const elementsToHide = [
-      'ui-overlay',
-      'btn-roster',
-      'btn-character-status',
-      'btn-toggle-debug',
-      'debug-panel',
-      'roster-modal',
-      'character-modal'
-    ];
+    const elementsToHide = ['ui-overlay', 'btn-roster', 'btn-character-status', 'btn-toggle-debug', 'debug-panel', 'roster-modal', 'character-modal'];
     elementsToHide.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -417,7 +409,7 @@ export class BattleScene extends Phaser.Scene {
       { type: 'attack', label: 'Attack', icon: '🗡️', color: 0xd97706 },
       { type: 'skill', label: 'Skill (Water)', icon: '✨', color: 0x2563eb },
       { type: 'defend', label: 'Defend', icon: '🛡️', color: 0x059669 },
-      { type: 'swap', label: 'Swap', icon: '🔄', color: 0x0284c7 },
+      { type: 'swap', label: 'เปลี่ยนตัว', icon: '🔄', color: 0x0284c7 },
       { type: 'pass', label: 'Pass', icon: '⏸️', color: 0x475569 },
       { type: 'capture', label: 'Capture', icon: '🕸️', color: 0x7c3aed },
       { type: 'item', label: 'Item', icon: '🎒', color: 0x334155 },
@@ -485,7 +477,7 @@ export class BattleScene extends Phaser.Scene {
       const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
       const actor = activeVis?.unit;
       if (!actor || !actor.isHero) {
-        this.statusBannerText.setText('Only the Hero can command companion swapping!');
+        this.statusBannerText.setText('Only the Hero can command Reserve Beast swapping!');
         this.statusBannerText.setColor('#ef4444');
         return;
       }
@@ -507,7 +499,7 @@ export class BattleScene extends Phaser.Scene {
         });
       }
       this.swapMenuController.show(actor, this.roster?.beasts || [], this.roster?.activeBeastId);
-      this.statusBannerText.setText('Select a reserve companion to summon:');
+      this.statusBannerText.setText('Select a Reserve Beast to summon:');
       this.statusBannerText.setColor('#38bdf8');
     } else if (actionType === 'skill') {
       const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
@@ -702,6 +694,16 @@ export class BattleScene extends Phaser.Scene {
         if (u && u.hp > 0) livingAllies.push(u);
       });
     });
+
+    const hasHeroSwap = Object.entries(this.stagedActions).some(([id, a]) => a.type === 'swap' && this.combatantVisuals.get(id)?.unit.isHero);
+    if (hasHeroSwap) {
+      livingAllies.forEach(u => {
+        if (!u.isHero && !this.stagedActions[u.id]) {
+          this.stagedActions[u.id] = { type: 'pass' };
+          this.updateActorStagingBadge(u.id, 'pass');
+        }
+      });
+    }
 
     const nextUnstaged = livingAllies.find(u => !this.stagedActions[u.id]);
     if (nextUnstaged) {
@@ -920,11 +922,15 @@ export class BattleScene extends Phaser.Scene {
     if (evt.type === 'swap') {
       soundManager.playRevive();
       const heroVis = this.combatantVisuals.get(evt.actorId);
-      if (heroVis) this.showFloatingCombatText(heroVis.container.x, heroVis.container.y - 20, 'SWAP! 🔄', '#38bdf8');
-      const beastVis = Array.from(this.combatantVisuals.values()).find(v => !v.unit.isHero);
+      const heroName = heroVis?.unit.name || 'Hero';
+      if (heroVis) this.showFloatingCombatText(heroVis.container.x, heroVis.container.y - 20, '🔄 เปลี่ยนตัว!', '#38bdf8');
+      const allAllies = [...this.battleState.allies.front, ...this.battleState.allies.back].filter(u => u && !u.isHero);
+      const beastVis = Array.from(this.combatantVisuals.values()).find(v => allAllies.some(a => a?.id === v.unit.id));
       if (evt.targetId && beastVis) {
         const newBeast = (this.roster?.beasts || []).find((b: Combatant) => b.id === evt.targetId);
         if (newBeast) {
+          this.statusBannerText.setText(`🔄 ${heroName} เรียกตัว ${newBeast.name} ลงสู่สนาม!`);
+          this.statusBannerText.setColor('#38bdf8');
           this.combatantVisuals.delete(beastVis.unit.id);
           beastVis.unit = JSON.parse(JSON.stringify(newBeast));
           this.combatantVisuals.set(newBeast.id, beastVis);
@@ -933,6 +939,10 @@ export class BattleScene extends Phaser.Scene {
           beastVis.container.setAlpha(1.0);
           this.updateHealthBar(beastVis);
           this.updateSpBar(beastVis);
+          if (newBeast.element === 'Fire') beastVis.sprite.setTint(0xf87171);
+          else if (newBeast.element === 'Earth') beastVis.sprite.setTint(0xfbbf24);
+          else if (newBeast.element === 'Wind') beastVis.sprite.setTint(0x4ade80);
+          else beastVis.sprite.clearTint();
           this.tweens.add({ targets: beastVis.container, scaleX: { from: 0.2, to: 1.0 }, scaleY: { from: 0.2, to: 1.0 }, duration: 250, ease: 'Back.easeOut' });
         }
       }

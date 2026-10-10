@@ -3,8 +3,10 @@ import { Combatant } from "@poktsonline/shared";
 import { soundManager } from "../audio/SoundManager.js";
 
 export interface BattleSwapMenuCallbacks {
-  onSelectReserveBeast: (beastId: string) => void;
-  onCancelled: () => void;
+  onSelectReserveBeast?: (beastId: string) => void;
+  onSelectBeast?: (beastId: string) => void;
+  onCancelled?: () => void;
+  onCancel?: () => void;
   onWarning?: (msg: string) => void;
 }
 
@@ -43,7 +45,9 @@ export class BattleSwapMenuController {
 
     // 1. Validation: Only Hero can swap
     if (!actor.isHero) {
-      this.callbacks.onWarning?.("Only the Hero can command a companion swap!");
+      this.callbacks.onWarning?.(
+        "Only the Hero can command a Reserve Beast swap!"
+      );
       return;
     }
 
@@ -51,20 +55,20 @@ export class BattleSwapMenuController {
     const reserveBeasts = rosterBeasts.filter((b) => b.id !== activeBeastId);
 
     if (reserveBeasts.length === 0) {
-      this.callbacks.onWarning?.("No reserve companions available in roster!");
+      this.callbacks.onWarning?.("No Reserve Beasts available in roster!");
       return;
     }
 
     const { width, height } = this.scene.scale;
     const hudY = height - 100;
-    const menuY = hudY - 80;
+    const menuY = hudY - 88;
 
     this.container = this.scene.add.container(width / 2, menuY);
     this.container.setDepth(500);
 
     const cardCount = reserveBeasts.length;
     const cardWidth = 140;
-    const cardHeight = 56;
+    const cardHeight = 64;
     const spacing = 10;
     const cancelWidth = 80;
 
@@ -88,7 +92,7 @@ export class BattleSwapMenuController {
     const titleText = this.scene.add.text(
       -totalW / 2 + 10,
       -cardHeight / 2 - 8,
-      "🔄 SELECT RESERVE COMPANION (Consumes Hero turn):",
+      "🔄 เลือกขุนพลสำรอง (SELECT RESERVE BEAST - Consumes Hero turn):",
       {
         fontSize: "11px",
         color: "#38bdf8",
@@ -114,7 +118,7 @@ export class BattleSwapMenuController {
       cardBg.setStrokeStyle(1, isConscious ? 0x38bdf8 : 0x52525b, 0.7);
 
       const nameText = this.scene.add
-        .text(x, -10, `${beast.name} [${beast.element}]`, {
+        .text(x, -14, `${beast.name} [${beast.element}]`, {
           fontSize: "11px",
           color: isConscious ? "#f1f5f9" : "#71717a",
           fontFamily: "monospace",
@@ -126,15 +130,22 @@ export class BattleSwapMenuController {
         0,
         Math.min(1, beast.hp / Math.max(1, beast.maxHp))
       );
+      const spRatio = Math.max(
+        0,
+        Math.min(1, beast.sp / Math.max(1, beast.maxSp))
+      );
+      const hpColor =
+        hpRatio > 0.5 ? 0x22c55e : hpRatio > 0.25 ? 0xeab308 : 0xef4444;
+
       const statsText = this.scene.add
         .text(
           x,
-          6,
+          0,
           isConscious
-            ? `Lv.${beast.level} HP:${beast.hp}/${beast.maxHp}`
+            ? `Lv.${beast.level} HP ${beast.hp}/${beast.maxHp}`
             : `Lv.${beast.level} (Fainted)`,
           {
-            fontSize: "10px",
+            fontSize: "9px",
             color: isConscious
               ? hpRatio > 0.4
                 ? "#34d399"
@@ -145,20 +156,35 @@ export class BattleSwapMenuController {
         )
         .setOrigin(0.5);
 
-      const spText = this.scene.add
-        .text(
-          x,
-          20,
-          isConscious ? `SP: ${beast.sp}/${beast.maxSp}` : "Unconscious",
-          {
-            fontSize: "10px",
-            color: isConscious ? "#38bdf8" : "#52525b",
-            fontFamily: "monospace",
-          }
-        )
-        .setOrigin(0.5);
+      // Visual Progress Bars
+      const barW = 88;
+      const hpBg = this.scene.add.rectangle(x, 14, barW, 4, 0x0f172a);
+      const hpBar = this.scene.add.rectangle(
+        x - barW / 2 + (barW * hpRatio) / 2,
+        14,
+        barW * hpRatio,
+        4,
+        isConscious ? hpColor : 0x52525b
+      );
 
-      this.container?.add([cardBg, nameText, statsText, spText]);
+      const spBg = this.scene.add.rectangle(x, 21, barW, 2, 0x0f172a);
+      const spBar = this.scene.add.rectangle(
+        x - barW / 2 + (barW * spRatio) / 2,
+        21,
+        barW * spRatio,
+        2,
+        isConscious ? 0x38bdf8 : 0x334155
+      );
+
+      this.container?.add([
+        cardBg,
+        nameText,
+        statsText,
+        hpBg,
+        hpBar,
+        spBg,
+        spBar,
+      ]);
 
       if (isConscious) {
         cardBg.setInteractive({ useHandCursor: true });
@@ -170,14 +196,16 @@ export class BattleSwapMenuController {
         });
         cardBg.on("pointerdown", () => {
           soundManager.playButtonClick();
-          this.callbacks.onSelectReserveBeast(beast.id);
+          const cb =
+            this.callbacks.onSelectReserveBeast || this.callbacks.onSelectBeast;
+          cb?.(beast.id);
           this.hide();
         });
       } else {
         cardBg.setInteractive({ useHandCursor: false });
         cardBg.on("pointerdown", () => {
           this.callbacks.onWarning?.(
-            `Cannot summon fallen companion ${beast.name}!`
+            `Cannot summon fallen Reserve Beast ${beast.name}!`
           );
         });
       }
@@ -213,7 +241,8 @@ export class BattleSwapMenuController {
     cancelBg.on("pointerout", () => cancelBg.setFillStyle(0x334155, 0.9));
     cancelBg.on("pointerdown", () => {
       soundManager.playButtonClick();
-      this.callbacks.onCancelled();
+      const cancelCb = this.callbacks.onCancelled || this.callbacks.onCancel;
+      cancelCb?.();
       this.hide();
     });
 

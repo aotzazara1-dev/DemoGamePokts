@@ -152,7 +152,7 @@ describe("BattleSwapMenuController", () => {
     controller.show(hero, [activeBeast], "beast_active");
 
     expect(onWarning).toHaveBeenCalledWith(
-      expect.stringContaining("No reserve companions")
+      expect.stringContaining("No Reserve Beasts")
     );
     expect(controller.isOpen()).toBe(false);
   });
@@ -228,7 +228,7 @@ describe("BattleSwapMenuController", () => {
     faintedCard.events.get("pointerdown")();
 
     expect(onWarning).toHaveBeenCalledWith(
-      expect.stringContaining("Cannot summon fallen companion")
+      expect.stringContaining("Cannot summon fallen Reserve Beast")
     );
     expect(onSelectReserveBeast).not.toHaveBeenCalled();
     expect(controller.isOpen()).toBe(true); // Stays open

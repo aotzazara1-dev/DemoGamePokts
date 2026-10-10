@@ -237,13 +237,7 @@ export class OverworldScene extends Phaser.Scene {
         if (uiOverlay) uiOverlay.style.display = "block";
         this.minimapController?.setVisible(true);
         this.chatController?.setVisible(true);
-        [
-          this.rosterModal,
-          this.characterModal,
-          this.equipmentModal,
-          this.inventoryModal,
-          this.skillTreeModal,
-        ].forEach((m) => m?.setButtonVisible?.(true));
+        [this.rosterModal, this.characterModal, this.equipmentModal, this.inventoryModal, this.skillTreeModal].forEach((m) => m?.setButtonVisible?.(true));
         this.debugToolbar.setVisible(true);
 
         if (data?.expAwarded || data?.loot) {
@@ -1312,13 +1306,7 @@ export class OverworldScene extends Phaser.Scene {
     if (uiOverlay) uiOverlay.style.display = "none";
     this.minimapController?.setVisible(false);
     this.chatController?.setVisible(false);
-    [
-      this.rosterModal,
-      this.characterModal,
-      this.equipmentModal,
-      this.inventoryModal,
-      this.skillTreeModal,
-    ].forEach((m) => m?.setButtonVisible?.(false));
+    [this.rosterModal, this.characterModal, this.equipmentModal, this.inventoryModal, this.skillTreeModal].forEach((m) => m?.setButtonVisible?.(false));
     this.debugToolbar.setVisible(false);
 
     // Flash screen and spin transition

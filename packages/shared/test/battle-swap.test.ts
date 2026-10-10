@@ -153,7 +153,9 @@ describe("In-Combat Beast Swapping (ADR 0011)", () => {
     );
 
     const swapEvent = res.events.find((e) => e.type === "swap");
-    expect(swapEvent?.message).toContain("Cannot summon fallen companion Thor");
+    expect(swapEvent?.message).toContain(
+      "Cannot summon fallen Reserve Beast Thor"
+    );
     expect(res.nextState.allies.back[2]?.id).toBe("beast_active");
   });
 
@@ -206,5 +208,50 @@ describe("In-Combat Beast Swapping (ADR 0011)", () => {
     const swapEvent = res.events.find((e) => e.type === "swap");
     expect(swapEvent).toBeDefined();
     expect(swapEvent?.message).toContain("Thor");
+  });
+
+  it("ensures neither the withdrawing beast nor the incoming beast acts during the swap round (ADR 0011)", () => {
+    // Active beast has 99 AGI (higher than Hero's 25 AGI)
+    const activeBeast = createBeast(
+      "beast_active",
+      "Speedy Bird",
+      Element.Wind,
+      80
+    );
+    activeBeast.agi = 99;
+    const reserveBeast = createBeast(
+      "beast_reserve",
+      "Rock Golem",
+      Element.Earth,
+      80
+    );
+    reserveBeast.agi = 50;
+    const enemy = createBeast("enemy_1", "Enemy Target", Element.Water, 100);
+
+    const state = createInitialState(activeBeast, enemy);
+    const reserveBeasts = [reserveBeast];
+
+    const actions: TeamActionsMap = {
+      hero_1: { type: "swap", swapBeastId: "beast_reserve" },
+      beast_active: { type: "attack", targetId: "enemy_1" },
+      enemy_1: { type: "defend" },
+    };
+
+    const res = BattleEngine.resolveTurn(
+      state,
+      actions,
+      () => 0.5,
+      reserveBeasts
+    );
+
+    // Active beast action should have been cancelled, enemy takes NO damage from active beast
+    const attackEvents = res.events.filter(
+      (e) => e.type === "damage" || e.type === "attack"
+    );
+    expect(attackEvents.length).toBe(0);
+    expect(res.nextState.enemies.front[2]?.hp).toBe(100);
+
+    // Deployed beast is now the reserve beast
+    expect(res.nextState.allies.back[2]?.id).toBe("beast_reserve");
   });
 });
