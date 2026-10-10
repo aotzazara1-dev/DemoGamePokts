@@ -1,7 +1,7 @@
 # Graph Report - Poktsonline  (2026-10-10)
 
 ## Corpus Check
-- 223 files · ~215,598 words
+- 223 files · ~215,833 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 26 file(s) not represented in the graph (top: .css 17, (none) 5, .bat 4)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `43ab41a0`
+- Built from commit: `5b401fe9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -484,7 +484,7 @@ Nodes (4): Description, Issue 04: In-Combat Item Action Picker & QA Toolbar Chea
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Combatant` connect `Combatant` to `OverworldRoom`, `BattleScene`, `EquipmentManager`, `RosterModalController`, `OverworldScene.ts`, `RosterModalController.ts`, `InventoryModalController`, `EquipmentModalController`, `shared/src/index.ts`, `src/types.ts`, `BattleScene.ts`, `MapConfig`, `3. Architecture & Data Structures`, `skill-tree-manager.ts`, `BattleSkillMenuController.ts`, `SkillTreeModalController`, `ProgressionEngine`, `.create`, `SkillTreeModalController.ts`, `getSkillDefinition`, `InventoryState`, `BattleState.ts`, `Issue 01: Core Progression Engine, EXP Formulas & Stat Allocation`, `BattleSwapMenuController`, `HeroRepository.ts`, `HeroRepository`, `.showBattleEndBanner`, `DebugToolbarController`, `ItemStack`?**
-  _High betweenness centrality (0.118) - this node is a cross-community bridge._
+  _High betweenness centrality (0.121) - this node is a cross-community bridge._
 - **Are the 5 inferred relationships involving `Combatant` (e.g. with `Tasks` and `Tasks`) actually correct?**
   _`Combatant` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `husky`, `lint-staged`, `prettier` to the rest of the system?**

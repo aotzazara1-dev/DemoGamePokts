@@ -58,7 +58,7 @@ export class BattleScene extends Phaser.Scene {
 
   init(data: any) {
     this.encounterData = data;
-    this.network = data.battleNetwork || data.network || new BattleNetwork();
+    this.network = data.battleNetwork || new BattleNetwork();
     this.roster = data.roster;
     this.inventory = data.inventory || InventoryManager.createInitialInventory();
     this.stagedActions = {};
@@ -476,11 +476,8 @@ export class BattleScene extends Phaser.Scene {
     } else if (actionType === 'swap') {
       const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
       const actor = activeVis?.unit;
-      if (!actor || !actor.isHero) {
-        this.statusBannerText.setText('Only the Hero can command Reserve Beast swapping!');
-        this.statusBannerText.setColor('#ef4444');
-        return;
-      }
+      if (!actor) return;
+
       if (!this.swapMenuController) {
         this.swapMenuController = new BattleSwapMenuController(this, {
           onSelectReserveBeast: (beastId) => {
@@ -498,7 +495,14 @@ export class BattleScene extends Phaser.Scene {
           }
         });
       }
-      this.swapMenuController.show(actor, this.roster?.beasts || [], this.roster?.activeBeastId);
+
+      let activeBeastId = this.roster?.activeBeastId;
+      if (!activeBeastId) {
+        const deployedAllyBeast = [...this.battleState.allies.front, ...this.battleState.allies.back].find(u => u && !u.isHero);
+        if (deployedAllyBeast) activeBeastId = deployedAllyBeast.id;
+      }
+
+      this.swapMenuController.show(actor, this.roster?.beasts || [], activeBeastId || null);
       this.statusBannerText.setText('Select a Reserve Beast to summon:');
       this.statusBannerText.setColor('#38bdf8');
     } else if (actionType === 'skill') {
@@ -729,7 +733,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private submitAllActions() {
-    if (this.network && this.network.isConnected()) {
+    if (this.network && typeof (this.network as any).isConnected === 'function' && this.network.isConnected()) {
       Object.entries(this.stagedActions).forEach(([combatantId, action]) => {
         this.network.sendSelectAction(combatantId, action);
       });
@@ -921,15 +925,15 @@ export class BattleScene extends Phaser.Scene {
 
     if (evt.type === 'swap') {
       soundManager.playRevive();
-      const heroVis = this.combatantVisuals.get(evt.actorId);
-      const heroName = heroVis?.unit.name || 'Hero';
-      if (heroVis) this.showFloatingCombatText(heroVis.container.x, heroVis.container.y - 20, '🔄 เปลี่ยนตัว!', '#38bdf8');
-      const allAllies = [...this.battleState.allies.front, ...this.battleState.allies.back].filter(u => u && !u.isHero);
-      const beastVis = Array.from(this.combatantVisuals.values()).find(v => allAllies.some(a => a?.id === v.unit.id));
+      const actorVis = this.combatantVisuals.get(evt.actorId);
+      const actorName = actorVis?.unit.name || 'Hero';
+      if (actorVis) this.showFloatingCombatText(actorVis.container.x, actorVis.container.y - 20, '🔄 เปลี่ยนตัว!', '#38bdf8');
+      const enemyIds = new Set([...this.battleState.enemies.front, ...this.battleState.enemies.back].filter((u): u is Combatant => !!u).map(u => u.id));
+      const beastVis = Array.from(this.combatantVisuals.values()).find(v => !v.unit.isHero && !enemyIds.has(v.unit.id));
       if (evt.targetId && beastVis) {
         const newBeast = (this.roster?.beasts || []).find((b: Combatant) => b.id === evt.targetId);
         if (newBeast) {
-          this.statusBannerText.setText(`🔄 ${heroName} เรียกตัว ${newBeast.name} ลงสู่สนาม!`);
+          this.statusBannerText.setText(`🔄 ${actorName} เรียกตัว ${newBeast.name} ลงสู่สนาม!`);
           this.statusBannerText.setColor('#38bdf8');
           this.combatantVisuals.delete(beastVis.unit.id);
           beastVis.unit = JSON.parse(JSON.stringify(newBeast));

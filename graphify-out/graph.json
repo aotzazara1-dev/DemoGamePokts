@@ -3089,7 +3089,7 @@
       "file_type": "code",
       "norm_label": ".setupnetworkhandlers()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L768"
+      "source_location": "L772"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_submitallactions",
@@ -3101,7 +3101,7 @@
       "file_type": "code",
       "norm_label": ".submitallactions()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L731"
+      "source_location": "L735"
     },
     {
       "id": "packages_client_src_ui_battleswapmenucontroller_battleswapmenucontroller_constructor",
@@ -3269,7 +3269,7 @@
       "file_type": "code",
       "norm_label": ".showbattleendbanner()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1123"
+      "source_location": "L1127"
     },
     {
       "id": "packages_client_src_ui_debugtoolbarcontroller_debugtoolbarcontroller_close",
@@ -4049,7 +4049,7 @@
       "file_type": "code",
       "norm_label": ".advanceturninput()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L688"
+      "source_location": "L692"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_handleactionclick",
@@ -4073,7 +4073,7 @@
       "file_type": "code",
       "norm_label": ".handletargetselected()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L648"
+      "source_location": "L652"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_highlightvalidtargets",
@@ -4085,7 +4085,7 @@
       "file_type": "code",
       "norm_label": ".highlightvalidtargets()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L623"
+      "source_location": "L627"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_showitemselectionmenu",
@@ -4097,7 +4097,7 @@
       "file_type": "code",
       "norm_label": ".showitemselectionmenu()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L552"
+      "source_location": "L556"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_tickactiontimer",
@@ -4109,7 +4109,7 @@
       "file_type": "code",
       "norm_label": ".tickactiontimer()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L744"
+      "source_location": "L748"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_updateactorstagingbadge",
@@ -4253,7 +4253,7 @@
       "file_type": "code",
       "norm_label": ".executelocalresolution()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L785"
+      "source_location": "L789"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_initbattlestate",
@@ -4277,7 +4277,7 @@
       "file_type": "code",
       "norm_label": ".playresolutionsequence()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L828"
+      "source_location": "L832"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_playsingleeventanimation",
@@ -4289,7 +4289,7 @@
       "file_type": "code",
       "norm_label": ".playsingleeventanimation()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L889"
+      "source_location": "L893"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_preload",
@@ -4337,7 +4337,7 @@
       "file_type": "code",
       "norm_label": ".showfloatingcombattext()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1104"
+      "source_location": "L1108"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_updateactiveactorhud",
@@ -4361,7 +4361,7 @@
       "file_type": "code",
       "norm_label": ".updatehealthbar()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1071"
+      "source_location": "L1075"
     },
     {
       "id": "packages_client_src_scenes_battlescene_battlescene_updatespbar",
@@ -4373,7 +4373,7 @@
       "file_type": "code",
       "norm_label": ".updatespbar()",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1093"
+      "source_location": "L1097"
     },
     {
       "id": "packages_client_src_entities_overworldentitymanager_overworldentitymanager_getminimapblips",
@@ -19188,7 +19188,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L703",
+      "source_location": "L707",
       "weight": 1.0
     },
     {
@@ -19200,7 +19200,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L711",
+      "source_location": "L715",
       "weight": 1.0
     },
     {
@@ -19212,7 +19212,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L728",
+      "source_location": "L732",
       "weight": 1.0
     },
     {
@@ -19332,7 +19332,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L821",
+      "source_location": "L825",
       "weight": 1.0
     },
     {
@@ -19344,7 +19344,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L825",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -19380,7 +19380,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L485",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -19392,7 +19392,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L510",
+      "source_location": "L514",
       "weight": 1.0
     },
     {
@@ -19404,7 +19404,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L512",
+      "source_location": "L516",
       "weight": 1.0
     },
     {
@@ -19416,7 +19416,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L514",
+      "source_location": "L518",
       "weight": 1.0
     },
     {
@@ -19428,7 +19428,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L515",
+      "source_location": "L519",
       "weight": 1.0
     },
     {
@@ -19440,7 +19440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L535",
+      "source_location": "L539",
       "weight": 1.0
     },
     {
@@ -19452,7 +19452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L542",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
@@ -19464,7 +19464,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L651",
+      "source_location": "L655",
       "weight": 1.0
     },
     {
@@ -19476,7 +19476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L652",
+      "source_location": "L656",
       "weight": 1.0
     },
     {
@@ -19488,7 +19488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L653",
+      "source_location": "L657",
       "weight": 1.0
     },
     {
@@ -19500,7 +19500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L674",
+      "source_location": "L678",
       "weight": 1.0
     },
     {
@@ -19512,7 +19512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L680",
+      "source_location": "L684",
       "weight": 1.0
     },
     {
@@ -19524,7 +19524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L685",
+      "source_location": "L689",
       "weight": 1.0
     },
     {
@@ -19560,7 +19560,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L839",
+      "source_location": "L843",
       "weight": 1.0
     },
     {
@@ -19572,7 +19572,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L841",
+      "source_location": "L845",
       "weight": 1.0
     },
     {
@@ -19584,7 +19584,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L850",
+      "source_location": "L854",
       "weight": 1.0
     },
     {
@@ -19596,7 +19596,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L882",
+      "source_location": "L886",
       "weight": 1.0
     },
     {
@@ -19608,7 +19608,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L883",
+      "source_location": "L887",
       "weight": 1.0
     },
     {
@@ -19620,7 +19620,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L899",
+      "source_location": "L903",
       "weight": 1.0
     },
     {
@@ -19632,7 +19632,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L940",
+      "source_location": "L944",
       "weight": 1.0
     },
     {
@@ -19644,7 +19644,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L941",
+      "source_location": "L945",
       "weight": 1.0
     },
     {
@@ -19680,7 +19680,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L770",
+      "source_location": "L774",
       "weight": 1.0
     },
     {
@@ -19692,7 +19692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L774",
+      "source_location": "L778",
       "weight": 1.0
     },
     {
@@ -19704,7 +19704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1165",
+      "source_location": "L1169",
       "weight": 1.0
     },
     {
@@ -19716,7 +19716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1188",
+      "source_location": "L1192",
       "weight": 1.0
     },
     {
@@ -19728,7 +19728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L575",
+      "source_location": "L579",
       "weight": 1.0
     },
     {
@@ -19740,7 +19740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L576",
+      "source_location": "L580",
       "weight": 1.0
     },
     {
@@ -19752,7 +19752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L593",
+      "source_location": "L597",
       "weight": 1.0
     },
     {
@@ -19764,7 +19764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L593",
+      "source_location": "L597",
       "weight": 1.0
     },
     {
@@ -19776,7 +19776,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L739",
+      "source_location": "L743",
       "weight": 1.0
     },
     {
@@ -19788,7 +19788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L760",
+      "source_location": "L764",
       "weight": 1.0
     },
     {
@@ -19800,7 +19800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L764",
+      "source_location": "L768",
       "weight": 1.0
     },
     {
@@ -43412,7 +43412,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L828",
+      "source_location": "L832",
       "weight": 1.0
     },
     {
@@ -43424,7 +43424,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L889",
+      "source_location": "L893",
       "weight": 1.0
     },
     {
@@ -43436,7 +43436,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1123",
+      "source_location": "L1127",
       "weight": 1.0
     },
     {
@@ -43448,7 +43448,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1123",
+      "source_location": "L1127",
       "weight": 1.0
     },
     {
@@ -43460,7 +43460,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L552",
+      "source_location": "L556",
       "weight": 1.0
     },
     {
@@ -54696,7 +54696,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1071",
+      "source_location": "L1075",
       "weight": 1.0
     },
     {
@@ -54707,7 +54707,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1093",
+      "source_location": "L1097",
       "weight": 1.0
     },
     {
@@ -54718,7 +54718,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1104",
+      "source_location": "L1108",
       "weight": 1.0
     },
     {
@@ -54729,7 +54729,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L1123",
+      "source_location": "L1127",
       "weight": 1.0
     },
     {
@@ -54861,7 +54861,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L552",
+      "source_location": "L556",
       "weight": 1.0
     },
     {
@@ -54883,7 +54883,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L623",
+      "source_location": "L627",
       "weight": 1.0
     },
     {
@@ -54894,7 +54894,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L648",
+      "source_location": "L652",
       "weight": 1.0
     },
     {
@@ -54905,7 +54905,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L688",
+      "source_location": "L692",
       "weight": 1.0
     },
     {
@@ -54927,7 +54927,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L731",
+      "source_location": "L735",
       "weight": 1.0
     },
     {
@@ -54949,7 +54949,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L744",
+      "source_location": "L748",
       "weight": 1.0
     },
     {
@@ -54960,7 +54960,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L768",
+      "source_location": "L772",
       "weight": 1.0
     },
     {
@@ -54971,7 +54971,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L785",
+      "source_location": "L789",
       "weight": 1.0
     },
     {
@@ -54982,7 +54982,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L828",
+      "source_location": "L832",
       "weight": 1.0
     },
     {
@@ -54993,7 +54993,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L889",
+      "source_location": "L893",
       "weight": 1.0
     },
     {
@@ -58822,7 +58822,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L689",
+      "source_location": "L693",
       "weight": 1.0
     },
     {
@@ -58834,7 +58834,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L690",
+      "source_location": "L694",
       "weight": 1.0
     },
     {
@@ -58870,7 +58870,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L501",
+      "source_location": "L505",
       "weight": 1.0
     },
     {
@@ -58882,7 +58882,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L531",
+      "source_location": "L535",
       "weight": 1.0
     },
     {
@@ -58894,7 +58894,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L769",
+      "source_location": "L773",
       "weight": 1.0
     },
     {
@@ -58906,7 +58906,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L773",
+      "source_location": "L777",
       "weight": 1.0
     },
     {
@@ -58918,7 +58918,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L732",
+      "source_location": "L736",
       "weight": 1.0
     },
     {
@@ -58930,7 +58930,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "packages/client/src/scenes/BattleScene.ts",
-      "source_location": "L734",
+      "source_location": "L738",
       "weight": 1.0
     },
     {
@@ -64131,5 +64131,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "43ab41a0cf4d78811251e2e373be9b87732601e7"
+  "built_at_commit": "5b401fe91911f1a30cf96f059eff97fbf2f8b97d"
 }

@@ -43,19 +43,13 @@ export class BattleSwapMenuController {
   ): void {
     this.hide();
 
-    // 1. Validation: Only Hero can swap
-    if (!actor.isHero) {
-      this.callbacks.onWarning?.(
-        "Only the Hero can command a Reserve Beast swap!"
-      );
-      return;
-    }
-
-    // 2. Filter reserve beasts (excluding currently deployed active beast)
+    // 1. Filter reserve beasts (excluding currently deployed active beast)
     const reserveBeasts = rosterBeasts.filter((b) => b.id !== activeBeastId);
 
     if (reserveBeasts.length === 0) {
-      this.callbacks.onWarning?.("No Reserve Beasts available in roster!");
+      this.callbacks.onWarning?.(
+        "ไม่มีขุนพลสำรองในคลังทัพ (No Reserve Beasts available in roster!)"
+      );
       return;
     }
 
@@ -92,7 +86,7 @@ export class BattleSwapMenuController {
     const titleText = this.scene.add.text(
       -totalW / 2 + 10,
       -cardHeight / 2 - 8,
-      "🔄 เลือกขุนพลสำรอง (SELECT RESERVE BEAST - Consumes Hero turn):",
+      "🔄 เลือกขุนพลสำรองเข้าสู่สนามรบ (SELECT RESERVE BEAST):",
       {
         fontSize: "11px",
         color: "#38bdf8",

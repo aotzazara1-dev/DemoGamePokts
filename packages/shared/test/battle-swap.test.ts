@@ -106,9 +106,9 @@ describe("In-Combat Beast Swapping (ADR 0011)", () => {
     );
   });
 
-  it("fails swap if actor is not Hero", () => {
+  it("Beast successfully initiates self-swap with conscious reserve beast", () => {
     const activeBeast = createBeast("beast_active", "Lu Bu");
-    const reserveBeast = createBeast("beast_reserve", "Thor");
+    const reserveBeast = createBeast("beast_reserve", "Thor", Element.Wind);
     const enemy = createBeast("enemy_1", "Fenrir", Element.Earth, 100);
 
     const state = createInitialState(activeBeast, enemy);
@@ -127,8 +127,45 @@ describe("In-Combat Beast Swapping (ADR 0011)", () => {
       reserveBeasts
     );
 
+    // 1. Grid should now hold reserveBeast
+    expect(res.nextState.allies.back[2]?.id).toBe("beast_reserve");
+    expect(res.nextState.allies.back[2]?.name).toBe("Thor");
+
+    // 2. Old beast should be moved to reserve
+    expect(res.nextState.alliesReserve).toBeDefined();
+    expect(
+      res.nextState.alliesReserve!.some((b) => b.id === "beast_active")
+    ).toBe(true);
+
+    // 3. Swap event emitted with retreat message
     const swapEvent = res.events.find((e) => e.type === "swap");
-    expect(swapEvent?.message).toContain("only Heroes can command a swap");
+    expect(swapEvent?.message).toContain("Lu Bu retreated and summoned Thor");
+  });
+
+  it("fails swap if actor is not an allied combatant", () => {
+    const activeBeast = createBeast("beast_active", "Lu Bu");
+    const reserveBeast = createBeast("beast_reserve", "Thor");
+    const enemy = createBeast("enemy_1", "Fenrir", Element.Earth, 100);
+
+    const state = createInitialState(activeBeast, enemy);
+    const reserveBeasts = [reserveBeast];
+
+    const actions: TeamActionsMap = {
+      enemy_1: { type: "swap", swapBeastId: "beast_reserve" },
+      hero_1: { type: "defend" },
+    };
+
+    const res = BattleEngine.resolveTurn(
+      state,
+      actions,
+      () => 0.5,
+      reserveBeasts
+    );
+
+    const swapEvent = res.events.find((e) => e.type === "swap");
+    expect(swapEvent?.message).toContain(
+      "cannot command a swap because they are not an allied combatant"
+    );
     expect(res.nextState.allies.back[2]?.id).toBe("beast_active");
   });
 

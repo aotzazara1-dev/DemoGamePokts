@@ -120,7 +120,7 @@ describe("BattleSwapMenuController", () => {
     };
   });
 
-  it("warns and refuses to open if actor is not Hero", () => {
+  it("allows opening if actor is a Beast", () => {
     const onWarning = vi.fn();
     const controller = new BattleSwapMenuController(mockScene, {
       onSelectReserveBeast: vi.fn(),
@@ -129,12 +129,11 @@ describe("BattleSwapMenuController", () => {
     });
 
     const beastActor = createMockBeast("beast_1", "Lu Bu");
-    controller.show(beastActor, [beastActor], "beast_1");
+    const reserveBeast = createMockBeast("beast_res", "Thor");
+    controller.show(beastActor, [beastActor, reserveBeast], "beast_1");
 
-    expect(onWarning).toHaveBeenCalledWith(
-      expect.stringContaining("Only the Hero")
-    );
-    expect(controller.isOpen()).toBe(false);
+    expect(onWarning).not.toHaveBeenCalled();
+    expect(controller.isOpen()).toBe(true);
   });
 
   it("warns if no reserve beasts are in roster", () => {

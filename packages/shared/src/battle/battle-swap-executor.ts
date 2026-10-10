@@ -27,12 +27,15 @@ export class BattleSwapExecutor {
       actedUnitIds,
     } = params;
 
-    // 1. Only Heroes can issue Swap
-    if (!actor.isHero) {
+    // 1. Only player allies can command a swap
+    const isAlly =
+      nextState.allies.front.some((u) => u?.id === actor.id) ||
+      nextState.allies.back.some((u) => u?.id === actor.id);
+    if (!isAlly) {
       events.push({
         type: "swap",
         actorId: actor.id,
-        message: `${actor.name} tried to swap beasts, but only Heroes can command a swap!`,
+        message: `${actor.name} cannot command a swap because they are not an allied combatant!`,
       });
       return false;
     }
@@ -87,18 +90,36 @@ export class BattleSwapExecutor {
     let oldBeast: Combatant | null = null;
     let foundSlot = false;
 
-    for (const r of ["back", "front"] as const) {
-      for (let c = 0; c < 5; c++) {
-        const u = nextState.allies[r][c];
-        if (u && !u.isHero) {
-          targetRow = r;
-          targetCol = c;
-          oldBeast = u;
-          foundSlot = true;
-          break;
+    if (!actor.isHero) {
+      // Beast itself is initiating retreat and summoning reserve
+      for (const r of ["back", "front"] as const) {
+        for (let c = 0; c < 5; c++) {
+          const u = nextState.allies[r][c];
+          if (u && u.id === actor.id) {
+            targetRow = r;
+            targetCol = c;
+            oldBeast = u;
+            foundSlot = true;
+            break;
+          }
         }
+        if (foundSlot) break;
       }
-      if (foundSlot) break;
+    } else {
+      // Hero commands swapping the deployed allied beast
+      for (const r of ["back", "front"] as const) {
+        for (let c = 0; c < 5; c++) {
+          const u = nextState.allies[r][c];
+          if (u && !u.isHero) {
+            targetRow = r;
+            targetCol = c;
+            oldBeast = u;
+            foundSlot = true;
+            break;
+          }
+        }
+        if (foundSlot) break;
+      }
     }
 
     // Fallback: If no existing beast found, find first open slot in back row
@@ -133,13 +154,17 @@ export class BattleSwapExecutor {
     actedUnitIds.add(newBeast.id);
 
     // 7. Emit swap event
+    const message = actor.isHero
+      ? oldBeast
+        ? `${actor.name} withdrew ${oldBeast.name} and summoned ${newBeast.name} into battle!`
+        : `${actor.name} summoned ${newBeast.name} into battle!`
+      : `${actor.name} retreated and summoned ${newBeast.name} into battle!`;
+
     events.push({
       type: "swap",
       actorId: actor.id,
       targetId: newBeast.id,
-      message: oldBeast
-        ? `${actor.name} withdrew ${oldBeast.name} and summoned ${newBeast.name} into battle!`
-        : `${actor.name} summoned ${newBeast.name} into battle!`,
+      message,
     });
 
     return true;
