@@ -60,9 +60,9 @@
     "semantic_hash": "c24e430dcbb999f240481d1e284cbf9c"
   },
   "packages/client/src/network/OverworldNetwork.ts": {
-    "mtime": 1791616200.615006,
-    "seen": 1791616376.7634513,
-    "ast_hash": "524bed4271c3ecefd9a7a29278099175",
+    "mtime": 1791616398.0773704,
+    "seen": 1791617459.2949312,
+    "ast_hash": "5603af8bfe4e6ed2ead534a2d7b81ecc",
     "semantic_hash": ""
   },
   "packages/client/src/renderer/OverworldRenderer.ts": {
@@ -78,9 +78,9 @@
     "semantic_hash": "5e39e13e793e92ccd4db53e5d71e2f9f"
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791616229.0911572,
-    "seen": 1791616376.7634568,
-    "ast_hash": "452e59385ba6c0f662b9857acfb9769d",
+    "mtime": 1791617385.3798666,
+    "seen": 1791617459.2949371,
+    "ast_hash": "ce710e680dc2a1394e37c2bf45161edf",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -90,9 +90,9 @@
     "semantic_hash": "056ae1a5eda09855ddfbd4a1cc46509c"
   },
   "packages/client/src/ui/CharacterModalController.ts": {
-    "mtime": 1791616320.523142,
-    "seen": 1791616376.7634604,
-    "ast_hash": "6293cb17dc3a351fa6c0583cd2bc131f",
+    "mtime": 1791617253.3375678,
+    "seen": 1791617459.2949402,
+    "ast_hash": "1073fed5fcabb57e660e06d0ff79c1e4",
     "semantic_hash": ""
   },
   "packages/client/src/ui/CharacterSelectModalController.ts": {
@@ -108,9 +108,9 @@
     "semantic_hash": "661c17f1cb0d5ea672e0c89b061989bd"
   },
   "packages/client/src/ui/DebugToolbarController.ts": {
-    "mtime": 1791616140.384784,
-    "seen": 1791616376.7634647,
-    "ast_hash": "4d02c9f1618218dab8910491bbfd8d9d",
+    "mtime": 1791616398.483748,
+    "seen": 1791617459.2949445,
+    "ast_hash": "756b4d21fb9bda8afe24ba4bb1ada222",
     "semantic_hash": ""
   },
   "packages/client/src/ui/DialogueModalController.ts": {
@@ -120,9 +120,9 @@
     "semantic_hash": "1213febf44fb34c193838677ce255a9a"
   },
   "packages/client/src/ui/InventoryModalController.ts": {
-    "mtime": 1791616102.315003,
-    "seen": 1791616376.7634678,
-    "ast_hash": "64f0fb7c0e0930ca5bba63b33d35111b",
+    "mtime": 1791616398.5443475,
+    "seen": 1791617459.294949,
+    "ast_hash": "6f73a72758f81f1361a154225d617aa8",
     "semantic_hash": ""
   },
   "packages/client/src/ui/MinimapController.ts": {
@@ -132,9 +132,9 @@
     "semantic_hash": "435646b473265f9283697458788cc71c"
   },
   "packages/client/src/ui/RosterModalController.ts": {
-    "mtime": 1791616070.206181,
-    "seen": 1791616376.7634706,
-    "ast_hash": "399de0fca77e931b9ab06063a6b9ac8a",
+    "mtime": 1791616398.5928118,
+    "seen": 1791617459.294952,
+    "ast_hash": "5df21f0d50ab3481573393df6295223c",
     "semantic_hash": ""
   },
   "packages/client/src/ui/ShopModalController.ts": {
@@ -144,10 +144,10 @@
     "semantic_hash": "045831d5be7b385ad3e433113539a9ec"
   },
   "packages/client/src/ui/index.ts": {
-    "mtime": 1791556168.1255696,
-    "seen": 1791558675.8076365,
-    "ast_hash": "a47435f4846f31cab63e065157f10c87",
-    "semantic_hash": "a47435f4846f31cab63e065157f10c87"
+    "mtime": 1791617237.8496041,
+    "seen": 1791617459.2949548,
+    "ast_hash": "d5d1aec12a7fd2fc9a7e20a5e026e688",
+    "semantic_hash": ""
   },
   "packages/client/src/utils/isometric.ts": {
     "mtime": 1791555289.030897,
@@ -258,15 +258,15 @@
     "semantic_hash": "7db43d65e4876cca1da6bb276a732c59"
   },
   "packages/server/src/db/DatabaseEngine.ts": {
-    "mtime": 1791615826.079122,
-    "seen": 1791616376.7635043,
-    "ast_hash": "2d035550f387fc72238819a5d0f9d468",
+    "mtime": 1791616398.6386096,
+    "seen": 1791617459.2949858,
+    "ast_hash": "d69a4e56d5d307cdc7b2e4bee8465d42",
     "semantic_hash": ""
   },
   "packages/server/src/db/HeroRepository.ts": {
-    "mtime": 1791615915.8982766,
-    "seen": 1791616376.763506,
-    "ast_hash": "3800212b93219b56128c6a24bd905caa",
+    "mtime": 1791616398.6755316,
+    "seen": 1791617459.294987,
+    "ast_hash": "c49817c3a4c1a1cd9ccb1179b5e15856",
     "semantic_hash": ""
   },
   "packages/server/src/db/index.ts": {
@@ -288,9 +288,9 @@
     "semantic_hash": "a66be9293c52d8857d762b5c49e56b74"
   },
   "packages/server/src/rooms/OverworldRoom.ts": {
-    "mtime": 1791615929.9177656,
-    "seen": 1791616376.7635124,
-    "ast_hash": "5e54cd575d81ec75d99bae8c71fbcd0f",
+    "mtime": 1791616398.7424672,
+    "seen": 1791617459.294993,
+    "ast_hash": "1428f524e44c606af3d99bfe6595470f",
     "semantic_hash": ""
   },
   "packages/server/src/schema/BattleState.ts": {
@@ -336,9 +336,9 @@
     "semantic_hash": "18f730edc83a0d931f18fc3ea0a0cafe"
   },
   "packages/server/test/overworld-persistence.test.ts": {
-    "mtime": 1791615948.6619573,
-    "seen": 1791616376.763524,
-    "ast_hash": "df6c944e243f78fc4246c6ac22a72319",
+    "mtime": 1791616398.7752597,
+    "seen": 1791617459.2950044,
+    "ast_hash": "18bce4413a6bfcae3aedf43457f46609",
     "semantic_hash": ""
   },
   "packages/server/test/overworld-room.test.ts": {
@@ -396,9 +396,9 @@
     "semantic_hash": "d54460a2af1cc58258cd88468749adaa"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1791615791.3584394,
-    "seen": 1791616376.7635405,
-    "ast_hash": "f443087c0f988124e672a164e0a40f03",
+    "mtime": 1791616398.8115249,
+    "seen": 1791617459.2950206,
+    "ast_hash": "4c8d02ef6c8ac2b43118783b80cdb7d0",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/inventory-manager.ts": {
@@ -408,9 +408,9 @@
     "semantic_hash": "b3184937275138a599ab12ffb5dc8040"
   },
   "packages/shared/src/inventory/item-database.ts": {
-    "mtime": 1791615752.4597685,
-    "seen": 1791616376.7635431,
-    "ast_hash": "62e419aa75dfa9f0221c0b180c96cf86",
+    "mtime": 1791616398.842224,
+    "seen": 1791617459.2950237,
+    "ast_hash": "d443e6f57eb8b53ddee09b7417ed4bf8",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/loot-engine.ts": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791615741.958935,
-    "seen": 1791616376.7635555,
-    "ast_hash": "f834fdac028dd56df4e767e64328dfcf",
+    "mtime": 1791616398.8649123,
+    "seen": 1791617459.2950354,
+    "ast_hash": "09e23db8b672ca99773a696d289df903",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791615690.9658713,
-    "seen": 1791616376.7636492,
-    "ast_hash": "44cf167b1db4f35eba05ab1bb4dc4b1b",
+    "mtime": 1791616397.0841336,
+    "seen": 1791617459.29513,
+    "ast_hash": "03fd36a56562aced42d473db2fc0b53c",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791616132.8999436,
-    "seen": 1791616376.763684,
-    "ast_hash": "424a123a27cbe063f8337c79c549a4c2",
+    "mtime": 1791617295.8201685,
+    "seen": 1791617459.2952015,
+    "ast_hash": "a94fb999bc3d562923f24152e1b9071b",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1038,63 +1038,81 @@
     "semantic_hash": ""
   },
   "packages/client/test/equipment-ui.test.ts": {
-    "mtime": 1791616322.8597357,
-    "seen": 1791616376.7634828,
-    "ast_hash": "6b1bb45ce126560db14b383c30fd0a91",
+    "mtime": 1791617399.729568,
+    "seen": 1791617459.2949648,
+    "ast_hash": "f9f45adf0deb0a085010c1054bae4df3",
     "semantic_hash": ""
   },
   "packages/shared/src/equipment/equipment-manager.ts": {
-    "mtime": 1791615784.0887005,
-    "seen": 1791616376.7635374,
-    "ast_hash": "86bc9b082330dfa0e8e748ebc9dd48cc",
+    "mtime": 1791616398.8049996,
+    "seen": 1791617459.2950177,
+    "ast_hash": "a5124ee7fc5b71fbf1badd2a25ae136a",
     "semantic_hash": ""
   },
   "packages/shared/test/equipment.test.ts": {
-    "mtime": 1791615801.3570797,
-    "seen": 1791616376.7635612,
-    "ast_hash": "11caa576c64dfbde56488bd9b98c9fb7",
+    "mtime": 1791616398.898718,
+    "seen": 1791617459.2950413,
+    "ast_hash": "ef9f0d33b322846e3403eb4db6c53e8c",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/01-shared-equipment-types-and-catalog.md": {
-    "mtime": 1791615770.1638174,
-    "seen": 1791616376.7635777,
-    "ast_hash": "f09818e6238f06b09d3f6434949bc0b9",
+    "mtime": 1791616396.9183674,
+    "seen": 1791617459.2950568,
+    "ast_hash": "462de376f92ea5ddcd180f99ba7b5741",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/02-equipment-manager-and-stat-calculation.md": {
-    "mtime": 1791615812.595979,
-    "seen": 1791616376.7635787,
-    "ast_hash": "2ec7d2adda3603ad16e9754f0433a45d",
+    "mtime": 1791616396.935823,
+    "seen": 1791617459.2950583,
+    "ast_hash": "de755e40f46e4d34a5d23716041d6be6",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/03-server-persistence-and-room-messages.md": {
-    "mtime": 1791615961.872876,
-    "seen": 1791616376.7635798,
-    "ast_hash": "066139744e84719980668216fdc3b538",
+    "mtime": 1791616396.9492264,
+    "seen": 1791617459.2950594,
+    "ast_hash": "80b213b693e0c8341e046c067e71b44a",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/04-client-ui-paperdoll-and-modals.md": {
-    "mtime": 1791616340.3940432,
-    "seen": 1791616376.763581,
-    "ast_hash": "7c6013896835a52e1d0193cca1ed8d11",
+    "mtime": 1791616396.9695208,
+    "seen": 1791617459.2950604,
+    "ast_hash": "257b6026b25198980455355fd01c4492",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/issues/05-full-system-verification-and-smoke-test.md": {
-    "mtime": 1791616367.1425152,
-    "seen": 1791616376.763582,
-    "ast_hash": "f8eb1b94df317ad86c09ec3217159f19",
+    "mtime": 1791616396.979892,
+    "seen": 1791617459.2950618,
+    "ast_hash": "2e642df2c5cc4eeb16c8f4cd071b9162",
     "semantic_hash": ""
   },
   ".scratch/equipment-system/spec.md": {
-    "mtime": 1791615697.7764766,
-    "seen": 1791616376.763583,
-    "ast_hash": "5a960ffee47baedee1d3d4feace23522",
+    "mtime": 1791616397.0031645,
+    "seen": 1791617459.2950647,
+    "ast_hash": "68e691326e04bd5b0d1d16b0058a18cd",
     "semantic_hash": ""
   },
   "docs/adr/0019-equipment-and-volundr-system.md": {
-    "mtime": 1791615683.5402942,
-    "seen": 1791616376.7636786,
-    "ast_hash": "64fb76356a2bf234b559bb70247a7c05",
+    "mtime": 1791616397.4104517,
+    "seen": 1791617459.2951958,
+    "ast_hash": "881fe34a286146c7174a7a1d1a96a449",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/EquipmentModalController.ts": {
+    "mtime": 1791617233.0273795,
+    "seen": 1791617459.2949476,
+    "ast_hash": "b394f0bf7ffd72de6f8d872c7588d30e",
+    "semantic_hash": ""
+  },
+  ".scratch/equipment-system/issues/06-dedicated-equipment-modal-and-hotkey.md": {
+    "mtime": 1791617448.3573415,
+    "seen": 1791617459.295063,
+    "ast_hash": "f90832a4c56c7ffc07aa76d9567d9cce",
+    "semantic_hash": ""
+  },
+  "packages/client/prototype-equipment.html": {
+    "mtime": 1791617180.5731792,
+    "seen": 1791617459.2952027,
+    "ast_hash": "749e7b45bf6aae890a11b1eb5029beb3",
     "semantic_hash": ""
   }
 }

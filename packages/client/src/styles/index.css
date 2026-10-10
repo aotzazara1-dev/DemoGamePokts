@@ -1,13 +1,12 @@
-@import './base.css';
-@import './roster-modal.css';
-@import './character-modal.css';
-@import './inventory-modal.css';
-@import './debug-toolbar.css';
-@import './dialogue-modal.css';
-@import './shop-modal.css';
-@import './auth-modal.css';
-@import './character-select-modal.css';
-@import './minimap.css';
-@import './chat.css';
-
-
+@import "./base.css";
+@import "./roster-modal.css";
+@import "./character-modal.css";
+@import "./inventory-modal.css";
+@import "./debug-toolbar.css";
+@import "./dialogue-modal.css";
+@import "./shop-modal.css";
+@import "./auth-modal.css";
+@import "./character-select-modal.css";
+@import "./minimap.css";
+@import "./chat.css";
+@import "./equipment-modal.css";

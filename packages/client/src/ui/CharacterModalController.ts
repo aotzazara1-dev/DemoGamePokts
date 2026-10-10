@@ -2,16 +2,12 @@ import {
   Combatant,
   ProgressionEngine,
   EquipmentManager,
-  type EquipmentSlot,
-  getItemDefinition,
-  getItemIcon,
 } from "@poktsonline/shared";
 
 export interface CharacterModalCallbacks {
   onHeroUpdated?: (hero: Combatant) => void;
   onOpen?: () => void;
   onClose?: () => void;
-  onUnequipItem?: (slot: EquipmentSlot) => void;
 }
 
 /**
@@ -166,56 +162,6 @@ export class CharacterModalController {
     plusBtns.forEach((btn) => {
       btn.disabled = statPoints <= 0;
     });
-
-    // Render Hero Equipment Paperdoll Slots
-    const eqContainer = document.getElementById("hero-equipment-slots");
-    if (eqContainer) {
-      eqContainer.innerHTML = "";
-      const slots: EquipmentSlot[] = [
-        "head",
-        "weapon",
-        "armor",
-        "boots",
-        "accessory",
-      ];
-      const slotLabels: Record<EquipmentSlot, { label: string; icon: string }> =
-        {
-          head: { label: "Head", icon: "🪖" },
-          weapon: { label: "Weapon", icon: "⚔️" },
-          armor: { label: "Armor", icon: "🛡️" },
-          boots: { label: "Boots", icon: "👢" },
-          accessory: { label: "Accessory", icon: "💍" },
-        };
-
-      slots.forEach((slot) => {
-        const itemId = hero.equipment?.[slot];
-        const itemDef = itemId ? getItemDefinition(itemId) : null;
-        const slotEl = document.createElement("div");
-        slotEl.className = `paperdoll-slot ${itemDef ? "equipped" : "empty"}`;
-        slotEl.setAttribute("data-slot", slot);
-
-        if (itemDef) {
-          slotEl.title = `${itemDef.name}\n${itemDef.description}\n[Click to Unequip]`;
-          slotEl.innerHTML = `
-            <span class="paperdoll-slot-icon">${getItemIcon(itemDef.id)}</span>
-            <span class="paperdoll-slot-name">${itemDef.name.split(" (")[0]}</span>
-            <span class="paperdoll-slot-type">${slotLabels[slot].label}</span>
-            <span class="paperdoll-slot-unequip">✕ Unequip</span>
-          `;
-          slotEl.onclick = () => {
-            this.callbacks.onUnequipItem?.(slot);
-          };
-        } else {
-          slotEl.title = `${slotLabels[slot].label} Slot (Empty)`;
-          slotEl.innerHTML = `
-            <span class="paperdoll-slot-icon" style="opacity: 0.35;">${slotLabels[slot].icon}</span>
-            <span class="paperdoll-slot-name" style="opacity: 0.5;">[Empty]</span>
-            <span class="paperdoll-slot-type">${slotLabels[slot].label}</span>
-          `;
-        }
-        eqContainer.appendChild(slotEl);
-      });
-    }
   }
 
   private setupDOM(): void {

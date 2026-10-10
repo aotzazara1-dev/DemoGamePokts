@@ -23,6 +23,14 @@
         <span>📊 <kbd>C</kbd> Status</span>
         <span class="ctrl-sep">&bull;</span>
         <button
+          id="header-btn-equipment"
+          class="header-btn"
+          title="Open Equipment & Arms (Hotkey: E)"
+        >
+          🛡️ <kbd>E</kbd> Equipment
+        </button>
+        <span class="ctrl-sep">&bull;</span>
+        <button
           id="header-btn-inventory"
           class="header-btn"
           title="Open Inventory (Hotkey: I)"
@@ -83,6 +91,23 @@
             "
           >
             📊 Status [C]
+          </button>
+          <button
+            id="btn-equipment"
+            title="Open Equipment & Arms Hub (Hotkey: E)"
+            style="
+              background: #0d9488;
+              color: #fff;
+              border: 1px solid #2dd4bf;
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-size: 11px;
+              font-weight: bold;
+              cursor: pointer;
+              pointer-events: auto;
+            "
+          >
+            🛡️ Equipment [E]
           </button>
           <button
             id="btn-quick-inventory"
@@ -524,16 +549,6 @@
               </div>
             </div>
 
-            <div class="equipment-paperdoll-section">
-              <div class="paperdoll-header">
-                <span>⚔️ VÖLUNDR EQUIPMENT (อุปกรณ์สวมใส่)</span>
-                <span style="font-size: 11px; color: #94a3b8"
-                  >Click item to unequip</span
-                >
-              </div>
-              <div id="hero-equipment-slots" class="paperdoll-slots-grid"></div>
-            </div>
-
             <div class="attributes-grid">
               <div class="attr-row">
                 <div class="attr-label">
@@ -656,6 +671,80 @@
           <div class="roster-footer">
             <button id="btn-close-char-bottom" class="btn-confirm-formation">
               ✔️ Done
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dedicated Equipment Management Modal Overlay [E] -->
+      <div id="equipment-modal">
+        <div class="equipment-card">
+          <div class="equipment-header">
+            <div class="equipment-title">
+              <span>🛡️ ศูนย์บริหารอุปกรณ์และศาสตราวุธ (EQUIPMENT & ARMS)</span>
+              <span class="hotkey">Hotkey [E]</span>
+            </div>
+            <button
+              id="btn-close-equipment-modal"
+              class="btn-close-modal"
+              title="Close (Hotkey: Esc or E)"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div class="equipment-body">
+            <!-- Col 1: Unit Roster -->
+            <div class="eq-roster-col">
+              <div class="eq-col-title">เลือกตัวละคร (Select Unit)</div>
+              <div
+                id="eq-unit-list"
+                style="display: flex; flex-direction: column; gap: 8px"
+              >
+                <!-- Populated dynamically: Hero & Champions -->
+              </div>
+            </div>
+
+            <!-- Col 2: Central Paperdoll & Stats -->
+            <div class="eq-paperdoll-col">
+              <div class="eq-header-strip">
+                <div id="eq-selected-title" class="eq-selected-title">
+                  <!-- Populated dynamically -->
+                </div>
+                <div id="eq-selected-stats" class="eq-stat-pill">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- 5 Slots Grid -->
+              <div id="eq-slots-container" class="eq-slots-grid">
+                <!-- 5 slots: head, weapon, armor, boots, accessory -->
+              </div>
+
+              <div class="eq-hint-box">
+                💡
+                <strong>คำแนะนำ:</strong>
+                สามารถคลิกไอเทมจากกระเป๋าด้านขวาเพื่อสวมใส่ให้ตัวละครที่เลือก
+                หรือคลิก
+                <code>[✕ ถอด]</code> ที่ช่องอุปกรณ์เพื่อปลดของคืนสู่กระเป๋า
+              </div>
+            </div>
+
+            <!-- Col 3: Quick Inventory Bag -->
+            <div class="eq-bag-col">
+              <div class="eq-col-title">กระเป๋าของสวมใส่ (Gear Bag)</div>
+              <div id="eq-bag-list" class="eq-bag-list">
+                <!-- Populated dynamically with equipable items from inventory -->
+              </div>
+            </div>
+          </div>
+
+          <div class="equipment-footer">
+            <button
+              id="btn-close-equipment-bottom"
+              class="btn-confirm-formation"
+            >
+              ✔️ เรียบร้อย (Done)
             </button>
           </div>
         </div>

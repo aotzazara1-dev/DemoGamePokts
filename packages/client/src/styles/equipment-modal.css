@@ -1,0 +1,366 @@
+/* Equipment Management Modal [E] */
+#equipment-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family:
+    "Kanit",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  user-select: none;
+}
+
+#equipment-modal.open {
+  display: flex;
+}
+
+.equipment-card {
+  width: 820px;
+  max-width: 95%;
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 10px;
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.equipment-header {
+  background: #1e293b;
+  padding: 12px 20px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.equipment-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.equipment-title span.hotkey {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* 3-Column Workstation Layout */
+.equipment-body {
+  display: grid;
+  grid-template-columns: 210px 1fr 230px;
+  min-height: 480px;
+  background: #0b1120;
+}
+
+/* Col 1: Unit Roster */
+.eq-roster-col {
+  background: #111827;
+  border-right: 1px solid #1f2937;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eq-col-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 4px 6px 4px;
+}
+
+.eq-unit-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eq-unit-card:hover {
+  background: #273548;
+  border-color: #4b5563;
+}
+
+.eq-unit-card.active {
+  background: #1e3a5f;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.eq-unit-avatar {
+  font-size: 22px;
+  width: 36px;
+  height: 36px;
+  background: #0f172a;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #334155;
+}
+
+.eq-unit-meta {
+  flex: 1;
+  overflow: hidden;
+}
+
+.eq-unit-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eq-unit-tag {
+  font-size: 10px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Col 2: Central Paperdoll & Stats */
+.eq-paperdoll-col {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #0b1120;
+}
+
+.eq-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 10px;
+}
+
+.eq-selected-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eq-stat-pill {
+  font-size: 11px;
+  color: #4ade80;
+  font-weight: 600;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.eq-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.eq-slot-card {
+  background: #131c2e;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+
+.eq-slot-card.equipped {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.eq-slot-icon {
+  width: 38px;
+  height: 38px;
+  background: #1e293b;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.eq-slot-card.equipped .eq-slot-icon {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+}
+
+.eq-slot-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.eq-slot-type {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.eq-slot-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eq-slot-card.equipped .eq-slot-name {
+  color: #fbbf24;
+}
+
+.eq-slot-stats {
+  font-size: 10px;
+  color: #4ade80;
+}
+
+.btn-eq-unequip {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-eq-unequip:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #fff;
+}
+
+.eq-hint-box {
+  font-size: 11px;
+  color: #94a3b8;
+  background: #0f172a;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  line-height: 1.4;
+}
+
+/* Col 3: Quick Inventory Bag */
+.eq-bag-col {
+  background: #111827;
+  border-left: 1px solid #1f2937;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.eq-bag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 400px;
+  padding-right: 2px;
+}
+
+.eq-bag-item {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.eq-bag-item:hover {
+  border-color: #38bdf8;
+  background: #24344d;
+}
+
+.eq-bag-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.eq-bag-meta {
+  flex: 1;
+  overflow: hidden;
+}
+
+.eq-bag-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eq-bag-slot {
+  font-size: 9px;
+  color: #94a3b8;
+}
+
+.btn-eq-action {
+  background: #0284c7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-eq-action:hover {
+  background: #0369a1;
+}
+
+.equipment-footer {
+  background: #1e293b;
+  padding: 10px 20px;
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: flex-end;
+}

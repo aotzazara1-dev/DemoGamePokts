@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { CharacterModalController } from "../src/ui/CharacterModalController.js";
+import { EquipmentModalController } from "../src/ui/EquipmentModalController.js";
 import { RosterModalController } from "../src/ui/RosterModalController.js";
 import { InventoryModalController } from "../src/ui/InventoryModalController.js";
 import {
@@ -17,6 +18,7 @@ describe("Equipment UI Controllers", () => {
 
   beforeEach(() => {
     document.body.innerHTML = `
+      <!-- Character Status Modal [C] -->
       <div id="character-modal" class="modal">
         <div id="hero-quick-info"></div>
         <div id="char-name"></div>
@@ -33,12 +35,25 @@ describe("Equipment UI Controllers", () => {
         <div id="val-agi"></div>
         <div id="val-hp"></div>
         <div id="val-sp"></div>
-        <div id="hero-equipment-slots"></div>
         <button id="btn-character-status"></button>
         <button id="btn-close-char-modal"></button>
         <button id="btn-close-char-bottom"></button>
       </div>
 
+      <!-- Dedicated Equipment Modal [E] -->
+      <div id="equipment-modal" class="modal">
+        <button id="btn-equipment"></button>
+        <button id="header-btn-equipment"></button>
+        <button id="btn-close-equipment-modal"></button>
+        <button id="btn-close-equipment-bottom"></button>
+        <div id="eq-unit-list"></div>
+        <div id="eq-selected-title"></div>
+        <div id="eq-selected-stats"></div>
+        <div id="eq-slots-container"></div>
+        <div id="eq-bag-list"></div>
+      </div>
+
+      <!-- Roster Modal [B/F] -->
       <div id="roster-modal" class="modal">
         <button id="btn-roster-formation"></button>
         <button id="btn-close-roster-modal"></button>
@@ -49,6 +64,7 @@ describe("Equipment UI Controllers", () => {
         <button id="btn-select-beast"></button>
       </div>
 
+      <!-- Inventory Modal [I] -->
       <div id="inventory-modal" class="modal">
         <button id="btn-inventory"></button>
         <div id="inv-grid-container"></div>
@@ -142,52 +158,146 @@ describe("Equipment UI Controllers", () => {
     };
   });
 
-  describe("CharacterModalController Paperdoll", () => {
-    it("renders 5 empty paperdoll slots when hero has no equipment", () => {
-      const controller = new CharacterModalController(sampleHero);
-      controller.toggle(true);
-
-      const slots = document.querySelectorAll(
-        "#hero-equipment-slots .paperdoll-slot"
-      );
-      expect(slots.length).toBe(5);
-      slots.forEach((slot) => {
-        expect(slot.classList.contains("empty")).toBe(true);
-        expect(slot.textContent).toContain("[Empty]");
-      });
-    });
-
-    it("renders equipped slots and triggers onUnequipItem callback on click", () => {
-      const onUnequipItem = vi.fn();
+  describe("CharacterModalController Status View [C]", () => {
+    it("renders hero stats and bonus indicators cleanly without paperdoll slots", () => {
       sampleHero.equipment = {
         weapon: "weapon_bronze_gladius",
         head: "head_iron_circlet",
       };
-      // Effective stats with weapon_bronze_gladius (+12 ATK) & head_iron_circlet (+8 DEF, +15 Max SP)
       sampleHero = EquipmentManager.applyEquipmentToCombatant(
         sampleHero,
         sampleHero.equipment
       );
 
-      const controller = new CharacterModalController(sampleHero, {
-        onUnequipItem,
-      });
+      const controller = new CharacterModalController(sampleHero);
       controller.toggle(true);
-
-      const weaponSlot = document.querySelector(
-        '#hero-equipment-slots .paperdoll-slot[data-slot="weapon"]'
-      );
-      expect(weaponSlot).not.toBeNull();
-      expect(weaponSlot?.classList.contains("equipped")).toBe(true);
-      expect(weaponSlot?.textContent).toContain("Bronze Gladius");
-
-      // Click to unequip weapon
-      (weaponSlot as HTMLElement).click();
-      expect(onUnequipItem).toHaveBeenCalledWith("weapon");
 
       // Stat label should display (+bonus)
       const atkEl = document.getElementById("val-atk");
       expect(atkEl?.innerHTML).toContain("(+12)");
+
+      const defEl = document.getElementById("val-def");
+      expect(defEl?.innerHTML).toContain("(+8)");
+    });
+  });
+
+  describe("EquipmentModalController [E]", () => {
+    it("renders 5 empty paperdoll slots when hero has no equipment", () => {
+      const controller = new EquipmentModalController(
+        sampleHero,
+        sampleRoster,
+        sampleInventory
+      );
+      controller.toggle(true);
+
+      const slots = document.querySelectorAll(
+        "#eq-slots-container .eq-slot-card"
+      );
+      expect(slots.length).toBe(5);
+      slots.forEach((slot) => {
+        expect(slot.classList.contains("empty")).toBe(true);
+        expect(slot.textContent).toContain("ช่องว่าง");
+      });
+    });
+
+    it("renders equipped slots and triggers onUnequipItem for Hero", () => {
+      const onUnequipItem = vi.fn();
+      sampleHero.equipment = {
+        weapon: "weapon_bronze_gladius",
+        head: "head_iron_circlet",
+      };
+      sampleHero = EquipmentManager.applyEquipmentToCombatant(
+        sampleHero,
+        sampleHero.equipment
+      );
+
+      const controller = new EquipmentModalController(
+        sampleHero,
+        sampleRoster,
+        sampleInventory,
+        { onUnequipItem }
+      );
+      controller.toggle(true);
+
+      const weaponCard = document.querySelector(
+        '#eq-slots-container .eq-slot-card[data-slot="weapon"]'
+      );
+      expect(weaponCard).not.toBeNull();
+      expect(weaponCard?.classList.contains("equipped")).toBe(true);
+      expect(weaponCard?.textContent).toContain("Bronze Gladius");
+
+      // Click to unequip weapon
+      const unequipBtn = weaponCard?.querySelector(
+        ".btn-eq-unequip"
+      ) as HTMLButtonElement;
+      expect(unequipBtn).not.toBeNull();
+      unequipBtn.click();
+
+      expect(onUnequipItem).toHaveBeenCalledWith("hero", undefined, "weapon");
+    });
+
+    it("switches to champion and allows equipping/unequipping for champion", () => {
+      const onUnequipItem = vi.fn();
+      const onEquipItem = vi.fn();
+
+      const champion = sampleRoster.beasts[0];
+      champion.equipment = {
+        accessory: "acc_draupnir_ring",
+      };
+      sampleRoster.beasts[0] = EquipmentManager.applyEquipmentToCombatant(
+        champion,
+        champion.equipment
+      );
+
+      const controller = new EquipmentModalController(
+        sampleHero,
+        sampleRoster,
+        sampleInventory,
+        { onUnequipItem, onEquipItem }
+      );
+      controller.toggle(true);
+
+      // Select Champion in unit list
+      const unitCards = document.querySelectorAll(
+        "#eq-unit-list .eq-unit-card"
+      );
+      expect(unitCards.length).toBe(2);
+      (unitCards[1] as HTMLElement).click();
+
+      // Check header title changed to Lu Bu
+      const titleEl = document.getElementById("eq-selected-title");
+      expect(titleEl?.textContent).toContain("Lu Bu");
+
+      // Check champion's equipped accessory
+      const accCard = document.querySelector(
+        '#eq-slots-container .eq-slot-card[data-slot="accessory"]'
+      );
+      expect(accCard?.classList.contains("equipped")).toBe(true);
+      expect(accCard?.textContent).toContain("Draupnir");
+
+      // Click unequip on champion
+      const unequipBtn = accCard?.querySelector(
+        ".btn-eq-unequip"
+      ) as HTMLButtonElement;
+      unequipBtn.click();
+      expect(onUnequipItem).toHaveBeenCalledWith(
+        "champion",
+        "beast_lubu",
+        "accessory"
+      );
+
+      // Equip item from quick bag to champion
+      const bagItems = document.querySelectorAll("#eq-bag-list .eq-bag-item");
+      expect(bagItems.length).toBe(2);
+      const equipBtn = bagItems[0].querySelector(
+        ".btn-eq-action"
+      ) as HTMLButtonElement;
+      equipBtn.click();
+      expect(onEquipItem).toHaveBeenCalledWith(
+        "weapon_bronze_gladius",
+        "champion",
+        "beast_lubu"
+      );
     });
   });
 
