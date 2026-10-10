@@ -20,3 +20,5 @@ export * from "./inventory/shop-manager.js";
 export * from "./battle/battle-skill-executor.js";
 export * from "./data/skill-trees.js";
 export * from "./skills/skill-tree-manager.js";
+export * from "./inventory/warehouse-manager.js";
+export * from "./roster/inn-storage-manager.js";

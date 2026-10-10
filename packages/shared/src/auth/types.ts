@@ -1,4 +1,12 @@
-import { Element, Direction, InventoryState, PlayerRosterState, Combatant } from '../types.js';
+import {
+  Element,
+  Direction,
+  InventoryState,
+  PlayerRosterState,
+  Combatant,
+  WarehouseState,
+  InnStorageState,
+} from "../types.js";
 
 export interface AccountSummary {
   id: string;
@@ -39,6 +47,8 @@ export interface HeroFullSaveState {
   direction: Direction;
   inventory: InventoryState;
   roster: PlayerRosterState;
+  warehouse?: WarehouseState;
+  innStorage?: InnStorageState;
   createdAt: number;
 }
 
@@ -50,5 +60,6 @@ export interface SyncHeroStatePayload {
   inventory?: InventoryState;
   roster?: PlayerRosterState;
   hero?: Combatant;
+  warehouse?: WarehouseState;
+  innStorage?: InnStorageState;
 }
-

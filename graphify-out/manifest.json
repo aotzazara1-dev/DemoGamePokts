@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791627254.595403,
-    "seen": 1791627398.680633,
-    "ast_hash": "f54616a476f2ea3df7d315818460830e",
+    "mtime": 1791629764.7053933,
+    "seen": 1791629860.7691905,
+    "ast_hash": "0b5bfbde58ab94978979afcab95e614c",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -114,10 +114,10 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/DialogueModalController.ts": {
-    "mtime": 1791541965.9210165,
-    "seen": 1791558675.8076305,
-    "ast_hash": "1213febf44fb34c193838677ce255a9a",
-    "semantic_hash": "1213febf44fb34c193838677ce255a9a"
+    "mtime": 1791629519.015266,
+    "seen": 1791629860.7692032,
+    "ast_hash": "5d5a3f06db9a18abbdf492b88f39f66f",
+    "semantic_hash": ""
   },
   "packages/client/src/ui/InventoryModalController.ts": {
     "mtime": 1791625184.7034733,
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/index.ts": {
-    "mtime": 1791626987.3915553,
-    "seen": 1791627398.6806574,
-    "ast_hash": "48571887488f81ea2322bea84b9d1b49",
+    "mtime": 1791629645.3478088,
+    "seen": 1791629860.7692177,
+    "ast_hash": "d05e55892dafc1832810942bad66bb71",
     "semantic_hash": ""
   },
   "packages/client/src/utils/isometric.ts": {
@@ -258,15 +258,15 @@
     "semantic_hash": "7db43d65e4876cca1da6bb276a732c59"
   },
   "packages/server/src/db/DatabaseEngine.ts": {
-    "mtime": 1791626887.7054348,
-    "seen": 1791627398.6806948,
-    "ast_hash": "33684bcf8db813745a11ce5cbedf1953",
+    "mtime": 1791629380.6175642,
+    "seen": 1791629860.7692587,
+    "ast_hash": "86ab5c004a25da67481e8711f41319db",
     "semantic_hash": ""
   },
   "packages/server/src/db/HeroRepository.ts": {
-    "mtime": 1791626934.580753,
-    "seen": 1791627398.6806965,
-    "ast_hash": "fee1b52f167689103e95b5a4308e57ee",
+    "mtime": 1791629437.4177516,
+    "seen": 1791629860.76926,
+    "ast_hash": "c6e1b5aaf173ae0d0fc324127f925c6e",
     "semantic_hash": ""
   },
   "packages/server/src/db/index.ts": {
@@ -372,10 +372,10 @@
     "semantic_hash": "b192b046597a6b4bb5b737214a30efdb"
   },
   "packages/shared/src/auth/types.ts": {
-    "mtime": 1791553949.6375787,
-    "seen": 1791558675.8076816,
-    "ast_hash": "711fd32ae6e2b66a33e01ce6ae72a746",
-    "semantic_hash": "711fd32ae6e2b66a33e01ce6ae72a746"
+    "mtime": 1791629390.8919845,
+    "seen": 1791629860.7692924,
+    "ast_hash": "3076a714ad969f63ba5f1bc9763cf74d",
+    "semantic_hash": ""
   },
   "packages/shared/src/battle/battle-engine.ts": {
     "mtime": 1791625046.0044248,
@@ -396,9 +396,9 @@
     "semantic_hash": "d54460a2af1cc58258cd88468749adaa"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1791626834.0174282,
-    "seen": 1791627398.6807382,
-    "ast_hash": "c95a5693018db8f0caaaded0496999ff",
+    "mtime": 1791629316.2726834,
+    "seen": 1791629860.7693052,
+    "ast_hash": "7862771b29dc9bd4a282d1ea653b088e",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/inventory-manager.ts": {
@@ -420,9 +420,9 @@
     "semantic_hash": "13957b02778592b8036643af8d18ba4b"
   },
   "packages/shared/src/overworld/map-database.ts": {
-    "mtime": 1791560046.7038312,
-    "seen": 1791560439.0288768,
-    "ast_hash": "5c3e04eda0afc060e2e2decef7b5697e",
+    "mtime": 1791629510.9718914,
+    "seen": 1791629860.7693164,
+    "ast_hash": "1f6955cc113fb7a78cd5d7740d47c4a4",
     "semantic_hash": ""
   },
   "packages/shared/src/overworld/overworld-engine.ts": {
@@ -444,9 +444,9 @@
     "semantic_hash": "6ae3701c586df43a024ac8a9fca55cdf"
   },
   "packages/shared/src/progression/progression-engine.ts": {
-    "mtime": 1791626821.7027998,
-    "seen": 1791627398.6807551,
-    "ast_hash": "44aa2e42455903b0aa2ed5587652c911",
+    "mtime": 1791627417.194174,
+    "seen": 1791629860.7693226,
+    "ast_hash": "eae8efac0d631aa05199c23d037043bb",
     "semantic_hash": ""
   },
   "packages/shared/src/roster/roster-manager.ts": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791626767.1141088,
-    "seen": 1791627398.6807609,
-    "ast_hash": "11041758787e99efed3409e52375ca10",
+    "mtime": 1791629506.134699,
+    "seen": 1791629860.76933,
+    "ast_hash": "9d7676907a049a7bb11a7cfc7261361d",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791626761.5703049,
-    "seen": 1791627398.6808834,
-    "ast_hash": "b7795c1d3a97094eb298dc10a9f99a8f",
+    "mtime": 1791629247.6385612,
+    "seen": 1791629860.7694635,
+    "ast_hash": "1bdeb5ab36d1cbe559e5adbc5333b0b6",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0008-elemental-skill-trees.md": {
-    "mtime": 1791626755.7020924,
-    "seen": 1791627398.680897,
-    "ast_hash": "f95230178636115a68760fd1886f9619",
+    "mtime": 1791627416.436013,
+    "seen": 1791629860.769477,
+    "ast_hash": "fd4645014c18f0c5cac6d39b9cca74e4",
     "semantic_hash": ""
   },
   "docs/adr/0009-manual-stat-allocation.md": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791627038.181182,
-    "seen": 1791627398.6809273,
-    "ast_hash": "60cae1a2661ae64316da5ef11f8cf07c",
+    "mtime": 1791629601.1174054,
+    "seen": 1791629860.7695036,
+    "ast_hash": "801cff2c99467a4a685df28a4a24d75f",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1218,81 +1218,171 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/SkillTreeModalController.ts": {
-    "mtime": 1791626980.3327487,
-    "seen": 1791627398.6806557,
-    "ast_hash": "bb620fe642816c4618119d06213356cb",
+    "mtime": 1791627416.9690747,
+    "seen": 1791629860.7692149,
+    "ast_hash": "5f18467f3bdbffb1e844d2f396cff75c",
     "semantic_hash": ""
   },
   "packages/client/test/skill-tree-ui.test.ts": {
-    "mtime": 1791627364.39562,
-    "seen": 1791627398.6806805,
-    "ast_hash": "5f66e892805736c1b114b08cba775c3d",
+    "mtime": 1791627417.0186627,
+    "seen": 1791629860.7692432,
+    "ast_hash": "2db74f64152c8605c227f76468c5b3aa",
     "semantic_hash": ""
   },
   "packages/server/test/hero-skill-tree-persistence.test.ts": {
-    "mtime": 1791626944.9014657,
-    "seen": 1791627398.6807148,
-    "ast_hash": "83dd729065f1fd15565a308d72e2df6a",
+    "mtime": 1791627417.0854867,
+    "seen": 1791629860.7692795,
+    "ast_hash": "4a45bbbfe7d738c71886f3f797168bda",
     "semantic_hash": ""
   },
   "packages/shared/src/data/skill-trees.ts": {
-    "mtime": 1791626788.3856914,
-    "seen": 1791627398.6807308,
-    "ast_hash": "e544fd83b3da8d8d6b37e0c39e536177",
+    "mtime": 1791627417.1219208,
+    "seen": 1791629860.7692971,
+    "ast_hash": "5eae5a940efbdf8e4613456223f9de04",
     "semantic_hash": ""
   },
   "packages/shared/src/data/tree-skills.ts": {
-    "mtime": 1791626776.0473313,
-    "seen": 1791627398.6807337,
-    "ast_hash": "676bd62711234e33e7a9bb5d7c9452ed",
+    "mtime": 1791627417.1663885,
+    "seen": 1791629860.7693007,
+    "ast_hash": "b14fd233a1c6c6da74599b5aae5dad64",
     "semantic_hash": ""
   },
   "packages/shared/src/skills/skill-tree-manager.ts": {
-    "mtime": 1791626861.7197528,
-    "seen": 1791627398.6807592,
-    "ast_hash": "e6eab79e785f010cd63bac4177651ef3",
+    "mtime": 1791627417.2301776,
+    "seen": 1791629860.7693284,
+    "ast_hash": "bf396216deab9eb629dac56f0eec3e18",
     "semantic_hash": ""
   },
   "packages/shared/test/skill-tree-catalog.test.ts": {
-    "mtime": 1791626803.7273467,
-    "seen": 1791627398.6807785,
-    "ast_hash": "bb35fd113915622a3107d4903699e6c1",
+    "mtime": 1791627417.2748134,
+    "seen": 1791629860.769349,
+    "ast_hash": "1ecdf5f4cc0c060aec660da1a7d18498",
     "semantic_hash": ""
   },
   "packages/shared/test/skill-tree-manager.test.ts": {
-    "mtime": 1791626865.419362,
-    "seen": 1791627398.6807797,
-    "ast_hash": "82fc2d7ac1bce597db72bd84ee306ab9",
+    "mtime": 1791627417.30838,
+    "seen": 1791629860.7693503,
+    "ast_hash": "c8cd59d800b673422fd02e429f063571",
     "semantic_hash": ""
   },
   ".scratch/elemental-skill-tree/issues/01-shared-elemental-skill-tree-catalog-and-types.md": {
-    "mtime": 1791626737.8654056,
-    "seen": 1791627398.680791,
-    "ast_hash": "9913c7516f5dbf9dc0f81530ceaabbd6",
+    "mtime": 1791627416.2490375,
+    "seen": 1791629860.769363,
+    "ast_hash": "14c9e99ed53542d1df948a45338b12d6",
     "semantic_hash": ""
   },
   ".scratch/elemental-skill-tree/issues/02-skill-tree-manager-and-progression-engine.md": {
-    "mtime": 1791626741.5212255,
-    "seen": 1791627398.6807919,
-    "ast_hash": "7a85cc99d30e1c4799c169f2e0fa8ce1",
+    "mtime": 1791627416.2652278,
+    "seen": 1791629860.7693646,
+    "ast_hash": "b153e7718b2ccd5feaf15ba340fbfbd9",
     "semantic_hash": ""
   },
   ".scratch/elemental-skill-tree/issues/03-server-persistence-and-hero-state.md": {
-    "mtime": 1791626744.4207222,
-    "seen": 1791627398.680793,
-    "ast_hash": "f2c69924d66e7cc27e9dabe5e719530a",
+    "mtime": 1791627416.278833,
+    "seen": 1791629860.7693658,
+    "ast_hash": "1ab72ebcd8b4fa2656b6dfd1839d2c75",
     "semantic_hash": ""
   },
   ".scratch/elemental-skill-tree/issues/04-client-skill-tree-modal-controller-and-hud.md": {
-    "mtime": 1791626748.2825408,
-    "seen": 1791627398.6807945,
-    "ast_hash": "c8d50fa11b8d210f7e0e13077cea1b61",
+    "mtime": 1791627416.2937095,
+    "seen": 1791629860.769367,
+    "ast_hash": "f6ddc30da95143aff1fb00a8e283f001",
     "semantic_hash": ""
   },
   ".scratch/elemental-skill-tree/spec.md": {
-    "mtime": 1791626734.0960083,
-    "seen": 1791627398.6807954,
-    "ast_hash": "ed1fc9c8a3b4c6dc829410ca4e39d542",
+    "mtime": 1791627416.349465,
+    "seen": 1791629860.7693684,
+    "ast_hash": "cc3bb0179a9008a23bf85e81eb4074e6",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/InnStorageModalController.ts": {
+    "mtime": 1791629758.5103586,
+    "seen": 1791629860.7692068,
+    "ast_hash": "9c1610fa75a73d7c872dc571c05be984",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/WarehouseModalController.ts": {
+    "mtime": 1791629747.2389474,
+    "seen": 1791629860.7692165,
+    "ast_hash": "a22fc66309ef2a917f6802a3624e0532",
+    "semantic_hash": ""
+  },
+  "packages/client/test/dialogue-warehouse-actions.test.ts": {
+    "mtime": 1791629529.0018568,
+    "seen": 1791629860.7692294,
+    "ast_hash": "14d18300b7c7d2a088476bd40a36b169",
+    "semantic_hash": ""
+  },
+  "packages/client/test/warehouse-inn-ui.test.ts": {
+    "mtime": 1791629805.3186352,
+    "seen": 1791629860.7692478,
+    "ast_hash": "d0ad8548b052cd1f3dc17942837c77ec",
+    "semantic_hash": ""
+  },
+  "packages/server/test/warehouse-inn-persistence.test.ts": {
+    "mtime": 1791629450.1231544,
+    "seen": 1791629860.7692876,
+    "ast_hash": "94ea398ed9f5a159669aad3f593a80c6",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/inventory/warehouse-manager.ts": {
+    "mtime": 1791629299.6385546,
+    "seen": 1791629860.769315,
+    "ast_hash": "d43cfc0a9f199aa3db15c136e00aea5a",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/roster/inn-storage-manager.ts": {
+    "mtime": 1791629306.1645894,
+    "seen": 1791629860.7693238,
+    "ast_hash": "89def9a476f63656953a5c02518b5910",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/inn-storage-manager.test.ts": {
+    "mtime": 1791629327.3617258,
+    "seen": 1791629860.769338,
+    "ast_hash": "5418f81fe49e539eb9fab6254f7ad64c",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/warehouse-manager.test.ts": {
+    "mtime": 1791629344.0328176,
+    "seen": 1791629860.7693532,
+    "ast_hash": "a0931e9abf9add530772f2c48b558dcd",
+    "semantic_hash": ""
+  },
+  ".scratch/warehouse-and-inn-storage/issues/01-shared-warehouse-and-inn-domain-types.md": {
+    "mtime": 1791629367.2950654,
+    "seen": 1791629860.769454,
+    "ast_hash": "3efd8293dd0e0d99de8ceae510f9f14f",
+    "semantic_hash": ""
+  },
+  ".scratch/warehouse-and-inn-storage/issues/02-server-sqlite-schema-and-persistence.md": {
+    "mtime": 1791629493.1187594,
+    "seen": 1791629860.7694557,
+    "ast_hash": "db43e4c1dcbed86c297ea7b24e5191da",
+    "semantic_hash": ""
+  },
+  ".scratch/warehouse-and-inn-storage/issues/03-npc-innkeeper-dialogue-and-overworld-integration.md": {
+    "mtime": 1791629536.7536006,
+    "seen": 1791629860.7694566,
+    "ast_hash": "3ebd4e9b090fdcfbfd191f393730bf05",
+    "semantic_hash": ""
+  },
+  ".scratch/warehouse-and-inn-storage/issues/04-client-warehouse-and-inn-modal-controllers.md": {
+    "mtime": 1791629852.0568006,
+    "seen": 1791629860.7694578,
+    "ast_hash": "66805f40feb7f3dbe0c74f4d9d2cd697",
+    "semantic_hash": ""
+  },
+  ".scratch/warehouse-and-inn-storage/spec.md": {
+    "mtime": 1791629263.6967676,
+    "seen": 1791629860.7694592,
+    "ast_hash": "96b94da1c8886c59a1a7bde086857f20",
+    "semantic_hash": ""
+  },
+  "docs/adr/0022-warehouse-and-inn-beast-storage.md": {
+    "mtime": 1791629257.7759097,
+    "seen": 1791629860.7694979,
+    "ast_hash": "f6ef32e6c1fda9b97011c07fdd405ef4",
     "semantic_hash": ""
   }
 }

@@ -1161,6 +1161,270 @@
         </div>
       </div>
 
+      <!-- Warehouse & Item Storage Modal Overlay -->
+      <div id="warehouse-modal">
+        <div class="warehouse-card">
+          <div class="warehouse-header">
+            <div class="warehouse-title-box">
+              <div class="warehouse-title-icon">📦</div>
+              <div>
+                <h2 id="warehouse-title-text">
+                  คลังเก็บสัมภาระและเหรียญทอง (PERSONAL WAREHOUSE)
+                </h2>
+                <p>
+                  ฝากและถอนไอเทมหรือเหรียญทองส่วนตัว ปลอดภัย 100%
+                  ฟรีไม่มีค่าธรรมเนียม
+                </p>
+              </div>
+            </div>
+            <button
+              id="btn-close-warehouse-modal"
+              class="btn-close-modal"
+              title="Close (Esc)"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div class="warehouse-body">
+            <!-- Left Panel: Backpack Inventory -->
+            <div class="warehouse-panel">
+              <div class="warehouse-panel-header">
+                <div class="warehouse-panel-title">
+                  🎒 กระเป๋าสัมภาระ (Backpack)
+                </div>
+                <div id="wh-inv-capacity" class="warehouse-capacity-badge">
+                  0 / 20
+                </div>
+              </div>
+              <div class="warehouse-gold-row">
+                <div class="warehouse-gold-info">
+                  <span>🪙 ทองในกระเป๋า:</span>
+                  <span id="wh-inv-gold-val" class="warehouse-gold-val"
+                    >0 G</span
+                  >
+                </div>
+                <button type="button" id="btn-deposit-gold" class="wh-btn-gold">
+                  📥 ฝากทอง
+                </button>
+              </div>
+              <div id="wh-inv-grid" class="warehouse-grid warehouse-grid-inv">
+                <!-- Dynamically populated 20 slots -->
+              </div>
+            </div>
+
+            <!-- Center Panel: Transfer / Inspector Controls -->
+            <div class="warehouse-center-controls">
+              <div class="wh-selected-box">
+                <div class="wh-selected-title">ไอเทมที่เลือก</div>
+                <div id="wh-selected-icon" class="wh-selected-icon">❓</div>
+                <div id="wh-selected-name" class="wh-selected-name">
+                  ยังไม่ได้เลือกไอเทม
+                </div>
+                <div id="wh-selected-desc" class="wh-selected-desc">
+                  คลิกที่ไอเทมในกระเป๋าหรือคลังเพื่อจัดการ
+                </div>
+              </div>
+
+              <div class="wh-transfer-actions">
+                <div class="wh-qty-row">
+                  <label for="wh-transfer-qty">จำนวน:</label>
+                  <input
+                    type="number"
+                    id="wh-transfer-qty"
+                    min="1"
+                    max="99"
+                    value="1"
+                    class="wh-qty-input"
+                  />
+                  <button
+                    type="button"
+                    id="wh-qty-max-btn"
+                    class="wh-btn-shortcut"
+                  >
+                    Max
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  id="btn-transfer-to-warehouse"
+                  class="wh-action-btn btn-to-warehouse"
+                  disabled
+                >
+                  📥 ฝากเข้าคลัง ➔
+                </button>
+                <button
+                  type="button"
+                  id="btn-transfer-to-inventory"
+                  class="wh-action-btn btn-to-inventory"
+                  disabled
+                >
+                  ⬅ 📤 ถอนใส่กระเป๋า
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Panel: Personal Warehouse -->
+            <div class="warehouse-panel">
+              <div class="warehouse-panel-header">
+                <div class="warehouse-panel-title">
+                  🏛️ คลังเก็บของส่วนตัว (Warehouse)
+                </div>
+                <div id="wh-storage-capacity" class="warehouse-capacity-badge">
+                  0 / 40
+                </div>
+              </div>
+              <div class="warehouse-gold-row">
+                <div class="warehouse-gold-info">
+                  <span>🪙 ทองในคลัง:</span>
+                  <span id="wh-storage-gold-val" class="warehouse-gold-val"
+                    >0 G</span
+                  >
+                </div>
+                <button
+                  type="button"
+                  id="btn-withdraw-gold"
+                  class="wh-btn-gold"
+                >
+                  📤 ถอนทอง
+                </button>
+              </div>
+              <div
+                id="wh-storage-grid"
+                class="warehouse-grid warehouse-grid-storage"
+              >
+                <!-- Dynamically populated 40 slots -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Gold Transfer Overlay Dialog -->
+          <div
+            id="wh-gold-dialog"
+            class="wh-gold-dialog-overlay"
+            style="display: none"
+          >
+            <div class="wh-gold-dialog-box">
+              <h3 id="wh-gold-dialog-title">ฝากเหรียญทองเข้าคลัง</h3>
+              <p id="wh-gold-dialog-desc">ระบุจำนวนเหรียญทองที่ต้องการโอน:</p>
+              <div class="wh-gold-input-group">
+                <input
+                  type="number"
+                  id="wh-gold-input"
+                  min="1"
+                  value="100"
+                  class="wh-gold-input"
+                />
+                <button
+                  type="button"
+                  id="wh-gold-max-btn"
+                  class="wh-btn-shortcut"
+                >
+                  Max
+                </button>
+              </div>
+              <div class="wh-gold-dialog-buttons">
+                <button
+                  type="button"
+                  id="btn-wh-gold-cancel"
+                  class="btn-cancel"
+                >
+                  ✕ ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  id="btn-wh-gold-confirm"
+                  class="btn-confirm"
+                >
+                  ✔️ ยืนยัน
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="warehouse-footer">
+            <button
+              id="btn-close-warehouse-bottom"
+              class="btn-confirm-formation"
+            >
+              ✔️ เรียบร้อย (Done)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inn Beast Daycare & Storage Modal Overlay -->
+      <div id="inn-storage-modal">
+        <div class="inn-card">
+          <div class="inn-header">
+            <div class="inn-title-box">
+              <div class="inn-title-icon">🐎</div>
+              <div>
+                <h2 id="inn-title-text">
+                  โรงเตี๊ยมรับฝากขุนพล (INN BEAST DAYCARE)
+                </h2>
+                <p>
+                  ฝากขุนพลม้าศึกเพื่อพักผ่อน ฟื้นฟู HP/SP เต็มเปี่ยม 100% ทันที
+                  ฟรีไม่มีค่าใช้จ่าย
+                </p>
+              </div>
+            </div>
+            <button
+              id="btn-close-inn-modal"
+              class="btn-close-modal"
+              title="Close (Esc)"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div class="inn-body">
+            <!-- Left Panel: Active Roster -->
+            <div class="inn-panel">
+              <div class="inn-panel-header">
+                <div class="inn-panel-title">
+                  ⚔️ กองทัพขุนพลติดตาม (Active Roster)
+                </div>
+                <div id="inn-roster-count" class="inn-capacity-badge">
+                  0 / 10
+                </div>
+              </div>
+              <div class="inn-hint-bar">
+                💡 ขุนพลที่ฝากจะได้รับการรักษา HP และ SP เต็มทันที
+                (ต้องมีขุนพลในทัพอย่างน้อย 1 ตัว)
+              </div>
+              <div id="inn-roster-list" class="inn-beast-list">
+                <!-- Dynamically populated roster beasts -->
+              </div>
+            </div>
+
+            <!-- Right Panel: Inn Daycare Storage -->
+            <div class="inn-panel">
+              <div class="inn-panel-header">
+                <div class="inn-panel-title">
+                  🏡 โรงเตี๊ยมพักฟื้นขุนพล (Inn Daycare Storage)
+                </div>
+                <div id="inn-storage-count" class="inn-capacity-badge">
+                  0 / 30
+                </div>
+              </div>
+              <div class="inn-hint-bar">
+                ✨ ขุนพลทุกตัวในโรงเตี๊ยมพร้อมออกรบด้วยสภาพสมบูรณ์ 100% เสมอ
+              </div>
+              <div id="inn-storage-list" class="inn-beast-list">
+                <!-- Dynamically populated inn beasts -->
+              </div>
+            </div>
+          </div>
+
+          <div class="inn-footer">
+            <button id="btn-close-inn-bottom" class="btn-confirm-formation">
+              ✔️ เรียบร้อย (Done)
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Beast Roster & Formation Grid Modal Overlay -->
       <div id="roster-modal">
         <div class="roster-card">

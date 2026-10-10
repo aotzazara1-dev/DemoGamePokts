@@ -10,3 +10,5 @@ export * from "./MinimapController.js";
 export * from "./ChatController.js";
 export * from "./EquipmentModalController.js";
 export * from "./SkillTreeModalController.js";
+export * from "./WarehouseModalController.js";
+export * from "./InnStorageModalController.js";

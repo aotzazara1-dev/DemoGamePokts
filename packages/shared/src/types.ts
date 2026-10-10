@@ -183,7 +183,7 @@ export interface PortalDefinition {
 export interface NPCDialogueOption {
   id: string;
   label: string;
-  action: "shop" | "heal" | "advice" | "close";
+  action: "shop" | "heal" | "advice" | "close" | "warehouse" | "inn_beasts";
   response?: string;
 }
 
@@ -301,6 +301,15 @@ export interface ItemStack {
 export interface InventoryState {
   slots: (ItemStack | null)[];
   gold: number;
+}
+
+export interface WarehouseState {
+  slots: (ItemStack | null)[];
+  gold: number;
+}
+
+export interface InnStorageState {
+  beasts: Combatant[];
 }
 
 export interface LootReward {

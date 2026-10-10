@@ -1,0 +1,433 @@
+/* ==========================================================================
+   Warehouse & Item Storage Modal Styles (ADR 0022)
+   ========================================================================== */
+
+#warehouse-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#warehouse-modal.open {
+  display: flex;
+}
+
+.warehouse-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid #334155;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1040px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #e2e8f0;
+}
+
+.warehouse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.warehouse-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.warehouse-title-icon {
+  font-size: 26px;
+  background: #334155;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #475569;
+}
+
+.warehouse-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin: 0 0 2px 0;
+}
+
+.warehouse-header p {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.warehouse-body {
+  display: grid;
+  grid-template-columns: 1fr 220px 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.warehouse-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.warehouse-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.warehouse-panel-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f1f5f9;
+}
+
+.warehouse-capacity-badge {
+  background: #334155;
+  color: #38bdf8;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.warehouse-gold-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+}
+
+.warehouse-gold-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.warehouse-gold-val {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.wh-btn-gold {
+  background: #d97706;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.wh-btn-gold:hover {
+  background: #b45309;
+}
+
+.warehouse-grid {
+  display: grid;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.warehouse-grid-inv {
+  grid-template-columns: repeat(4, 1fr);
+  max-height: 380px;
+}
+
+.warehouse-grid-storage {
+  grid-template-columns: repeat(5, 1fr);
+  max-height: 380px;
+}
+
+.wh-slot {
+  aspect-ratio: 1;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.wh-slot:hover {
+  background: #334155;
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.wh-slot.selected {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 0 1px #f59e0b;
+}
+
+.wh-slot.empty {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.wh-slot.empty:hover {
+  background: #1e293b;
+  border-color: #334155;
+  transform: none;
+}
+
+.wh-slot-icon {
+  font-size: 22px;
+}
+
+.wh-slot-qty {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+/* Center controls */
+.warehouse-center-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.wh-selected-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.wh-selected-title {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.wh-selected-icon {
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.wh-selected-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+
+.wh-selected-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.wh-transfer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wh-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e293b;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  font-size: 12px;
+}
+
+.wh-qty-input {
+  width: 50px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  color: #fff;
+  text-align: center;
+  padding: 2px 4px;
+}
+
+.wh-btn-shortcut {
+  background: #334155;
+  color: #cbd5e1;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.wh-btn-shortcut:hover {
+  background: #475569;
+  color: #fff;
+}
+
+.wh-action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wh-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.btn-to-warehouse {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-to-warehouse:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-to-inventory {
+  background: #059669;
+  color: #fff;
+}
+
+.btn-to-inventory:hover:not(:disabled) {
+  background: #047857;
+}
+
+/* Gold dialog overlay */
+.wh-gold-dialog-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.wh-gold-dialog-box {
+  background: #1e293b;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  width: 280px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.wh-gold-dialog-box h3 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  color: #fbbf24;
+}
+
+.wh-gold-dialog-box p {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.wh-gold-input-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.wh-gold-input {
+  width: 120px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  color: #fbbf24;
+  font-weight: 700;
+  text-align: center;
+  padding: 6px;
+}
+
+.wh-gold-dialog-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.wh-gold-dialog-buttons .btn-cancel {
+  background: #475569;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.wh-gold-dialog-buttons .btn-confirm {
+  background: #f59e0b;
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.warehouse-footer {
+  padding: 12px 20px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: flex-end;
+}

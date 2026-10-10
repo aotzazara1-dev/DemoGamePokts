@@ -116,6 +116,9 @@ export class DatabaseEngine {
         skill_points INTEGER NOT NULL DEFAULT 0,
         unlocked_skill_ids TEXT DEFAULT '[]',
         skill_slots TEXT DEFAULT '[]',
+        warehouse_items TEXT DEFAULT '[]',
+        warehouse_gold INTEGER NOT NULL DEFAULT 0,
+        inn_beasts TEXT DEFAULT '[]',
         map_id TEXT NOT NULL,
         x INTEGER NOT NULL,
         y INTEGER NOT NULL,
@@ -155,6 +158,9 @@ export class DatabaseEngine {
       "ALTER TABLE heroes ADD COLUMN skill_points INTEGER NOT NULL DEFAULT 0",
       'ALTER TABLE heroes ADD COLUMN unlocked_skill_ids TEXT DEFAULT "[]"',
       'ALTER TABLE heroes ADD COLUMN skill_slots TEXT DEFAULT "[]"',
+      'ALTER TABLE heroes ADD COLUMN warehouse_items TEXT DEFAULT "[]"',
+      "ALTER TABLE heroes ADD COLUMN warehouse_gold INTEGER NOT NULL DEFAULT 0",
+      'ALTER TABLE heroes ADD COLUMN inn_beasts TEXT DEFAULT "[]"',
     ].forEach((sql) => {
       try {
         this.db!.run(sql);

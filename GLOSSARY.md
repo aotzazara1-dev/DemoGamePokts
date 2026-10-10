@@ -199,3 +199,11 @@ _Avoid_: Shallow module, helper dump, util spaghetti
 **Graphify-First Navigation**:
 The mandatory agent engineering rule requiring execution of `graphify query` or `graphify explain` prior to codebase exploration or structural modifications.
 _Avoid_: Blind grep, brute-force file scanning, guessing file locations
+
+**Warehouse (Personal Item & Gold Warehouse)**:
+A secure, persistent 40-slot storage vault accessible via town Innkeeper NPCs allowing Heroes to deposit, withdraw, and store overflow Items, Equipment, and Gold safely outside their 20-slot personal Inventory.
+_Avoid_: Bank, item box, storage chest, depot
+
+**Inn Beast Storage (Inn Daycare & Beast Reserve)**:
+A sanctuary facility managed by town Innkeeper NPCs where Heroes can deposit and reserve up to 30 Champions/Beasts outside their active 10-slot Roster. Deposited Beasts automatically enjoy full HP and SP restoration while resting.
+_Avoid_: Beast bank, general daycare, pokemon box, pet cage

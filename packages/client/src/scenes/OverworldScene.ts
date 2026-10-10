@@ -9,44 +9,18 @@ import {
   getIsometricDepth,
 } from "../utils/isometric.js";
 import {
-  DEFAULT_OVERWORLD_MAP,
-  getMapConfig,
-  MAP_DATABASE,
-  findPath,
-  OverworldEngine,
-  RosterManager,
-  ProgressionEngine,
-  InventoryManager,
-  RoamingBeastManager,
-  EquipmentManager,
-  getItemDefinition,
-  type EquipmentSlot,
-  type RoamingBeastEntity,
-  type MapConfig,
-  type TileCoord,
-  type Direction,
-  type Combatant,
-  type PlayerRosterState,
-  type InventoryState,
-  type LootReward,
-  type PortalDefinition,
-  type NPCDefinition,
-  type HeroSummary,
-  type SyncHeroStatePayload,
+  DEFAULT_OVERWORLD_MAP, getMapConfig, MAP_DATABASE, findPath, OverworldEngine,
+  RosterManager, ProgressionEngine, InventoryManager, RoamingBeastManager, EquipmentManager,
+  WarehouseManager, InnStorageManager, getItemDefinition,
+  type EquipmentSlot, type RoamingBeastEntity, type MapConfig, type TileCoord, type Direction,
+  type Combatant, type PlayerRosterState, type InventoryState, type WarehouseState, type InnStorageState,
+  type LootReward, type PortalDefinition, type NPCDefinition, type HeroSummary, type SyncHeroStatePayload,
 } from "@poktsonline/shared";
 import {
-  CharacterModalController,
-  RosterModalController,
-  InventoryModalController,
-  EquipmentModalController,
-  DebugToolbarController,
-  DialogueModalController,
-  ShopModalController,
-  AuthModalController,
-  CharacterSelectModalController,
-  MinimapController,
-  ChatController,
-  SkillTreeModalController,
+  CharacterModalController, RosterModalController, InventoryModalController, EquipmentModalController,
+  DebugToolbarController, DialogueModalController, ShopModalController, AuthModalController,
+  CharacterSelectModalController, MinimapController, ChatController, SkillTreeModalController,
+  WarehouseModalController, InnStorageModalController,
 } from "../ui/index.js";
 import { AuthService } from "../auth/AuthService.js";
 import { HeroService } from "../auth/HeroService.js";
@@ -80,8 +54,10 @@ export class OverworldScene extends Phaser.Scene {
   // Beast Roster and Formation state
   private roster: PlayerRosterState = RosterManager.createInitialRoster();
 
-  // Inventory state (20-slot TS Online inventory & Gold)
+  // Inventory & Storage state (20-slot TS Online inventory, Warehouse & Inn)
   private inventory: InventoryState = InventoryManager.createInitialInventory();
+  private warehouse: WarehouseState = WarehouseManager.createInitialWarehouse();
+  private innStorage: InnStorageState = InnStorageManager.createInitialInnStorage();
 
   // Deep UI Controllers
   private rosterModal!: RosterModalController;
@@ -89,6 +65,8 @@ export class OverworldScene extends Phaser.Scene {
   private equipmentModal!: EquipmentModalController;
   private inventoryModal!: InventoryModalController;
   private skillTreeModal!: SkillTreeModalController;
+  private warehouseModal!: WarehouseModalController;
+  private innStorageModal!: InnStorageModalController;
   private debugToolbar!: DebugToolbarController;
   private dialogueModal!: DialogueModalController;
   private shopModal!: ShopModalController;
@@ -457,6 +435,8 @@ export class OverworldScene extends Phaser.Scene {
           this.equipmentModal,
           this.inventoryModal,
           this.skillTreeModal,
+          this.warehouseModal,
+          this.innStorageModal,
           this.debugToolbar,
           this.dialogueModal,
           this.shopModal,
@@ -475,6 +455,8 @@ export class OverworldScene extends Phaser.Scene {
       this.equipmentModal?.isOpen() ||
       this.inventoryModal?.isOpen() ||
       this.skillTreeModal?.isOpen() ||
+      this.warehouseModal?.isOpen() ||
+      this.innStorageModal?.isOpen() ||
       this.debugToolbar?.isOpen() ||
       this.dialogueModal?.isOpen() ||
       this.shopModal?.isOpen() ||
@@ -516,11 +498,23 @@ export class OverworldScene extends Phaser.Scene {
           this.inventoryModal?.setInventory(this.inventory);
           this.equipmentModal?.setInventory(this.inventory);
           this.shopModal?.setInventory(this.inventory);
+          this.warehouseModal?.setInventory(this.inventory);
+        }
+
+        if (state.warehouse) {
+          this.warehouse = state.warehouse;
+          this.warehouseModal?.setWarehouse(this.warehouse);
+        }
+
+        if (state.innStorage) {
+          this.innStorage = state.innStorage;
+          this.innStorageModal?.setInnStorage(this.innStorage);
         }
 
         if (state.roster) {
           this.roster = state.roster;
           this.rosterModal?.setRoster(this.roster);
+          this.innStorageModal?.setRoster(this.roster);
           this.characterModal?.setHero(this.roster.hero);
           this.equipmentModal?.setHero(this.roster.hero);
           this.equipmentModal?.setRoster(this.roster);
@@ -804,6 +798,8 @@ export class OverworldScene extends Phaser.Scene {
     this.clearDestinationMarker();
     this.dialogueModal?.close();
     this.shopModal?.close();
+    this.warehouseModal?.close();
+    this.innStorageModal?.close();
     this.pendingNPCInteraction = null;
 
     if (this.playerContainer) {
@@ -1524,6 +1520,7 @@ export class OverworldScene extends Phaser.Scene {
     this.rosterModal = new RosterModalController(this.roster, {
       onRosterUpdated: (newRoster) => {
         this.roster = newRoster;
+        this.innStorageModal?.setRoster(newRoster);
         this.inventoryModal?.setActiveBeast(getActiveBeast());
         this.syncHeroSaveState({ roster: this.roster });
       },
@@ -1535,13 +1532,22 @@ export class OverworldScene extends Phaser.Scene {
     });
 
     this.dialogueModal = new DialogueModalController({
-      onOpenShop: (npc) => {
-        this.shopModal.open(npc);
+      onOpenShop: (npc) => this.shopModal.open(npc),
+      onOpenWarehouse: () => {
+        this.warehouseModal.setInventory(this.inventory);
+        this.warehouseModal.setWarehouse(this.warehouse);
+        this.warehouseModal.open();
+      },
+      onOpenInnStorage: () => {
+        this.innStorageModal.setRoster(this.roster);
+        this.innStorageModal.setInnStorage(this.innStorage);
+        this.innStorageModal.open();
       },
       onHeal: (npc) => {
         this.roster = RosterManager.restoreFullParty(this.roster);
         this.characterModal.setHero(this.roster.hero);
         this.rosterModal.setRoster(this.roster);
+        this.innStorageModal?.setRoster(this.roster);
         this.equipmentModal?.setHero(this.roster.hero);
         this.equipmentModal?.setRoster(this.roster);
         this.inventoryModal.setHero(this.roster.hero);
@@ -1559,13 +1565,51 @@ export class OverworldScene extends Phaser.Scene {
       onInventoryUpdated: (newInv) => {
         this.inventory = newInv;
         this.inventoryModal.setInventory(newInv);
+        this.warehouseModal?.setInventory(newInv);
         this.equipmentModal?.setInventory(newInv);
         this.syncHeroSaveState({ inventory: this.inventory });
       },
-      onShowToast: (msg, color) => {
-        this.showToast(msg, color);
-      },
+      onShowToast: (msg, color) => this.showToast(msg, color),
       onClose: () => {},
+    });
+
+    this.warehouseModal = new WarehouseModalController(this.inventory, this.warehouse, {
+      onInventoryUpdated: (newInv) => {
+        this.inventory = newInv;
+        this.inventoryModal.setInventory(newInv);
+        this.shopModal?.setInventory(newInv);
+        this.equipmentModal?.setInventory(newInv);
+        this.syncHeroSaveState({ inventory: this.inventory });
+      },
+      onWarehouseUpdated: (newWh) => {
+        this.warehouse = newWh;
+        this.syncHeroSaveState({ warehouse: this.warehouse });
+      },
+      onShowToast: (msg, color) => this.showToast(msg, color),
+      onOpen: () => {
+        this.currentPath = [];
+        this.clearDestinationMarker();
+      },
+    });
+
+    this.innStorageModal = new InnStorageModalController(this.roster, this.innStorage, {
+      onRosterUpdated: (newRoster) => {
+        this.roster = newRoster;
+        this.rosterModal.setRoster(newRoster);
+        this.characterModal.setHero(this.roster.hero);
+        this.equipmentModal?.setRoster(newRoster);
+        this.inventoryModal.setActiveBeast(getActiveBeast());
+        this.syncHeroSaveState({ roster: this.roster });
+      },
+      onInnStorageUpdated: (newInn) => {
+        this.innStorage = newInn;
+        this.syncHeroSaveState({ innStorage: this.innStorage });
+      },
+      onShowToast: (msg, color) => this.showToast(msg, color),
+      onOpen: () => {
+        this.currentPath = [];
+        this.clearDestinationMarker();
+      },
     });
 
     this.inventoryModal = new InventoryModalController(
@@ -1584,6 +1628,7 @@ export class OverworldScene extends Phaser.Scene {
           if (idx !== -1) {
             this.roster.beasts[idx] = beast;
             this.rosterModal.setRoster(this.roster);
+            this.innStorageModal?.setRoster(this.roster);
             this.equipmentModal?.setRoster(this.roster);
             this.syncHeroSaveState({ roster: this.roster });
           }
@@ -1593,6 +1638,7 @@ export class OverworldScene extends Phaser.Scene {
         onInventoryUpdated: (inv) => {
           this.inventory = inv;
           this.shopModal?.setInventory(inv);
+          this.warehouseModal?.setInventory(inv);
           this.equipmentModal?.setInventory(inv);
           this.syncHeroSaveState({ inventory: this.inventory });
         },
@@ -1765,7 +1811,9 @@ export class OverworldScene extends Phaser.Scene {
             this.authModal?.isOpen() ||
             this.charSelectModal?.isOpen() ||
             this.dialogueModal?.isOpen() ||
-            this.shopModal?.isOpen()
+            this.shopModal?.isOpen() ||
+            this.warehouseModal?.isOpen() ||
+            this.innStorageModal?.isOpen()
           );
         },
       });

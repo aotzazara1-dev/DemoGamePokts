@@ -9,9 +9,13 @@ import {
   type ItemStack,
   type InventoryState,
   type PlayerRosterState,
+  type WarehouseState,
+  type InnStorageState,
   InventoryManager,
   EquipmentManager,
   SkillManager,
+  WarehouseManager,
+  InnStorageManager,
 } from "@poktsonline/shared";
 import { DatabaseEngine } from "./DatabaseEngine.js";
 
@@ -289,6 +293,23 @@ export class HeroRepository {
       },
     };
 
+    let warehouse = WarehouseManager.createInitialWarehouse();
+    try {
+      if (heroRow.warehouse_items) warehouse.slots = JSON.parse(heroRow.warehouse_items);
+      warehouse.gold = heroRow.warehouse_gold ?? 0;
+      warehouse = WarehouseManager.ensureWarehouseState(warehouse);
+    } catch {
+      warehouse = WarehouseManager.createInitialWarehouse();
+    }
+
+    let innStorage = InnStorageManager.createInitialInnStorage();
+    try {
+      if (heroRow.inn_beasts) innStorage.beasts = JSON.parse(heroRow.inn_beasts);
+      innStorage = InnStorageManager.ensureInnStorageState(innStorage);
+    } catch {
+      innStorage = InnStorageManager.createInitialInnStorage();
+    }
+
     return {
       hero: heroCombatant,
       accountId: heroRow.account_id,
@@ -298,6 +319,8 @@ export class HeroRepository {
       direction: heroRow.direction as Direction,
       inventory,
       roster,
+      warehouse,
+      innStorage,
       createdAt: heroRow.created_at,
     };
   }
@@ -319,6 +342,7 @@ export class HeroRepository {
       `UPDATE heroes SET
         level = ?, exp = ?, stat_points = ?, skill_points = ?,
         unlocked_skill_ids = ?, skill_slots = ?,
+        warehouse_items = ?, warehouse_gold = ?, inn_beasts = ?,
         allocated_stats = ?, equipment = ?,
         map_id = ?, x = ?, y = ?, direction = ?, gold = ?
       WHERE id = ?`,
@@ -329,6 +353,9 @@ export class HeroRepository {
         state.hero.skillPoints ?? 0,
         JSON.stringify(state.hero.unlockedSkillIds || []),
         JSON.stringify(state.hero.skillSlots || []),
+        JSON.stringify(state.warehouse?.slots || []),
+        state.warehouse?.gold ?? 0,
+        JSON.stringify(state.innStorage?.beasts || []),
         JSON.stringify(heroAttrs),
         JSON.stringify(state.hero.equipment || {}),
         state.mapId,
@@ -409,70 +436,14 @@ export class HeroRepository {
   public getStarterBeast(element: Element): Combatant {
     switch (element) {
       case Element.Earth:
-        return {
-          id: "champion_starter_adam",
-          name: "Adam (อดัม)",
-          isHero: false,
-          level: 1,
-          element: Element.Earth,
-          hp: 65,
-          maxHp: 65,
-          sp: 20,
-          maxSp: 20,
-          atk: 18,
-          def: 16,
-          int: 8,
-          agi: 12,
-        };
+        return { id: "champion_starter_adam", name: "Adam (อดัม)", isHero: false, level: 1, element: Element.Earth, hp: 65, maxHp: 65, sp: 20, maxSp: 20, atk: 18, def: 16, int: 8, agi: 12 };
       case Element.Fire:
-        return {
-          id: "champion_starter_lu_bu",
-          name: "Lu Bu (ลิโป้)",
-          isHero: false,
-          level: 1,
-          element: Element.Fire,
-          hp: 60,
-          maxHp: 60,
-          sp: 15,
-          maxSp: 15,
-          atk: 22,
-          def: 10,
-          int: 8,
-          agi: 14,
-        };
+        return { id: "champion_starter_lu_bu", name: "Lu Bu (ลิโป้)", isHero: false, level: 1, element: Element.Fire, hp: 60, maxHp: 60, sp: 15, maxSp: 15, atk: 22, def: 10, int: 8, agi: 14 };
       case Element.Wind:
-        return {
-          id: "champion_starter_thor",
-          name: "Thor (ธอร์)",
-          isHero: false,
-          level: 1,
-          element: Element.Wind,
-          hp: 55,
-          maxHp: 55,
-          sp: 20,
-          maxSp: 20,
-          atk: 20,
-          def: 12,
-          int: 10,
-          agi: 16,
-        };
+        return { id: "champion_starter_thor", name: "Thor (ธอร์)", isHero: false, level: 1, element: Element.Wind, hp: 55, maxHp: 55, sp: 20, maxSp: 20, atk: 20, def: 12, int: 10, agi: 16 };
       case Element.Water:
       default:
-        return {
-          id: "champion_starter_kojiro",
-          name: "Sasaki Kojiro (โคจิโร่)",
-          isHero: false,
-          level: 1,
-          element: Element.Water,
-          hp: 55,
-          maxHp: 55,
-          sp: 20,
-          maxSp: 20,
-          atk: 18,
-          def: 12,
-          int: 10,
-          agi: 16,
-        };
+        return { id: "champion_starter_kojiro", name: "Sasaki Kojiro (โคจิโร่)", isHero: false, level: 1, element: Element.Water, hp: 55, maxHp: 55, sp: 20, maxSp: 20, atk: 18, def: 12, int: 10, agi: 16 };
     }
   }
 }

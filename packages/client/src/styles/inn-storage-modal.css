@@ -1,0 +1,282 @@
+/* ==========================================================================
+   Inn Beast Daycare & Storage Modal Styles (ADR 0022)
+   ========================================================================== */
+
+#inn-storage-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#inn-storage-modal.open {
+  display: flex;
+}
+
+.inn-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid #334155;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  width: 95%;
+  max-width: 960px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #e2e8f0;
+}
+
+.inn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.inn-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inn-title-icon {
+  font-size: 26px;
+  background: #334155;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #475569;
+}
+
+.inn-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin: 0 0 2px 0;
+}
+
+.inn-header p {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.inn-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.inn-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.inn-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.inn-panel-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f1f5f9;
+}
+
+.inn-capacity-badge {
+  background: #334155;
+  color: #38bdf8;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.inn-hint-bar {
+  background: rgba(30, 41, 59, 0.6);
+  border-left: 3px solid #38bdf8;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.inn-beast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding-right: 4px;
+}
+
+.inn-empty-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  color: #64748b;
+  text-align: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.inn-beast-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.inn-beast-card:hover {
+  background: #273549;
+  border-color: #475569;
+}
+
+.inn-beast-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.inn-beast-avatar {
+  font-size: 26px;
+  width: 40px;
+  height: 40px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inn-beast-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inn-beast-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inn-beast-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.inn-beast-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-active {
+  background: #059669;
+  color: #fff;
+}
+
+.badge-reserve {
+  background: #475569;
+  color: #cbd5e1;
+}
+
+.badge-healed {
+  background: #0284c7;
+  color: #e0f2fe;
+}
+
+.inn-beast-stats {
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  gap: 8px;
+}
+
+.inn-beast-hp {
+  color: #34d399;
+}
+
+.inn-beast-sp {
+  color: #38bdf8;
+}
+
+.inn-action-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.inn-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.btn-deposit-beast {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-deposit-beast:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-withdraw-beast {
+  background: #059669;
+  color: #fff;
+}
+
+.btn-withdraw-beast:hover:not(:disabled) {
+  background: #047857;
+}
+
+.inn-footer {
+  padding: 12px 20px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: flex-end;
+}
