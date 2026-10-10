@@ -183,3 +183,15 @@ _Avoid_: Total stats, final power, adjusted attributes
 **Paperdoll**:
 The visual UI representation in Character and Roster modals displaying the five Equipment Slots around the character's avatar.
 _Avoid_: Equipment screen, gear board, dressing room
+
+**God File**:
+An overgrown monolithic source file exceeding the project's tiered line limit (400/600 lines) or conflating multiple orthogonal responsibilities (Phaser lifecycle, networking, DOM, audio). Anti-pattern prohibited by ADR 0020.
+_Avoid_: Giant class, mega file, all-in-one script
+
+**Deep Module**:
+A cohesive software module providing substantial functionality behind a narrow, simple interface at a clean seam (e.g., dedicated Modal Controllers, Input Managers, Network Bridges).
+_Avoid_: Shallow module, helper dump, util spaghetti
+
+**Graphify-First Navigation**:
+The mandatory agent engineering rule requiring execution of `graphify query` or `graphify explain` prior to codebase exploration or structural modifications.
+_Avoid_: Blind grep, brute-force file scanning, guessing file locations

@@ -12,7 +12,8 @@
     "server": "npm run build --workspace=@poktsonline/shared && npm run build --workspace=@poktsonline/server && node packages/server/dist/index.js",
     "client": "npm run dev --workspace=@poktsonline/client",
     "typecheck": "npm run build",
-    "check": "npm run build && npm run test",
+    "check:god-files": "node scripts/check-god-files.mjs",
+    "check": "npm run check:god-files && npm run build && npm run test",
     "prepare": "husky"
   },
   "devDependencies": {

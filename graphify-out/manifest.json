@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1791562383.2204432,
-    "seen": 1791562441.0981047,
-    "ast_hash": "a32f5d889ba427bd61352ffb3f5c8d30",
+    "mtime": 1791620345.9402773,
+    "seen": 1791620382.680448,
+    "ast_hash": "1fd0ece2ed9f8174838c3e453fe8a390",
     "semantic_hash": ""
   },
   "packages/client/package.json": {
@@ -120,9 +120,9 @@
     "semantic_hash": "1213febf44fb34c193838677ce255a9a"
   },
   "packages/client/src/ui/InventoryModalController.ts": {
-    "mtime": 1791618627.503381,
-    "seen": 1791618680.7687109,
-    "ast_hash": "0b7fb8c95ee66b253fd0ac9cb4e59f8f",
+    "mtime": 1791618690.2666628,
+    "seen": 1791620382.680509,
+    "ast_hash": "99003b66c06f7321ea240d5cd4286874",
     "semantic_hash": ""
   },
   "packages/client/src/ui/MinimapController.ts": {
@@ -408,9 +408,9 @@
     "semantic_hash": "b3184937275138a599ab12ffb5dc8040"
   },
   "packages/shared/src/inventory/item-database.ts": {
-    "mtime": 1791618507.4222019,
-    "seen": 1791618680.7687905,
-    "ast_hash": "db974500cc1cf3838fff16b84aac3800",
+    "mtime": 1791618690.3595963,
+    "seen": 1791620382.6806316,
+    "ast_hash": "dfd90247e4a8080995a439d35edd1858",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/loot-engine.ts": {
@@ -480,9 +480,9 @@
     "semantic_hash": "53c4c21e88c72d25412a037b7cf7d2b5"
   },
   "packages/shared/test/inventory.test.ts": {
-    "mtime": 1791618525.24919,
-    "seen": 1791618680.7688105,
-    "ast_hash": "7f1205505c80f8e7f3e513e40a7056d2",
+    "mtime": 1791618690.4435272,
+    "seen": 1791620382.6806815,
+    "ast_hash": "a282671095ac1b97788ad7f05d49347b",
     "semantic_hash": ""
   },
   "packages/shared/test/overworld-engine.test.ts": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1791562472.470477,
-    "seen": 1791616376.7636466,
-    "ast_hash": "813d868a53dd7d415c1f9993024e259e",
+    "mtime": 1791620287.673045,
+    "seen": 1791620382.6808243,
+    "ast_hash": "5ef0e2a2e2307d1c4f254701d0bff8e6",
     "semantic_hash": ""
   },
   "CODING_STANDARDS.md": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791616397.0841336,
-    "seen": 1791617459.29513,
-    "ast_hash": "03fd36a56562aced42d473db2fc0b53c",
+    "mtime": 1791620279.9253225,
+    "seen": 1791620382.6808286,
+    "ast_hash": "7ca11d90ac2e945af92b8d132148c897",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791618561.4104688,
-    "seen": 1791618680.7689388,
-    "ast_hash": "da6e2e7ee7ae2b900795379bef7aa933",
+    "mtime": 1791618689.968862,
+    "seen": 1791620382.6808863,
+    "ast_hash": "f024f794a1556a9a56c3d419ebebd44f",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1116,15 +1116,27 @@
     "semantic_hash": ""
   },
   "packages/client/test/inventory-ui.test.ts": {
-    "mtime": 1791618639.6400418,
-    "seen": 1791618680.7687275,
-    "ast_hash": "f899cbdb204e0f068b3238f0defaef17",
+    "mtime": 1791618690.3179958,
+    "seen": 1791620382.6805348,
+    "ast_hash": "88092b84c4eaa81b99a07491507202d9",
     "semantic_hash": ""
   },
   ".scratch/inventory-system/issues/05-category-tabs-filtering.md": {
-    "mtime": 1791618667.121424,
-    "seen": 1791618680.7688425,
-    "ast_hash": "26138c372aacdcf489278dbda65dd822",
+    "mtime": 1791618689.6549573,
+    "seen": 1791620382.680734,
+    "ast_hash": "886dc6e14631d9745c622c2a1b0cfb1c",
+    "semantic_hash": ""
+  },
+  "scripts/check-god-files.mjs": {
+    "mtime": 1791620325.7804785,
+    "seen": 1791620382.680698,
+    "ast_hash": "9a9542e20bff6d2fc76c12b75f9cd425",
+    "semantic_hash": ""
+  },
+  "docs/adr/0020-anti-god-files-and-graphify-first.md": {
+    "mtime": 1791620334.530039,
+    "seen": 1791620382.6808777,
+    "ast_hash": "5691a4c2380255221253b8d2471712bc",
     "semantic_hash": ""
   }
 }
