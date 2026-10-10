@@ -205,16 +205,35 @@ export class OverworldRoom extends Room<OverworldState> {
           player.inBattle = true;
           collidedBeast.inCombat = true;
           collidedBeast.respawnAt = Date.now() + 20000;
-          const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(
-            collidedBeast as any
-          );
+          collidedBeast.x = -999;
+          collidedBeast.y = -999;
+          const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(collidedBeast as any);
           client.send("encounter", {
-            encounter: {
-              zoneId: collidedBeast.zoneId,
-              wildEnemies: [combatant],
-            },
+            encounter: { zoneId: collidedBeast.zoneId, wildEnemies: [combatant] },
             playerPosition: { x: player.x, y: player.y },
           });
+        }
+      } else {
+        const dx = Math.abs(message.targetX - player.x);
+        const dy = Math.abs(message.targetY - player.y);
+        if (dx <= 1 && dy <= 1) {
+          const collidedBeast = Array.from(this.state.roamingBeasts.values()).find(
+            (b) => b.mapId === player.mapId && !b.inCombat &&
+              ((b.x === player.x && b.y === player.y) || (b.x === message.targetX && b.y === message.targetY))
+          );
+          if (collidedBeast) {
+            player.inBattle = true;
+            collidedBeast.inCombat = true;
+            collidedBeast.respawnAt = Date.now() + 20000;
+            collidedBeast.x = -999;
+            collidedBeast.y = -999;
+            const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(collidedBeast as any);
+            client.send("encounter", {
+              encounter: { zoneId: collidedBeast.zoneId, wildEnemies: [combatant] },
+              playerPosition: { x: player.x, y: player.y },
+            });
+            return;
+          }
         }
       }
     });
@@ -287,155 +306,80 @@ export class OverworldRoom extends Room<OverworldState> {
       }
     );
 
-    this.onMessage("battleConcluded", (client: Client) => {
+    this.onMessage("battleConcluded", (client: Client, message?: { x?: number; y?: number; mapId?: string }) => {
       const player = this.state.players.get(client.sessionId);
       if (player) {
         player.inBattle = false;
+        if (message && typeof message.x === "number" && typeof message.y === "number") {
+          player.x = message.x;
+          player.y = message.y;
+          if (message.mapId) player.mapId = message.mapId;
+          this.playerStepCounters.set(client.sessionId, 0);
+        }
       }
     });
 
-    this.onMessage(
-      "equip_item",
-      (
-        client: Client,
-        message: {
-          targetType: "hero" | "champion";
-          championId?: string;
-          itemId: string;
-        }
-      ) => {
-        const heroData = this.clientHeroMap.get(client.sessionId);
-        if (!heroData?.fullState) return;
+    this.onMessage("equip_item", (client: Client, message: { targetType: "hero" | "champion"; championId?: string; itemId: string }) => {
+      const heroData = this.clientHeroMap.get(client.sessionId);
+      if (!heroData?.fullState) return;
+      const fullState = heroData.fullState;
+      const target = message.targetType === "hero" ? fullState.hero : fullState.roster.beasts.find((b) => b.id === message.championId);
+      if (!target) { client.send("error", { message: "Target character not found" }); return; }
 
-        const fullState = heroData.fullState;
-        let target =
-          message.targetType === "hero"
-            ? fullState.hero
-            : fullState.roster.beasts.find((b) => b.id === message.championId);
-        if (!target) {
-          client.send("error", { message: "Target character not found" });
-          return;
-        }
+      const currentEq = target.equipment || EquipmentManager.createEmptyEquipment();
+      const res = EquipmentManager.equipItem(fullState.inventory, currentEq, message.itemId, target.level);
+      if (!res.success) { client.send("error", { message: res.reason || "Failed to equip item" }); return; }
 
-        const currentEq =
-          target.equipment || EquipmentManager.createEmptyEquipment();
-        const res = EquipmentManager.equipItem(
-          fullState.inventory,
-          currentEq,
-          message.itemId,
-          target.level
-        );
-
-        if (!res.success) {
-          client.send("error", {
-            message: res.reason || "Failed to equip item",
-          });
-          return;
-        }
-
-        fullState.inventory = res.inventory;
-        const updatedTarget = EquipmentManager.applyEquipmentToCombatant(
-          target,
-          res.equipment
-        );
-
-        if (message.targetType === "hero") {
-          fullState.hero = updatedTarget;
-          fullState.roster.hero = updatedTarget;
-        } else {
-          const beastIdx = fullState.roster.beasts.findIndex(
-            (b) => b.id === message.championId
-          );
-          if (beastIdx !== -1) {
-            fullState.roster.beasts[beastIdx] = updatedTarget;
-          }
-        }
-
-        if (heroData.heroId && this.heroRepo) {
-          this.heroRepo.saveHeroState(heroData.heroId, fullState);
-        }
-
-        client.send("equipment_updated", {
-          targetType: message.targetType,
-          championId: message.championId,
-          equipment: res.equipment,
-          inventory: res.inventory,
-          swappedItemId: res.swappedItemId,
-          target: updatedTarget,
-        });
+      fullState.inventory = res.inventory;
+      const updatedTarget = EquipmentManager.applyEquipmentToCombatant(target, res.equipment);
+      if (message.targetType === "hero") {
+        fullState.hero = updatedTarget;
+        fullState.roster.hero = updatedTarget;
+      } else {
+        const beastIdx = fullState.roster.beasts.findIndex((b) => b.id === message.championId);
+        if (beastIdx !== -1) fullState.roster.beasts[beastIdx] = updatedTarget;
       }
-    );
+      if (heroData.heroId && this.heroRepo) this.heroRepo.saveHeroState(heroData.heroId, fullState);
+      client.send("equipment_updated", {
+        targetType: message.targetType,
+        championId: message.championId,
+        equipment: res.equipment,
+        inventory: res.inventory,
+        swappedItemId: res.swappedItemId,
+        target: updatedTarget,
+      });
+    });
 
-    this.onMessage(
-      "unequip_item",
-      (
-        client: Client,
-        message: {
-          targetType: "hero" | "champion";
-          championId?: string;
-          slot: EquipmentSlot;
-        }
-      ) => {
-        const heroData = this.clientHeroMap.get(client.sessionId);
-        if (!heroData?.fullState) return;
+    this.onMessage("unequip_item", (client: Client, message: { targetType: "hero" | "champion"; championId?: string; slot: EquipmentSlot }) => {
+      const heroData = this.clientHeroMap.get(client.sessionId);
+      if (!heroData?.fullState) return;
+      const fullState = heroData.fullState;
+      const target = message.targetType === "hero" ? fullState.hero : fullState.roster.beasts.find((b) => b.id === message.championId);
+      if (!target) { client.send("error", { message: "Target character not found" }); return; }
 
-        const fullState = heroData.fullState;
-        let target =
-          message.targetType === "hero"
-            ? fullState.hero
-            : fullState.roster.beasts.find((b) => b.id === message.championId);
-        if (!target) {
-          client.send("error", { message: "Target character not found" });
-          return;
-        }
+      const currentEq = target.equipment || EquipmentManager.createEmptyEquipment();
+      const res = EquipmentManager.unequipItem(fullState.inventory, currentEq, message.slot);
+      if (!res.success) { client.send("error", { message: res.reason || "Failed to unequip item" }); return; }
 
-        const currentEq =
-          target.equipment || EquipmentManager.createEmptyEquipment();
-        const res = EquipmentManager.unequipItem(
-          fullState.inventory,
-          currentEq,
-          message.slot
-        );
-
-        if (!res.success) {
-          client.send("error", {
-            message: res.reason || "Failed to unequip item",
-          });
-          return;
-        }
-
-        fullState.inventory = res.inventory;
-        const updatedTarget = EquipmentManager.applyEquipmentToCombatant(
-          target,
-          res.equipment
-        );
-
-        if (message.targetType === "hero") {
-          fullState.hero = updatedTarget;
-          fullState.roster.hero = updatedTarget;
-        } else {
-          const beastIdx = fullState.roster.beasts.findIndex(
-            (b) => b.id === message.championId
-          );
-          if (beastIdx !== -1) {
-            fullState.roster.beasts[beastIdx] = updatedTarget;
-          }
-        }
-
-        if (heroData.heroId && this.heroRepo) {
-          this.heroRepo.saveHeroState(heroData.heroId, fullState);
-        }
-
-        client.send("equipment_updated", {
-          targetType: message.targetType,
-          championId: message.championId,
-          equipment: res.equipment,
-          inventory: res.inventory,
-          unequippedItemId: res.unequippedItemId,
-          target: updatedTarget,
-        });
+      fullState.inventory = res.inventory;
+      const updatedTarget = EquipmentManager.applyEquipmentToCombatant(target, res.equipment);
+      if (message.targetType === "hero") {
+        fullState.hero = updatedTarget;
+        fullState.roster.hero = updatedTarget;
+      } else {
+        const beastIdx = fullState.roster.beasts.findIndex((b) => b.id === message.championId);
+        if (beastIdx !== -1) fullState.roster.beasts[beastIdx] = updatedTarget;
       }
-    );
+      if (heroData.heroId && this.heroRepo) this.heroRepo.saveHeroState(heroData.heroId, fullState);
+      client.send("equipment_updated", {
+        targetType: message.targetType,
+        championId: message.championId,
+        equipment: res.equipment,
+        inventory: res.inventory,
+        unequippedItemId: res.unequippedItemId,
+        target: updatedTarget,
+      });
+    });
   }
 
   public initRoamingBeasts(overrideMap?: MapConfig) {
@@ -535,6 +479,8 @@ export class OverworldRoom extends Room<OverworldState> {
           player.inBattle = true;
           beast.inCombat = true;
           beast.respawnAt = now + 20000;
+          beast.x = -999;
+          beast.y = -999;
 
           const combatant = RoamingBeastManager.convertRoamingBeastToCombatant(
             beast as any

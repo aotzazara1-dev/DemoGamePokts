@@ -60,9 +60,9 @@
     "semantic_hash": "c24e430dcbb999f240481d1e284cbf9c"
   },
   "packages/client/src/network/OverworldNetwork.ts": {
-    "mtime": 1791616398.0773704,
-    "seen": 1791617459.2949312,
-    "ast_hash": "5603af8bfe4e6ed2ead534a2d7b81ecc",
+    "mtime": 1791641324.6210682,
+    "seen": 1791641597.9159753,
+    "ast_hash": "d9cfba82a9de65ecd4a39249e6438626",
     "semantic_hash": ""
   },
   "packages/client/src/renderer/OverworldRenderer.ts": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791637537.8271823,
-    "seen": 1791637577.7506504,
-    "ast_hash": "a78bdb38176c85e1e834fde68caf5721",
+    "mtime": 1791641437.8177845,
+    "seen": 1791641597.9159832,
+    "ast_hash": "845f14181abdcfd07266b57989c67dc1",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -288,9 +288,9 @@
     "semantic_hash": "a66be9293c52d8857d762b5c49e56b74"
   },
   "packages/server/src/rooms/OverworldRoom.ts": {
-    "mtime": 1791631312.0838466,
-    "seen": 1791631537.236647,
-    "ast_hash": "72823a4e0288ebbff4545c473a37f18e",
+    "mtime": 1791641528.2996442,
+    "seen": 1791641597.9160988,
+    "ast_hash": "be3eb6ae0f493411419077478f94900b",
     "semantic_hash": ""
   },
   "packages/server/src/schema/BattleState.ts": {
@@ -348,10 +348,10 @@
     "semantic_hash": ""
   },
   "packages/server/test/roaming-beast-server.test.ts": {
-    "mtime": 1791548819.0825536,
-    "seen": 1791558675.8076766,
-    "ast_hash": "a53fb4f1d2a1cd09cada9b6c3b793b17",
-    "semantic_hash": "a53fb4f1d2a1cd09cada9b6c3b793b17"
+    "mtime": 1791640243.7439036,
+    "seen": 1791641597.9161277,
+    "ast_hash": "7bc928dd9bab36322bc12fff2a66b369",
+    "semantic_hash": ""
   },
   "packages/server/test/room-lifecycle-integration.test.ts": {
     "mtime": 1791525226.8993692,
@@ -1398,15 +1398,15 @@
     "semantic_hash": ""
   },
   "packages/shared/src/battle/battle-swap-executor.ts": {
-    "mtime": 1791638319.4281447,
-    "seen": 1791638415.0213246,
-    "ast_hash": "6c13ac7ed486b556ff585342f344a5b0",
+    "mtime": 1791638428.4355617,
+    "seen": 1791641597.9161472,
+    "ast_hash": "a1366b72811c51fce7cbb4cc92ddae34",
     "semantic_hash": ""
   },
   "packages/shared/test/battle-swap.test.ts": {
-    "mtime": 1791638365.009106,
-    "seen": 1791638415.0213668,
-    "ast_hash": "e8eb93fbc2b1ddfbc79295efe24e367d",
+    "mtime": 1791638428.4936104,
+    "seen": 1791641597.9162009,
+    "ast_hash": "52332e6609d120c14c70e41feb4836e2",
     "semantic_hash": ""
   },
   ".scratch/in-combat-beast-swapping/issues/01-shared-swap-types-and-battle-swap-executor.md": {
@@ -1431,6 +1431,12 @@
     "mtime": 1791636249.4745202,
     "seen": 1791637577.7509363,
     "ast_hash": "e64eb9b6a87d8964fc0a5ee2176e8fd8",
+    "semantic_hash": ""
+  },
+  "packages/server/test/post-battle-diag.test.ts": {
+    "mtime": 1791641535.9509037,
+    "seen": 1791641597.9161248,
+    "ast_hash": "3b9d2aab071521f48ec5071621606282",
     "semantic_hash": ""
   }
 }

@@ -123,9 +123,9 @@ export class OverworldNetwork {
     this.room.send("move", { targetX, targetY, mapId });
   }
 
-  public sendBattleConcluded() {
+  public sendBattleConcluded(pos?: { x: number; y: number; mapId?: string }) {
     if (!this.room) return;
-    this.room.send("battleConcluded");
+    this.room.send("battleConcluded", pos);
   }
 
   public sendWarpTown() {

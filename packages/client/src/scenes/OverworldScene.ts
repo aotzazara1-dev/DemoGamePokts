@@ -230,7 +230,12 @@ export class OverworldScene extends Phaser.Scene {
         this.isTransitioning = false;
         this.currentPath = [];
         this.clearDestinationMarker();
-        this.network.sendBattleConcluded();
+        this.tweens.killTweensOf(this.playerContainer);
+        this.network.sendBattleConcluded({
+          x: this.playerTile.x,
+          y: this.playerTile.y,
+          mapId: this.mapConfig.id,
+        });
 
         // Restore HUD elements and buttons when returning to Overworld
         const uiOverlay = document.getElementById("ui-overlay");
@@ -953,11 +958,10 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
-    // B. If adjacent (distance = 1):
-    const dist =
-      Math.abs(this.playerTile.x - targetX) +
-      Math.abs(this.playerTile.y - targetY);
-    if (dist === 1) {
+    // B. If adjacent (distance <= 1 including diagonals):
+    const dx = Math.abs(this.playerTile.x - targetX);
+    const dy = Math.abs(this.playerTile.y - targetY);
+    if (dx <= 1 && dy <= 1) {
       this.currentPath = [];
       this.clearDestinationMarker();
       this.attemptMove(targetX, targetY);
@@ -1174,6 +1178,7 @@ export class OverworldScene extends Phaser.Scene {
     // 2. Ragnarok Online Step Bobbing & Dynamic Foot Shadow
     this.mapRenderer.playStepBobbing(this.playerContainer, this.playerShadow);
 
+    const prevTile = { ...this.playerTile };
     this.isMoving = true;
     this.playerTile = { x: targetX, y: targetY };
 
@@ -1206,7 +1211,7 @@ export class OverworldScene extends Phaser.Scene {
     if (!this.network.getRoom() && !portal) {
       const offlinePlayerState = {
         playerId: "local_hero",
-        position: { x: this.playerTile.x, y: this.playerTile.y },
+        position: prevTile,
         facingDirection: "down" as Direction,
         stepsInCurrentZone: 0,
       };
@@ -1230,6 +1235,7 @@ export class OverworldScene extends Phaser.Scene {
       duration: 180,
       ease: "Power1",
       onComplete: () => {
+        if (this.isTransitioning) return;
         this.isMoving = false;
         this.playerContainer.setDepth(getIsometricDepth(targetX, targetY, 100));
 
@@ -1285,10 +1291,26 @@ export class OverworldScene extends Phaser.Scene {
   }
 
   private triggerBattleTransition(payload: any) {
+    this.isTransitioning = true;
     this.isMoving = true;
     this.currentPath = [];
     this.pendingNPCInteraction = null;
     this.clearDestinationMarker();
+
+    this.tweens.killTweensOf(this.playerContainer);
+    if (payload?.playerPosition && typeof payload.playerPosition.x === "number" && typeof payload.playerPosition.y === "number") {
+      this.playerTile = { x: payload.playerPosition.x, y: payload.playerPosition.y };
+      const screenPos = isoToScreen(
+        this.playerTile.x,
+        this.playerTile.y,
+        this.tileWidth,
+        this.tileHeight,
+        this.originX,
+        this.originY
+      );
+      this.playerContainer.setPosition(screenPos.x, screenPos.y);
+      this.playerContainer.setDepth(getIsometricDepth(this.playerTile.x, this.playerTile.y, 100));
+    }
 
     [
       this.rosterModal,
