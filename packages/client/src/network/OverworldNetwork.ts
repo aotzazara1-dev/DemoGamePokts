@@ -1,12 +1,12 @@
-import { Client, Room } from 'colyseus.js';
+import { Client, Room } from "colyseus.js";
 import {
   type PortalTransitionPayload,
   type MoveMessagePayload,
   type HeroFullSaveState,
   type SyncHeroStatePayload,
   type ChatMessagePayload,
-  type SendChatMessagePayload
-} from '@poktsonline/shared';
+  type SendChatMessagePayload,
+} from "@poktsonline/shared";
 
 export interface PlayerNetData {
   id: string;
@@ -21,10 +21,24 @@ export interface PlayerNetData {
 
 export type PlayerCallback = (sessionId: string, player: PlayerNetData) => void;
 export type PlayerRemoveCallback = (sessionId: string) => void;
-export type EncounterCallback = (payload: { encounter: any; playerPosition: { x: number; y: number } }) => void;
-export type PortalTransitionCallback = (payload: PortalTransitionPayload) => void;
+export type EncounterCallback = (payload: {
+  encounter: any;
+  playerPosition: { x: number; y: number };
+}) => void;
+export type PortalTransitionCallback = (
+  payload: PortalTransitionPayload
+) => void;
 export type HeroStateLoadedCallback = (payload: HeroFullSaveState) => void;
 export type ChatMessageCallback = (payload: ChatMessagePayload) => void;
+export type EquipmentUpdatedCallback = (payload: {
+  targetType: "hero" | "champion";
+  championId?: string;
+  equipment: any;
+  inventory: any;
+  swappedItemId?: string;
+  unequippedItemId?: string;
+  target: any;
+}) => void;
 
 export class OverworldNetwork {
   private client?: Client;
@@ -33,10 +47,11 @@ export class OverworldNetwork {
   private portalTransitionListeners: PortalTransitionCallback[] = [];
   private heroStateLoadedListeners: HeroStateLoadedCallback[] = [];
   private chatMessageListeners: ChatMessageCallback[] = [];
+  private equipmentUpdatedListeners: EquipmentUpdatedCallback[] = [];
   private lastHeroStateLoaded?: HeroFullSaveState;
 
   public async connect(
-    serverUrl: string = 'ws://localhost:2567',
+    serverUrl: string = "ws://localhost:2567",
     options: {
       name?: string;
       spawnTile?: { x: number; y: number };
@@ -45,7 +60,7 @@ export class OverworldNetwork {
     } = {}
   ): Promise<Room> {
     this.client = new Client(serverUrl);
-    this.room = await this.client.joinOrCreate('overworld', options);
+    this.room = await this.client.joinOrCreate("overworld", options);
     this.setupRoomListeners(this.room);
     return this.room;
   }
@@ -63,44 +78,73 @@ export class OverworldNetwork {
   }
 
   private setupRoomListeners(room: Room) {
-    room.onMessage('encounter', (payload: any) => {
-      this.encounterListeners.forEach(cb => cb(payload));
+    room.onMessage("encounter", (payload: any) => {
+      this.encounterListeners.forEach((cb) => cb(payload));
     });
-    room.onMessage('portalTransition', (payload: any) => {
-      this.portalTransitionListeners.forEach(cb => cb(payload));
+    room.onMessage("portalTransition", (payload: any) => {
+      this.portalTransitionListeners.forEach((cb) => cb(payload));
     });
-    room.onMessage('heroStateLoaded', (payload: any) => {
+    room.onMessage("heroStateLoaded", (payload: any) => {
       this.lastHeroStateLoaded = payload;
-      this.heroStateLoadedListeners.forEach(cb => cb(payload));
+      this.heroStateLoadedListeners.forEach((cb) => cb(payload));
     });
-    room.onMessage('chatMessage', (payload: ChatMessagePayload) => {
-      this.chatMessageListeners.forEach(cb => cb(payload));
+    room.onMessage("chatMessage", (payload: ChatMessagePayload) => {
+      this.chatMessageListeners.forEach((cb) => cb(payload));
     });
+    room.onMessage("equipment_updated", (payload: any) => {
+      this.equipmentUpdatedListeners.forEach((cb) => cb(payload));
+    });
+  }
+
+  public sendEquipItem(payload: {
+    targetType: "hero" | "champion";
+    championId?: string;
+    itemId: string;
+  }) {
+    if (!this.room) return;
+    this.room.send("equip_item", payload);
+  }
+
+  public sendUnequipItem(payload: {
+    targetType: "hero" | "champion";
+    championId?: string;
+    slot: string;
+  }) {
+    if (!this.room) return;
+    this.room.send("unequip_item", payload);
+  }
+
+  public onEquipmentUpdated(callback: EquipmentUpdatedCallback) {
+    this.equipmentUpdatedListeners.push(callback);
   }
 
   public sendMove(targetX: number, targetY: number, mapId?: string) {
     if (!this.room) return;
-    this.room.send('move', { targetX, targetY, mapId });
+    this.room.send("move", { targetX, targetY, mapId });
   }
 
   public sendBattleConcluded() {
     if (!this.room) return;
-    this.room.send('battleConcluded');
+    this.room.send("battleConcluded");
   }
 
   public sendWarpTown() {
     if (!this.room) return;
-    this.room.send('warpTown');
+    this.room.send("warpTown");
   }
 
-  public sendWarpPortal(targetMapId: string, targetPosition: { x: number; y: number }, portalName?: string) {
+  public sendWarpPortal(
+    targetMapId: string,
+    targetPosition: { x: number; y: number },
+    portalName?: string
+  ) {
     if (!this.room) return;
-    this.room.send('warpPortal', { targetMapId, targetPosition, portalName });
+    this.room.send("warpPortal", { targetMapId, targetPosition, portalName });
   }
 
   public sendSyncHeroState(payload: Partial<SyncHeroStatePayload>) {
     if (!this.room) return;
-    this.room.send('syncHeroState', payload);
+    this.room.send("syncHeroState", payload);
   }
 
   public onEncounter(callback: EncounterCallback) {
@@ -111,9 +155,9 @@ export class OverworldNetwork {
     this.portalTransitionListeners.push(callback);
   }
 
-  public sendChatMessage(text: string, channel: 'map' | 'system' = 'map') {
+  public sendChatMessage(text: string, channel: "map" | "system" = "map") {
     if (!this.room) return;
-    this.room.send('sendChatMessage', { text, channel });
+    this.room.send("sendChatMessage", { text, channel });
   }
 
   public onChatMessage(callback: ChatMessageCallback) {

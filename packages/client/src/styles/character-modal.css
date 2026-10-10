@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #character-modal.open {
@@ -203,4 +203,90 @@
 
 .beast-stat-btn:hover {
   background: #0369a1;
+}
+
+/* Equipment Paperdoll */
+.equipment-paperdoll-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paperdoll-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: #38bdf8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paperdoll-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.paperdoll-slot {
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 60px;
+  position: relative;
+}
+
+.paperdoll-slot:hover {
+  border-color: #38bdf8;
+  background: #1e293b;
+  transform: translateY(-2px);
+}
+
+.paperdoll-slot.equipped {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
+.paperdoll-slot-icon {
+  font-size: 18px;
+}
+
+.paperdoll-slot-name {
+  font-size: 10px;
+  font-weight: bold;
+  color: #f1f5f9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.paperdoll-slot-type {
+  font-size: 8px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.paperdoll-slot-unequip {
+  display: none;
+  font-size: 8px;
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.paperdoll-slot.equipped:hover .paperdoll-slot-unequip {
+  display: block;
 }

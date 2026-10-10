@@ -163,3 +163,23 @@ _Avoid_: Text balloon, talk bubble, chat pop-up
 **Chat Channel**:
 The categorization route for Chat Messages (such as Map Chat broadcast to players in the current Map, or System Log notifications for combat, gold, and item events).
 _Avoid_: Chat room, tab group, talk mode
+
+**Equipment Slot**:
+One of five wearable gear locations (`head`, `weapon`, `armor`, `boots`, `accessory`) present on both a Hero and their Roster Champions.
+_Avoid_: Gear slot, body part, armor hole
+
+**Equipment Item**:
+An Item with a specific Equipment Slot requirement that permanently boosts combat Attributes when equipped onto a Hero or Champion.
+_Avoid_: Armor piece, wearable prop, weapon item
+
+**Völundr (Divine Armament)**:
+A mythological or sacred weapon/armor soul-forged to empower mortals and gods with formidable Attribute bonuses.
+_Avoid_: Enchanted weapon, holy relic, super gear
+
+**Effective Attributes**:
+The final combat statistics calculated by combining an entity's Base Attributes (from level and allocated Stat Points) with the cumulative Attribute modifiers of all equipped gear.
+_Avoid_: Total stats, final power, adjusted attributes
+
+**Paperdoll**:
+The visual UI representation in Character and Roster modals displaying the five Equipment Slots around the character's avatar.
+_Avoid_: Equipment screen, gear board, dressing room

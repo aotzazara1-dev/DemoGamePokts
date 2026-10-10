@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import fs from "fs";
+import path from "path";
+import initSqlJs, { type Database, type SqlJsStatic } from "sql.js";
 
 export class DatabaseEngine {
   private SQL: SqlJsStatic | null = null;
@@ -29,7 +29,7 @@ export class DatabaseEngine {
     }
 
     // Enable foreign keys
-    this.db.run('PRAGMA foreign_keys = ON;');
+    this.db.run("PRAGMA foreign_keys = ON;");
 
     // Run migrations
     this.runMigrations();
@@ -56,11 +56,11 @@ export class DatabaseEngine {
     const rows = this.query<{ name: string }>(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
     );
-    return rows.map(r => r.name);
+    return rows.map((r) => r.name);
   }
 
   public run(sql: string, params: any[] = []): void {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
     this.db.run(sql, params);
     if (this.filePath) {
       this.persist();
@@ -68,7 +68,7 @@ export class DatabaseEngine {
   }
 
   public query<T = any>(sql: string, params: any[] = []): T[] {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
     const stmt = this.db.prepare(sql);
     stmt.bind(params);
     const results: T[] = [];
@@ -112,6 +112,7 @@ export class DatabaseEngine {
         exp INTEGER NOT NULL DEFAULT 0,
         stat_points INTEGER NOT NULL DEFAULT 0,
         allocated_stats TEXT NOT NULL,
+        equipment TEXT DEFAULT '{}',
         map_id TEXT NOT NULL,
         x INTEGER NOT NULL,
         y INTEGER NOT NULL,
@@ -144,6 +145,13 @@ export class DatabaseEngine {
         FOREIGN KEY(hero_id) REFERENCES heroes(id) ON DELETE CASCADE
       );
     `);
+
+    // Migration for existing databases
+    try {
+      this.db.run('ALTER TABLE heroes ADD COLUMN equipment TEXT DEFAULT "{}"');
+    } catch {
+      // Column already exists
+    }
 
     if (this.filePath) {
       this.persist();

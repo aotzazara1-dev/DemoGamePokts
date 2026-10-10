@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 import {
   Element,
   Direction,
@@ -9,9 +9,11 @@ import {
   type ItemStack,
   type InventoryState,
   type PlayerRosterState,
-  InventoryManager
-} from '@poktsonline/shared';
-import { DatabaseEngine } from './DatabaseEngine.js';
+  type EntityEquipment,
+  InventoryManager,
+  EquipmentManager,
+} from "@poktsonline/shared";
+import { DatabaseEngine } from "./DatabaseEngine.js";
 
 export class HeroRepository {
   public static readonly MAX_HEROES_PER_ACCOUNT = 3;
@@ -20,11 +22,11 @@ export class HeroRepository {
 
   public getHeroesByAccountId(accountId: string): HeroSummary[] {
     const rows = this.db.query<any>(
-      'SELECT * FROM heroes WHERE account_id = ? ORDER BY created_at ASC',
+      "SELECT * FROM heroes WHERE account_id = ? ORDER BY created_at ASC",
       [accountId]
     );
 
-    return rows.map(r => ({
+    return rows.map((r) => ({
       id: r.id,
       accountId: r.account_id,
       name: r.name,
@@ -34,39 +36,46 @@ export class HeroRepository {
       x: r.x,
       y: r.y,
       direction: r.direction as Direction,
-      createdAt: r.created_at
+      createdAt: r.created_at,
     }));
   }
 
   public getHeroCountByAccountId(accountId: string): number {
     const row = this.db.queryOne<{ count: number }>(
-      'SELECT COUNT(*) as count FROM heroes WHERE account_id = ?',
+      "SELECT COUNT(*) as count FROM heroes WHERE account_id = ?",
       [accountId]
     );
     return row?.count ?? 0;
   }
 
-  public createHero(accountId: string, payload: CreateHeroPayload): HeroSummary {
+  public createHero(
+    accountId: string,
+    payload: CreateHeroPayload
+  ): HeroSummary {
     const currentCount = this.getHeroCountByAccountId(accountId);
     if (currentCount >= HeroRepository.MAX_HEROES_PER_ACCOUNT) {
-      throw new Error(`Maximum ${HeroRepository.MAX_HEROES_PER_ACCOUNT} heroes allowed per account`);
+      throw new Error(
+        `Maximum ${HeroRepository.MAX_HEROES_PER_ACCOUNT} heroes allowed per account`
+      );
     }
 
     const trimmedName = payload.name.trim();
     if (trimmedName.length < 3 || trimmedName.length > 16) {
-      throw new Error('Hero name must be between 3 and 16 characters');
+      throw new Error("Hero name must be between 3 and 16 characters");
     }
     const validNameRegex = /^[a-zA-Z0-9 \u0E00-\u0E7F]{3,16}$/;
     if (!validNameRegex.test(trimmedName)) {
-      throw new Error('Hero name must contain only letters, numbers, Thai characters, or spaces');
+      throw new Error(
+        "Hero name must contain only letters, numbers, Thai characters, or spaces"
+      );
     }
 
-    const heroId = 'hero_' + crypto.randomUUID().slice(0, 8);
+    const heroId = "hero_" + crypto.randomUUID().slice(0, 8);
     const now = Date.now();
-    const mapId = 'valhalla_coliseum';
+    const mapId = "valhalla_coliseum";
     const spawnX = 10;
     const spawnY = 10;
-    const direction: Direction = 'down';
+    const direction: Direction = "down";
     const gold = 200;
 
     const baseAttributes = {
@@ -77,15 +86,17 @@ export class HeroRepository {
       atk: 25,
       def: 15,
       int: 10,
-      agi: 20
+      agi: 20,
     };
+
+    const heroEquipment = EquipmentManager.createEmptyEquipment();
 
     // 1. Insert Hero Record
     this.db.run(
       `INSERT INTO heroes (
         id, account_id, name, element, level, exp, stat_points,
-        allocated_stats, map_id, x, y, direction, gold, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        allocated_stats, equipment, map_id, x, y, direction, gold, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         heroId,
         accountId,
@@ -95,12 +106,13 @@ export class HeroRepository {
         0, // exp
         0, // stat points
         JSON.stringify(baseAttributes),
+        JSON.stringify(heroEquipment),
         mapId,
         spawnX,
         spawnY,
         direction,
         gold,
-        now
+        now,
       ]
     );
 
@@ -109,7 +121,7 @@ export class HeroRepository {
     initialInv.slots.forEach((slot, slotIndex) => {
       if (slot) {
         this.db.run(
-          'INSERT INTO hero_inventories (hero_id, slot_index, item_id, quantity) VALUES (?, ?, ?, ?)',
+          "INSERT INTO hero_inventories (hero_id, slot_index, item_id, quantity) VALUES (?, ?, ?, ?)",
           [heroId, slotIndex, slot.itemId, slot.quantity]
         );
       }
@@ -135,8 +147,9 @@ export class HeroRepository {
           int: starterBeast.int,
           agi: starterBeast.agi,
           name: starterBeast.name,
-          element: starterBeast.element
-        })
+          element: starterBeast.element,
+          equipment: EquipmentManager.createEmptyEquipment(),
+        }),
       ]
     );
 
@@ -150,22 +163,42 @@ export class HeroRepository {
       x: spawnX,
       y: spawnY,
       direction,
-      createdAt: now
+      createdAt: now,
     };
   }
 
   public getHeroFullState(heroId: string): HeroFullSaveState | null {
-    const heroRow = this.db.queryOne<any>('SELECT * FROM heroes WHERE id = ?', [heroId]);
+    const heroRow = this.db.queryOne<any>("SELECT * FROM heroes WHERE id = ?", [
+      heroId,
+    ]);
     if (!heroRow) return null;
 
-    let baseAttrs = { hp: 100, maxHp: 100, sp: 40, maxSp: 40, atk: 25, def: 15, int: 10, agi: 20 };
+    let baseAttrs = {
+      hp: 100,
+      maxHp: 100,
+      sp: 40,
+      maxSp: 40,
+      atk: 25,
+      def: 15,
+      int: 10,
+      agi: 20,
+    };
     try {
       baseAttrs = JSON.parse(heroRow.allocated_stats);
     } catch {
       // fallback
     }
 
-    const heroCombatant: Combatant = {
+    let heroEquipment = EquipmentManager.createEmptyEquipment();
+    try {
+      if (heroRow.equipment) {
+        heroEquipment = { ...heroEquipment, ...JSON.parse(heroRow.equipment) };
+      }
+    } catch {
+      // fallback
+    }
+
+    const rawHeroCombatant: Combatant = {
       id: heroRow.id,
       name: heroRow.name,
       isHero: true,
@@ -173,45 +206,65 @@ export class HeroRepository {
       element: heroRow.element as Element,
       exp: heroRow.exp,
       statPoints: heroRow.stat_points,
-      ...baseAttrs
+      ...baseAttrs,
     };
+
+    const heroCombatant = EquipmentManager.applyEquipmentToCombatant(
+      rawHeroCombatant,
+      heroEquipment
+    );
 
     // Load Inventory
     const invRows = this.db.query<any>(
-      'SELECT * FROM hero_inventories WHERE hero_id = ? ORDER BY slot_index ASC',
+      "SELECT * FROM hero_inventories WHERE hero_id = ? ORDER BY slot_index ASC",
       [heroId]
     );
-    const slots: (ItemStack | null)[] = new Array(InventoryManager.INVENTORY_CAPACITY).fill(null);
-    invRows.forEach(row => {
-      if (row.slot_index >= 0 && row.slot_index < InventoryManager.INVENTORY_CAPACITY) {
+    const slots: (ItemStack | null)[] = new Array(
+      InventoryManager.INVENTORY_CAPACITY
+    ).fill(null);
+    invRows.forEach((row) => {
+      if (
+        row.slot_index >= 0 &&
+        row.slot_index < InventoryManager.INVENTORY_CAPACITY
+      ) {
         slots[row.slot_index] = {
           itemId: row.item_id,
-          quantity: row.quantity
+          quantity: row.quantity,
         };
       }
     });
 
     const inventory: InventoryState = {
       slots,
-      gold: heroRow.gold
+      gold: heroRow.gold,
     };
 
     // Load Roster
     const rosterRows = this.db.query<any>(
-      'SELECT * FROM hero_rosters WHERE hero_id = ? ORDER BY is_active DESC',
+      "SELECT * FROM hero_rosters WHERE hero_id = ? ORDER BY is_active DESC",
       [heroId]
     );
 
-    const beasts: Combatant[] = rosterRows.map(r => {
+    const beasts: Combatant[] = rosterRows.map((r) => {
       let attrs: any = {};
       try {
         attrs = JSON.parse(r.attributes);
       } catch {
         // fallback
       }
-      return {
+
+      let beastEquipment = EquipmentManager.createEmptyEquipment();
+      try {
+        if (attrs.equipment) {
+          beastEquipment = { ...beastEquipment, ...attrs.equipment };
+        }
+      } catch {
+        // fallback
+      }
+
+      const rawBeast: Combatant = {
         id: r.beast_id,
-        name: attrs.name ?? 'Wild Beast',
+        name: attrs.name ?? "Wild Beast",
         isHero: false,
         level: r.level,
         element: (attrs.element as Element) || Element.Water,
@@ -223,20 +276,25 @@ export class HeroRepository {
         def: attrs.def ?? 15,
         int: attrs.int ?? 10,
         agi: attrs.agi ?? 15,
-        exp: r.exp
+        exp: r.exp,
       };
+
+      return EquipmentManager.applyEquipmentToCombatant(
+        rawBeast,
+        beastEquipment
+      );
     });
 
-    const activeRow = rosterRows.find(r => r.is_active === 1);
+    const activeRow = rosterRows.find((r) => r.is_active === 1);
 
     const roster: PlayerRosterState = {
       hero: heroCombatant,
       activeBeastId: activeRow ? activeRow.beast_id : beasts[0]?.id,
       beasts,
       formation: {
-        heroSlot: { row: 'front', col: 2 },
-        beastSlot: { row: 'back', col: 2 }
-      }
+        heroSlot: { row: "front", col: 2 },
+        beastSlot: { row: "back", col: 2 },
+      },
     };
 
     return {
@@ -248,12 +306,12 @@ export class HeroRepository {
       direction: heroRow.direction as Direction,
       inventory,
       roster,
-      createdAt: heroRow.created_at
+      createdAt: heroRow.created_at,
     };
   }
 
   public saveHeroState(heroId: string, state: HeroFullSaveState): void {
-    const heroAttrs = {
+    const heroAttrs = state.hero.baseAttributes || {
       hp: state.hero.hp,
       maxHp: state.hero.maxHp,
       sp: state.hero.sp,
@@ -261,13 +319,13 @@ export class HeroRepository {
       atk: state.hero.atk,
       def: state.hero.def,
       int: state.hero.int,
-      agi: state.hero.agi
+      agi: state.hero.agi,
     };
 
     // 1. Update Hero
     this.db.run(
       `UPDATE heroes SET
-        level = ?, exp = ?, stat_points = ?, allocated_stats = ?,
+        level = ?, exp = ?, stat_points = ?, allocated_stats = ?, equipment = ?,
         map_id = ?, x = ?, y = ?, direction = ?, gold = ?
       WHERE id = ?`,
       [
@@ -275,30 +333,40 @@ export class HeroRepository {
         state.hero.exp ?? 0,
         state.hero.statPoints ?? 0,
         JSON.stringify(heroAttrs),
+        JSON.stringify(state.hero.equipment || {}),
         state.mapId,
         state.x,
         state.y,
         state.direction,
         state.inventory.gold,
-        heroId
+        heroId,
       ]
     );
 
     // 2. Update Inventory
-    this.db.run('DELETE FROM hero_inventories WHERE hero_id = ?', [heroId]);
+    this.db.run("DELETE FROM hero_inventories WHERE hero_id = ?", [heroId]);
     state.inventory.slots.forEach((slot, idx) => {
       if (slot) {
         this.db.run(
-          'INSERT INTO hero_inventories (hero_id, slot_index, item_id, quantity) VALUES (?, ?, ?, ?)',
+          "INSERT INTO hero_inventories (hero_id, slot_index, item_id, quantity) VALUES (?, ?, ?, ?)",
           [heroId, idx, slot.itemId, slot.quantity]
         );
       }
     });
 
     // 3. Update Roster
-    this.db.run('DELETE FROM hero_rosters WHERE hero_id = ?', [heroId]);
-    state.roster.beasts.forEach(beast => {
+    this.db.run("DELETE FROM hero_rosters WHERE hero_id = ?", [heroId]);
+    state.roster.beasts.forEach((beast) => {
       const isActive = beast.id === state.roster.activeBeastId ? 1 : 0;
+      const baseAttrs = beast.baseAttributes || {
+        maxHp: beast.maxHp,
+        maxSp: beast.maxSp,
+        atk: beast.atk,
+        def: beast.def,
+        int: beast.int,
+        agi: beast.agi,
+      };
+
       this.db.run(
         `INSERT INTO hero_rosters (
           hero_id, beast_id, is_active, formation_index, level, exp, hp, sp, attributes
@@ -312,15 +380,17 @@ export class HeroRepository {
           beast.hp,
           beast.sp,
           JSON.stringify({
-            maxHp: beast.maxHp,
-            maxSp: beast.maxSp,
-            atk: beast.atk,
-            def: beast.def,
-            int: beast.int,
-            agi: beast.agi,
+            maxHp: baseAttrs.maxHp,
+            maxSp: baseAttrs.maxSp,
+            atk: baseAttrs.atk,
+            def: baseAttrs.def,
+            int: baseAttrs.int,
+            agi: baseAttrs.agi,
             name: beast.name,
-            element: beast.element
-          })
+            element: beast.element,
+            equipment:
+              beast.equipment || EquipmentManager.createEmptyEquipment(),
+          }),
         ]
       );
     });
@@ -328,14 +398,14 @@ export class HeroRepository {
 
   public deleteHero(heroId: string, accountId: string): boolean {
     const existing = this.db.queryOne<any>(
-      'SELECT id FROM heroes WHERE id = ? AND account_id = ?',
+      "SELECT id FROM heroes WHERE id = ? AND account_id = ?",
       [heroId, accountId]
     );
     if (!existing) return false;
 
-    this.db.run('DELETE FROM hero_inventories WHERE hero_id = ?', [heroId]);
-    this.db.run('DELETE FROM hero_rosters WHERE hero_id = ?', [heroId]);
-    this.db.run('DELETE FROM heroes WHERE id = ?', [heroId]);
+    this.db.run("DELETE FROM hero_inventories WHERE hero_id = ?", [heroId]);
+    this.db.run("DELETE FROM hero_rosters WHERE hero_id = ?", [heroId]);
+    this.db.run("DELETE FROM heroes WHERE id = ?", [heroId]);
     return true;
   }
 
@@ -343,8 +413,8 @@ export class HeroRepository {
     switch (element) {
       case Element.Earth:
         return {
-          id: 'champion_starter_adam',
-          name: 'Adam (อดัม)',
+          id: "champion_starter_adam",
+          name: "Adam (อดัม)",
           isHero: false,
           level: 1,
           element: Element.Earth,
@@ -355,12 +425,12 @@ export class HeroRepository {
           atk: 18,
           def: 16,
           int: 8,
-          agi: 12
+          agi: 12,
         };
       case Element.Fire:
         return {
-          id: 'champion_starter_lu_bu',
-          name: 'Lu Bu (ลิโป้)',
+          id: "champion_starter_lu_bu",
+          name: "Lu Bu (ลิโป้)",
           isHero: false,
           level: 1,
           element: Element.Fire,
@@ -371,12 +441,12 @@ export class HeroRepository {
           atk: 22,
           def: 10,
           int: 8,
-          agi: 14
+          agi: 14,
         };
       case Element.Wind:
         return {
-          id: 'champion_starter_thor',
-          name: 'Thor (ธอร์)',
+          id: "champion_starter_thor",
+          name: "Thor (ธอร์)",
           isHero: false,
           level: 1,
           element: Element.Wind,
@@ -387,13 +457,13 @@ export class HeroRepository {
           atk: 20,
           def: 12,
           int: 10,
-          agi: 16
+          agi: 16,
         };
       case Element.Water:
       default:
         return {
-          id: 'champion_starter_kojiro',
-          name: 'Sasaki Kojiro (โคจิโร่)',
+          id: "champion_starter_kojiro",
+          name: "Sasaki Kojiro (โคจิโร่)",
           isHero: false,
           level: 1,
           element: Element.Water,
@@ -404,7 +474,7 @@ export class HeroRepository {
           atk: 18,
           def: 12,
           int: 10,
-          agi: 16
+          agi: 16,
         };
     }
   }

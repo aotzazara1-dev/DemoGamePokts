@@ -1,624 +1,1137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Poktsonline - Isometric RPG</title>
-  <link rel="stylesheet" href="/src/styles/index.css" />
-</head>
-<body>
-  <!-- Outside Game Top Header Bar -->
-  <header id="game-header">
-    <div class="header-brand">
-      <span>⚔️ Poktsonline</span>
-      <span class="header-tag">Overworld Alpha</span>
-    </div>
-    <div class="header-controls">
-      <span>🎮 Move: <kbd>Click</kbd> / <kbd>Hold</kbd> / <kbd>Arrows</kbd></span>
-      <span class="ctrl-sep">&bull;</span>
-      <span>🐾 <kbd>B</kbd> Beasts</span>
-      <span class="ctrl-sep">&bull;</span>
-      <span>📊 <kbd>C</kbd> Status</span>
-      <span class="ctrl-sep">&bull;</span>
-      <button id="header-btn-inventory" class="header-btn" title="Open Inventory (Hotkey: I)">🎒 <kbd>I</kbd> Inventory</button>
-      <span class="ctrl-sep">&bull;</span>
-      <button id="header-btn-sound" class="header-btn" title="Toggle 8-bit Audio (Mute/Unmute)">🔊 Sound: ON</button>
-      <span class="ctrl-sep">&bull;</span>
-      <button id="header-btn-auth" class="header-btn" title="Account / Link Account">🔑 <kbd>Login</kbd></button>
-      <span class="ctrl-sep">&bull;</span>
-      <span>🛠️ <kbd>~</kbd> QA Debug</span>
-    </div>
-  </header>
-
-  <div id="game-wrapper">
-    <div id="ui-overlay">
-      <div id="zone-display" style="color: #6ee7b7; font-weight: 600; font-size: 12px;">🏡 Zone: Valhalla Coliseum (Safe Zone)</div>
-      <div id="hero-quick-bar" style="margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-        <span id="hero-quick-info" style="color: #facc15; font-size: 12px; font-weight: bold;">🧙 Hero Lv.5 (0/559 EXP)</span>
-        <button id="btn-character-status" title="Open Character Status (Hotkey: C)" style="background: #2563eb; color: #fff; border: 1px solid #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
-          📊 Status [C]
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poktsonline - Isometric RPG</title>
+    <link rel="stylesheet" href="/src/styles/index.css" />
+  </head>
+  <body>
+    <!-- Outside Game Top Header Bar -->
+    <header id="game-header">
+      <div class="header-brand">
+        <span>⚔️ Poktsonline</span>
+        <span class="header-tag">Overworld Alpha</span>
+      </div>
+      <div class="header-controls">
+        <span
+          >🎮 Move: <kbd>Click</kbd> / <kbd>Hold</kbd> / <kbd>Arrows</kbd></span
+        >
+        <span class="ctrl-sep">&bull;</span>
+        <span>🐾 <kbd>B</kbd> Beasts</span>
+        <span class="ctrl-sep">&bull;</span>
+        <span>📊 <kbd>C</kbd> Status</span>
+        <span class="ctrl-sep">&bull;</span>
+        <button
+          id="header-btn-inventory"
+          class="header-btn"
+          title="Open Inventory (Hotkey: I)"
+        >
+          🎒 <kbd>I</kbd> Inventory
         </button>
-        <button id="btn-quick-inventory" title="Open Inventory (Hotkey: I)" style="background: #0284c7; color: #fff; border: 1px solid #38bdf8; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: bold; cursor: pointer; pointer-events: auto;">
-          🎒 Inventory [I]
+        <span class="ctrl-sep">&bull;</span>
+        <button
+          id="header-btn-sound"
+          class="header-btn"
+          title="Toggle 8-bit Audio (Mute/Unmute)"
+        >
+          🔊 Sound: ON
         </button>
+        <span class="ctrl-sep">&bull;</span>
+        <button
+          id="header-btn-auth"
+          class="header-btn"
+          title="Account / Link Account"
+        >
+          🔑 <kbd>Login</kbd>
+        </button>
+        <span class="ctrl-sep">&bull;</span>
+        <span>🛠️ <kbd>~</kbd> QA Debug</span>
       </div>
-    </div>
+    </header>
 
-    <!-- Minimap Radar HUD -->
-    <div id="minimap-container">
-      <div class="minimap-header">
-        <span id="minimap-map-name">Valhalla Coliseum</span>
-        <span id="minimap-coords">(10, 10)</span>
-      </div>
-      <div class="minimap-body">
-        <canvas id="minimap-canvas" width="140" height="140"></canvas>
-      </div>
-      <div class="minimap-legend">
-        <span class="minimap-legend-item"><span class="minimap-dot hero"></span>You</span>
-        <span class="minimap-legend-item"><span class="minimap-dot beast"></span>Foe</span>
-        <span class="minimap-legend-item"><span class="minimap-dot npc"></span>NPC</span>
-        <span class="minimap-legend-item"><span class="minimap-dot portal"></span>Gate</span>
-      </div>
-    </div>
-
-    <!-- In-Game Chat System Overlay -->
-    <div id="chat-overlay">
-      <div class="chat-tab-bar">
-        <button id="chat-tab-all" class="chat-tab-btn active" type="button">💬 All (ทั้งหมด)</button>
-        <button id="chat-tab-system" class="chat-tab-btn" type="button">📜 System (ระบบ)</button>
-      </div>
-      <div id="chat-messages" class="chat-messages-container"></div>
-      <form id="chat-input-form" class="chat-input-bar">
-        <input id="chat-input" type="text" maxlength="120" placeholder="Press [Enter] to chat..." autocomplete="off" />
-        <button id="chat-btn-send" type="submit">Send</button>
-      </form>
-    </div>
-
-    <button id="btn-inventory" title="Open Inventory (Hotkey: I)">
-      🎒 INVENTORY [I]
-    </button>
-    <button id="btn-roster" title="Open Champions Roster & Formation Grid (Hotkey: B or F)">
-      ⚔️ CHAMPIONS (1/10) <span style="opacity: 0.75; font-size: 11px;">[B]</span>
-    </button>
-
-    <!-- Authentication Modal Overlay -->
-    <div id="auth-modal">
-      <div class="auth-card">
-        <div class="roster-header">
-          <div class="roster-header-titles">
-            <h2 id="auth-modal-title">🔑 WELCOME TO POKTSONLINE</h2>
-            <p id="auth-modal-desc">Sign in or play instantly as Guest to save your progression</p>
-          </div>
-          <button id="btn-close-auth-modal" class="btn-close-modal" title="Close" style="display: none;">✕ Close</button>
+    <div id="game-wrapper">
+      <div id="ui-overlay">
+        <div
+          id="zone-display"
+          style="color: #6ee7b7; font-weight: 600; font-size: 12px"
+        >
+          🏡 Zone: Valhalla Coliseum (Safe Zone)
         </div>
-
-        <div id="auth-guest-section" style="margin-bottom: 16px; padding: 12px; background: rgba(30, 41, 59, 0.7); border: 1px dashed #38bdf8; border-radius: 8px; text-align: center;">
-          <div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px;">Want to jump in immediately without a password?</div>
-          <button id="btn-auth-guest" class="btn-auth-guest-play" type="button">
-            🎮 PLAY INSTANTLY AS GUEST
+        <div
+          id="hero-quick-bar"
+          style="margin-top: 5px; display: flex; align-items: center; gap: 8px"
+        >
+          <span
+            id="hero-quick-info"
+            style="color: #facc15; font-size: 12px; font-weight: bold"
+            >🧙 Hero Lv.5 (0/559 EXP)</span
+          >
+          <button
+            id="btn-character-status"
+            title="Open Character Status (Hotkey: C)"
+            style="
+              background: #2563eb;
+              color: #fff;
+              border: 1px solid #60a5fa;
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-size: 11px;
+              font-weight: bold;
+              cursor: pointer;
+              pointer-events: auto;
+            "
+          >
+            📊 Status [C]
+          </button>
+          <button
+            id="btn-quick-inventory"
+            title="Open Inventory (Hotkey: I)"
+            style="
+              background: #0284c7;
+              color: #fff;
+              border: 1px solid #38bdf8;
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-size: 11px;
+              font-weight: bold;
+              cursor: pointer;
+              pointer-events: auto;
+            "
+          >
+            🎒 Inventory [I]
           </button>
         </div>
+      </div>
 
-        <div id="auth-tabs" class="auth-tab-bar">
-          <button id="auth-tab-login" class="auth-tab-btn active" type="button">🔑 Sign In (เข้าสู่ระบบ)</button>
-          <button id="auth-tab-register" class="auth-tab-btn" type="button">📝 Register (สมัครสมาชิก)</button>
+      <!-- Minimap Radar HUD -->
+      <div id="minimap-container">
+        <div class="minimap-header">
+          <span id="minimap-map-name">Valhalla Coliseum</span>
+          <span id="minimap-coords">(10, 10)</span>
         </div>
+        <div class="minimap-body">
+          <canvas id="minimap-canvas" width="140" height="140"></canvas>
+        </div>
+        <div class="minimap-legend">
+          <span class="minimap-legend-item"
+            ><span class="minimap-dot hero"></span>You</span
+          >
+          <span class="minimap-legend-item"
+            ><span class="minimap-dot beast"></span>Foe</span
+          >
+          <span class="minimap-legend-item"
+            ><span class="minimap-dot npc"></span>NPC</span
+          >
+          <span class="minimap-legend-item"
+            ><span class="minimap-dot portal"></span>Gate</span
+          >
+        </div>
+      </div>
 
-        <div id="auth-error-msg" class="auth-error-banner" style="display: none;"></div>
-
-        <form id="auth-form" class="auth-form-fields">
-          <div class="auth-input-group">
-            <label for="auth-input-username">Username (ชื่อผู้ใช้)</label>
-            <input id="auth-input-username" type="text" autocomplete="username" placeholder="3-20 characters" required />
-          </div>
-
-          <div class="auth-input-group">
-            <label for="auth-input-password">Password (รหัสผ่าน)</label>
-            <input id="auth-input-password" type="password" autocomplete="current-password" placeholder="At least 6 characters" required />
-          </div>
-
-          <button id="btn-auth-submit" class="btn-auth-submit-action" type="submit">
-            Enter Game (Sign In)
+      <!-- In-Game Chat System Overlay -->
+      <div id="chat-overlay">
+        <div class="chat-tab-bar">
+          <button id="chat-tab-all" class="chat-tab-btn active" type="button">
+            💬 All (ทั้งหมด)
           </button>
+          <button id="chat-tab-system" class="chat-tab-btn" type="button">
+            📜 System (ระบบ)
+          </button>
+        </div>
+        <div id="chat-messages" class="chat-messages-container"></div>
+        <form id="chat-input-form" class="chat-input-bar">
+          <input
+            id="chat-input"
+            type="text"
+            maxlength="120"
+            placeholder="Press [Enter] to chat..."
+            autocomplete="off"
+          />
+          <button id="chat-btn-send" type="submit">Send</button>
         </form>
       </div>
-    </div>
 
-    <!-- Character Select & Multi-Hero Modal Overlay -->
-    <div id="character-select-modal">
-      <div class="char-select-card">
-        <div class="char-select-topbar">
-          <div>
-            <h2 style="font-size: 18px; margin: 0; color: #38bdf8; font-weight: 800;">👥 SELECT YOUR HERO</h2>
-            <p style="font-size: 12px; margin: 4px 0 0; color: #94a3b8;">Choose a hero to enter the Overworld or create a new one (Up to 3 heroes)</p>
+      <button id="btn-inventory" title="Open Inventory (Hotkey: I)">
+        🎒 INVENTORY [I]
+      </button>
+      <button
+        id="btn-roster"
+        title="Open Champions Roster & Formation Grid (Hotkey: B or F)"
+      >
+        ⚔️ CHAMPIONS (1/10)
+        <span style="opacity: 0.75; font-size: 11px">[B]</span>
+      </button>
+
+      <!-- Authentication Modal Overlay -->
+      <div id="auth-modal">
+        <div class="auth-card">
+          <div class="roster-header">
+            <div class="roster-header-titles">
+              <h2 id="auth-modal-title">🔑 WELCOME TO POKTSONLINE</h2>
+              <p id="auth-modal-desc">
+                Sign in or play instantly as Guest to save your progression
+              </p>
+            </div>
+            <button
+              id="btn-close-auth-modal"
+              class="btn-close-modal"
+              title="Close"
+              style="display: none"
+            >
+              ✕ Close
+            </button>
           </div>
-          <button id="btn-char-select-link" class="btn-create-slot-hero" style="display: none; border-color: #f59e0b; color: #f59e0b;">
-            🔗 Link Guest Account
-          </button>
+
+          <div
+            id="auth-guest-section"
+            style="
+              margin-bottom: 16px;
+              padding: 12px;
+              background: rgba(30, 41, 59, 0.7);
+              border: 1px dashed #38bdf8;
+              border-radius: 8px;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px">
+              Want to jump in immediately without a password?
+            </div>
+            <button
+              id="btn-auth-guest"
+              class="btn-auth-guest-play"
+              type="button"
+            >
+              🎮 PLAY INSTANTLY AS GUEST
+            </button>
+          </div>
+
+          <div id="auth-tabs" class="auth-tab-bar">
+            <button
+              id="auth-tab-login"
+              class="auth-tab-btn active"
+              type="button"
+            >
+              🔑 Sign In (เข้าสู่ระบบ)
+            </button>
+            <button id="auth-tab-register" class="auth-tab-btn" type="button">
+              📝 Register (สมัครสมาชิก)
+            </button>
+          </div>
+
+          <div
+            id="auth-error-msg"
+            class="auth-error-banner"
+            style="display: none"
+          ></div>
+
+          <form id="auth-form" class="auth-form-fields">
+            <div class="auth-input-group">
+              <label for="auth-input-username">Username (ชื่อผู้ใช้)</label>
+              <input
+                id="auth-input-username"
+                type="text"
+                autocomplete="username"
+                placeholder="3-20 characters"
+                required
+              />
+            </div>
+
+            <div class="auth-input-group">
+              <label for="auth-input-password">Password (รหัสผ่าน)</label>
+              <input
+                id="auth-input-password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="At least 6 characters"
+                required
+              />
+            </div>
+
+            <button
+              id="btn-auth-submit"
+              class="btn-auth-submit-action"
+              type="submit"
+            >
+              Enter Game (Sign In)
+            </button>
+          </form>
         </div>
+      </div>
 
-        <div id="character-slots-grid" class="char-slots-grid">
-          <!-- Dynamically populated 3 slots -->
-        </div>
+      <!-- Character Select & Multi-Hero Modal Overlay -->
+      <div id="character-select-modal">
+        <div class="char-select-card">
+          <div class="char-select-topbar">
+            <div>
+              <h2
+                style="
+                  font-size: 18px;
+                  margin: 0;
+                  color: #38bdf8;
+                  font-weight: 800;
+                "
+              >
+                👥 SELECT YOUR HERO
+              </h2>
+              <p style="font-size: 12px; margin: 4px 0 0; color: #94a3b8">
+                Choose a hero to enter the Overworld or create a new one (Up to
+                3 heroes)
+              </p>
+            </div>
+            <button
+              id="btn-char-select-link"
+              class="btn-create-slot-hero"
+              style="display: none; border-color: #f59e0b; color: #f59e0b"
+            >
+              🔗 Link Guest Account
+            </button>
+          </div>
 
-        <!-- Submodal: Create Hero -->
-        <div id="create-hero-submodal" class="submodal-backdrop" style="display: none;">
-          <div class="submodal-content">
-            <h3 style="margin: 0; color: #38bdf8; font-size: 16px;">✨ CREATE NEW HERO</h3>
-            <p style="margin: 0; font-size: 12px; color: #94a3b8;">Select your martial name and starting elemental affinity:</p>
+          <div id="character-slots-grid" class="char-slots-grid">
+            <!-- Dynamically populated 3 slots -->
+          </div>
 
-            <div id="create-hero-error" class="auth-error-banner" style="display: none;"></div>
+          <!-- Submodal: Create Hero -->
+          <div
+            id="create-hero-submodal"
+            class="submodal-backdrop"
+            style="display: none"
+          >
+            <div class="submodal-content">
+              <h3 style="margin: 0; color: #38bdf8; font-size: 16px">
+                ✨ CREATE NEW HERO
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #94a3b8">
+                Select your martial name and starting elemental affinity:
+              </p>
 
-            <form id="create-hero-form" style="display: flex; flex-direction: column; gap: 12px;">
-              <div class="auth-input-group">
-                <label for="create-hero-name">Hero Name (ชื่อตัวละคร)</label>
-                <input id="create-hero-name" type="text" placeholder="3-16 characters" required />
-              </div>
+              <div
+                id="create-hero-error"
+                class="auth-error-banner"
+                style="display: none"
+              ></div>
 
-              <div class="auth-input-group">
-                <label>Starting Element & Champion (ธาตุประจำตัว & ขุนพล/เทพเริ่มต้น)</label>
-                <div class="element-choices-grid">
-                  <button type="button" class="element-choice-btn selected" data-element="Water">
-                    <span>💧 WATER (น้ำ)</span>
-                    <span class="element-choice-sub">Champion: Sasaki Kojiro (โคจิโร่)</span>
+              <form
+                id="create-hero-form"
+                style="display: flex; flex-direction: column; gap: 12px"
+              >
+                <div class="auth-input-group">
+                  <label for="create-hero-name">Hero Name (ชื่อตัวละคร)</label>
+                  <input
+                    id="create-hero-name"
+                    type="text"
+                    placeholder="3-16 characters"
+                    required
+                  />
+                </div>
+
+                <div class="auth-input-group">
+                  <label
+                    >Starting Element & Champion (ธาตุประจำตัว &
+                    ขุนพล/เทพเริ่มต้น)</label
+                  >
+                  <div class="element-choices-grid">
+                    <button
+                      type="button"
+                      class="element-choice-btn selected"
+                      data-element="Water"
+                    >
+                      <span>💧 WATER (น้ำ)</span>
+                      <span class="element-choice-sub"
+                        >Champion: Sasaki Kojiro (โคจิโร่)</span
+                      >
+                    </button>
+                    <button
+                      type="button"
+                      class="element-choice-btn"
+                      data-element="Fire"
+                    >
+                      <span>🔥 FIRE (ไฟ)</span>
+                      <span class="element-choice-sub"
+                        >Champion: Lu Bu (ลิโป้)</span
+                      >
+                    </button>
+                    <button
+                      type="button"
+                      class="element-choice-btn"
+                      data-element="Earth"
+                    >
+                      <span>🌍 EARTH (ดิน)</span>
+                      <span class="element-choice-sub"
+                        >Champion: Adam (อดัม)</span
+                      >
+                    </button>
+                    <button
+                      type="button"
+                      class="element-choice-btn"
+                      data-element="Wind"
+                    >
+                      <span>🌪️ WIND (ลม)</span>
+                      <span class="element-choice-sub"
+                        >Champion: Thor (ธอร์)</span
+                      >
+                    </button>
+                  </div>
+                </div>
+
+                <div class="submodal-actions">
+                  <button
+                    id="btn-cancel-create-hero"
+                    type="button"
+                    class="btn-submodal-cancel"
+                  >
+                    Cancel
                   </button>
-                  <button type="button" class="element-choice-btn" data-element="Fire">
-                    <span>🔥 FIRE (ไฟ)</span>
-                    <span class="element-choice-sub">Champion: Lu Bu (ลิโป้)</span>
-                  </button>
-                  <button type="button" class="element-choice-btn" data-element="Earth">
-                    <span>🌍 EARTH (ดิน)</span>
-                    <span class="element-choice-sub">Champion: Adam (อดัม)</span>
-                  </button>
-                  <button type="button" class="element-choice-btn" data-element="Wind">
-                    <span>🌪️ WIND (ลม)</span>
-                    <span class="element-choice-sub">Champion: Thor (ธอร์)</span>
+                  <button
+                    id="btn-submit-create-hero"
+                    type="submit"
+                    class="btn-submodal-submit"
+                  >
+                    Create Hero
                   </button>
                 </div>
-              </div>
-
-              <div class="submodal-actions">
-                <button id="btn-cancel-create-hero" type="button" class="btn-submodal-cancel">Cancel</button>
-                <button id="btn-submit-create-hero" type="submit" class="btn-submodal-submit">Create Hero</button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
 
-        <!-- Submodal: Delete Hero Confirmation -->
-        <div id="delete-hero-submodal" class="submodal-backdrop" style="display: none;">
-          <div class="submodal-content">
-            <h3 style="margin: 0; color: #f87171; font-size: 16px;">⚠️ DELETE HERO</h3>
-            <p id="delete-hero-prompt" style="margin: 0; font-size: 12px; color: #cbd5e1;"></p>
+          <!-- Submodal: Delete Hero Confirmation -->
+          <div
+            id="delete-hero-submodal"
+            class="submodal-backdrop"
+            style="display: none"
+          >
+            <div class="submodal-content">
+              <h3 style="margin: 0; color: #f87171; font-size: 16px">
+                ⚠️ DELETE HERO
+              </h3>
+              <p
+                id="delete-hero-prompt"
+                style="margin: 0; font-size: 12px; color: #cbd5e1"
+              ></p>
 
-            <div id="delete-hero-error" class="auth-error-banner" style="display: none;"></div>
+              <div
+                id="delete-hero-error"
+                class="auth-error-banner"
+                style="display: none"
+              ></div>
 
-            <form id="delete-hero-form" style="display: flex; flex-direction: column; gap: 12px;">
-              <div class="auth-input-group">
-                <label for="delete-hero-confirm-name">Confirm Hero Name</label>
-                <input id="delete-hero-confirm-name" type="text" placeholder="Type hero name to confirm" required />
-              </div>
+              <form
+                id="delete-hero-form"
+                style="display: flex; flex-direction: column; gap: 12px"
+              >
+                <div class="auth-input-group">
+                  <label for="delete-hero-confirm-name"
+                    >Confirm Hero Name</label
+                  >
+                  <input
+                    id="delete-hero-confirm-name"
+                    type="text"
+                    placeholder="Type hero name to confirm"
+                    required
+                  />
+                </div>
 
-              <div class="submodal-actions">
-                <button id="btn-cancel-delete-hero" type="button" class="btn-submodal-cancel">Cancel</button>
-                <button id="btn-submit-delete-hero" type="submit" class="btn-submodal-danger">Confirm Delete</button>
-              </div>
-            </form>
+                <div class="submodal-actions">
+                  <button
+                    id="btn-cancel-delete-hero"
+                    type="button"
+                    class="btn-submodal-cancel"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    id="btn-submit-delete-hero"
+                    type="submit"
+                    class="btn-submodal-danger"
+                  >
+                    Confirm Delete
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Character Status & Stat Points Modal Overlay -->
-    <div id="character-modal">
-      <div class="character-card">
-        <div class="roster-header">
-          <div class="roster-header-titles">
-            <h2>🧙 HERO CHARACTER PROFILE</h2>
-            <p>View Attributes, track Experience (EXP), and allocate Stat Points</p>
-          </div>
-          <button id="btn-close-char-modal" class="btn-close-modal" title="Close (Hotkey: Esc or C)">✕ Close</button>
-        </div>
-
-        <div class="character-body">
-          <div class="char-overview-box">
-            <div class="char-avatar-row">
-              <div class="char-avatar-circle" style="overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a;">
-                <img src="/assets/characters/hero_portrait.png" alt="Hero Portrait" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: pixelated;" onerror="this.parentElement.innerHTML='🧙'" />
-              </div>
-              <div>
-                <div id="char-name-title" class="char-name-title">Hero Lv.5 [Water]</div>
-                <div id="char-exp-text" class="char-sub-text">EXP: 0 / 559 (0%)</div>
-                <div class="exp-bar-container">
-                  <div id="char-exp-bar" class="exp-bar-fill" style="width: 0%;"></div>
-                </div>
-              </div>
+      <!-- Character Status & Stat Points Modal Overlay -->
+      <div id="character-modal">
+        <div class="character-card">
+          <div class="roster-header">
+            <div class="roster-header-titles">
+              <h2>🧙 HERO CHARACTER PROFILE</h2>
+              <p>
+                View Attributes, track Experience (EXP), and allocate Stat
+                Points
+              </p>
             </div>
-            <div class="char-points-callout">
-              <span>Distributable Stat Points:</span>
-              <span id="char-stat-points-val" class="stat-points-badge">0 Points</span>
-            </div>
+            <button
+              id="btn-close-char-modal"
+              class="btn-close-modal"
+              title="Close (Hotkey: Esc or C)"
+            >
+              ✕ Close
+            </button>
           </div>
 
-          <div class="attributes-grid">
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">⚔️</span>
+          <div class="character-body">
+            <div class="char-overview-box">
+              <div class="char-avatar-row">
+                <div
+                  class="char-avatar-circle"
+                  style="
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #0f172a;
+                  "
+                >
+                  <img
+                    src="/assets/characters/hero_portrait.png"
+                    alt="Hero Portrait"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      border-radius: 50%;
+                      image-rendering: pixelated;
+                    "
+                    onerror="this.parentElement.innerHTML = '🧙'"
+                  />
+                </div>
                 <div>
-                  <div class="attr-name">ATK (Attack)</div>
-                  <div class="attr-desc">Increases physical melee and skill damage</div>
+                  <div id="char-name-title" class="char-name-title">
+                    Hero Lv.5 [Water]
+                  </div>
+                  <div id="char-exp-text" class="char-sub-text">
+                    EXP: 0 / 559 (0%)
+                  </div>
+                  <div class="exp-bar-container">
+                    <div
+                      id="char-exp-bar"
+                      class="exp-bar-fill"
+                      style="width: 0%"
+                    ></div>
+                  </div>
                 </div>
               </div>
-              <div class="attr-val-box">
-                <span id="val-atk" class="attr-val">28</span>
-                <button class="btn-stat-plus" data-attr="atk" title="Allocate 1 Stat Point (+1 ATK)">+ 1</button>
+              <div class="char-points-callout">
+                <span>Distributable Stat Points:</span>
+                <span id="char-stat-points-val" class="stat-points-badge"
+                  >0 Points</span
+                >
               </div>
             </div>
 
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">🛡️</span>
-                <div>
-                  <div class="attr-name">DEF (Defense)</div>
-                  <div class="attr-desc">Reduces incoming damage & grants +10 Max HP</div>
+            <div class="equipment-paperdoll-section">
+              <div class="paperdoll-header">
+                <span>⚔️ VÖLUNDR EQUIPMENT (อุปกรณ์สวมใส่)</span>
+                <span style="font-size: 11px; color: #94a3b8"
+                  >Click item to unequip</span
+                >
+              </div>
+              <div id="hero-equipment-slots" class="paperdoll-slots-grid"></div>
+            </div>
+
+            <div class="attributes-grid">
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">⚔️</span>
+                  <div>
+                    <div class="attr-name">ATK (Attack)</div>
+                    <div class="attr-desc">
+                      Increases physical melee and skill damage
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="attr-val-box">
-                <span id="val-def" class="attr-val">18</span>
-                <button class="btn-stat-plus" data-attr="def" title="Allocate 1 Stat Point (+1 DEF, +10 HP)">+ 1</button>
-              </div>
-            </div>
-
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">✨</span>
-                <div>
-                  <div class="attr-name">INT (Intelligence)</div>
-                  <div class="attr-desc">Increases magical potency & grants +5 Max SP</div>
-                </div>
-              </div>
-              <div class="attr-val-box">
-                <span id="val-int" class="attr-val">12</span>
-                <button class="btn-stat-plus" data-attr="int" title="Allocate 1 Stat Point (+1 INT, +5 SP)">+ 1</button>
-              </div>
-            </div>
-
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">⚡</span>
-                <div>
-                  <div class="attr-name">AGI (Agility)</div>
-                  <div class="attr-desc">Determines turn order & unlocks simultaneous Combos</div>
-                </div>
-              </div>
-              <div class="attr-val-box">
-                <span id="val-agi" class="attr-val">22</span>
-                <button class="btn-stat-plus" data-attr="agi" title="Allocate 1 Stat Point (+1 AGI)">+ 1</button>
-              </div>
-            </div>
-
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">❤️</span>
-                <div>
-                  <div class="attr-name">Health Points (HP)</div>
-                  <div class="attr-desc">Maximum survivability pool</div>
-                </div>
-              </div>
-              <div class="attr-val-box">
-                <span id="val-hp" class="attr-val">120 / 120</span>
-              </div>
-            </div>
-
-            <div class="attr-row">
-              <div class="attr-label">
-                <span class="attr-icon">💧</span>
-                <div>
-                  <div class="attr-name">Spirit Points (SP)</div>
-                  <div class="attr-desc">Energy required for elemental skills</div>
-                </div>
-              </div>
-              <div class="attr-val-box">
-                <span id="val-sp" class="attr-val">50 / 50</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="roster-footer">
-          <button id="btn-close-char-bottom" class="btn-confirm-formation">
-            ✔️ Done
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Inventory & Item Consumption Modal Overlay -->
-    <div id="inventory-modal">
-      <div class="inventory-card">
-        <div class="inventory-header">
-          <div class="inventory-header-titles">
-            <h2>🎒 กระเป๋าสัมภาระ (INVENTORY)</h2>
-            <p>จัดการไอเทมยา เสบียง และใบวาร์ป (ความจุ 20 ช่อง)</p>
-          </div>
-          <button id="btn-close-inv-modal" class="btn-close-modal" title="Close (Hotkey: Esc or I)">✕ Close</button>
-        </div>
-
-        <div class="inventory-body">
-          <!-- Left Column: 20-Slot Grid -->
-          <div class="inventory-grid-wrap">
-            <div class="inventory-grid-title">
-              <span id="inv-capacity-header">SLOTS (3 / 20)</span>
-              <span>คลิกที่ช่องเพื่อดูไอเทม</span>
-            </div>
-            <div id="inv-grid-container" class="inventory-grid">
-              <!-- Dynamically populated 20 slots -->
-            </div>
-            <div class="inventory-gold-bar">
-              <span>🪙 เหรียญทอง (GOLD)</span>
-              <span id="inv-gold-val" class="inventory-gold-val">200 Gold</span>
-            </div>
-          </div>
-
-          <!-- Right Column: Item Inspector -->
-          <div class="inv-inspector">
-            <div id="inv-inspector-empty" class="inv-inspector-empty">
-              <div style="font-size: 32px;">🎒</div>
-              <div>เลือกไอเทมในกระเป๋าเพื่อดูรายละเอียดและใช้งาน</div>
-            </div>
-
-            <div id="inv-inspector-details" class="inv-inspector-details" style="display: none;">
-              <div class="inv-item-hero-row">
-                <div id="inv-detail-icon" class="inv-inspector-icon">🥟</div>
-                <div>
-                  <div id="inv-detail-name" class="inv-item-name">Steamed Bun</div>
-                  <span id="inv-detail-badge" class="inv-item-type-badge badge-hp-restore">HP Restore (+80)</span>
-                </div>
-              </div>
-
-              <div id="inv-detail-desc" class="inv-item-desc">
-                A hot, freshly steamed bun that restores 80 HP to a single ally.
-              </div>
-
-              <div class="inv-item-meta">
-                <span>ราคาขาย: <b id="inv-detail-price" style="color: #fbbf24;">20 G</b></span>
-                <span>จำนวนที่มี: <b id="inv-detail-qty" style="color: #38bdf8;">x5</b></span>
-              </div>
-
-              <div class="inv-target-section">
-                <div id="inv-target-title" class="inv-target-title">เลือกเป้าหมายที่จะใช้:</div>
-                <div class="inv-action-row">
-                  <button id="btn-use-item-scroll" class="btn-inv-use" style="background: #7c3aed; display: none;">
-                    ⚡ ใช้วาร์ปกลับเมือง (Teleport to Novice Town)
-                  </button>
-                  <button id="btn-use-item-hero" class="btn-inv-use">
-                    🧙 ใช้กับ Hero (<span id="inv-hero-hp-label">120/120 HP</span>)
-                  </button>
-                  <button id="btn-use-item-beast" class="btn-inv-use">
-                    🦁 ใช้กับ Active Beast (<span id="inv-beast-hp-label">60/60 HP</span>)
-                  </button>
-                  <button id="btn-drop-item" class="btn-inv-drop">
-                    🗑️ ทิ้งไอเทม 1 ชิ้น (Drop 1)
+                <div class="attr-val-box">
+                  <span id="val-atk" class="attr-val">28</span>
+                  <button
+                    class="btn-stat-plus"
+                    data-attr="atk"
+                    title="Allocate 1 Stat Point (+1 ATK)"
+                  >
+                    + 1
                   </button>
                 </div>
               </div>
 
-              <div id="inv-feedback-msg" class="inv-feedback-msg"></div>
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">🛡️</span>
+                  <div>
+                    <div class="attr-name">DEF (Defense)</div>
+                    <div class="attr-desc">
+                      Reduces incoming damage & grants +10 Max HP
+                    </div>
+                  </div>
+                </div>
+                <div class="attr-val-box">
+                  <span id="val-def" class="attr-val">18</span>
+                  <button
+                    class="btn-stat-plus"
+                    data-attr="def"
+                    title="Allocate 1 Stat Point (+1 DEF, +10 HP)"
+                  >
+                    + 1
+                  </button>
+                </div>
+              </div>
+
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">✨</span>
+                  <div>
+                    <div class="attr-name">INT (Intelligence)</div>
+                    <div class="attr-desc">
+                      Increases magical potency & grants +5 Max SP
+                    </div>
+                  </div>
+                </div>
+                <div class="attr-val-box">
+                  <span id="val-int" class="attr-val">12</span>
+                  <button
+                    class="btn-stat-plus"
+                    data-attr="int"
+                    title="Allocate 1 Stat Point (+1 INT, +5 SP)"
+                  >
+                    + 1
+                  </button>
+                </div>
+              </div>
+
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">⚡</span>
+                  <div>
+                    <div class="attr-name">AGI (Agility)</div>
+                    <div class="attr-desc">
+                      Determines turn order & unlocks simultaneous Combos
+                    </div>
+                  </div>
+                </div>
+                <div class="attr-val-box">
+                  <span id="val-agi" class="attr-val">22</span>
+                  <button
+                    class="btn-stat-plus"
+                    data-attr="agi"
+                    title="Allocate 1 Stat Point (+1 AGI)"
+                  >
+                    + 1
+                  </button>
+                </div>
+              </div>
+
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">❤️</span>
+                  <div>
+                    <div class="attr-name">Health Points (HP)</div>
+                    <div class="attr-desc">Maximum survivability pool</div>
+                  </div>
+                </div>
+                <div class="attr-val-box">
+                  <span id="val-hp" class="attr-val">120 / 120</span>
+                </div>
+              </div>
+
+              <div class="attr-row">
+                <div class="attr-label">
+                  <span class="attr-icon">💧</span>
+                  <div>
+                    <div class="attr-name">Spirit Points (SP)</div>
+                    <div class="attr-desc">
+                      Energy required for elemental skills
+                    </div>
+                  </div>
+                </div>
+                <div class="attr-val-box">
+                  <span id="val-sp" class="attr-val">50 / 50</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="roster-footer">
-          <button id="btn-close-inv-bottom" class="btn-confirm-formation">
-            ✔️ เรียบร้อย (Done)
-          </button>
+          <div class="roster-footer">
+            <button id="btn-close-char-bottom" class="btn-confirm-formation">
+              ✔️ Done
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- NPC Dialogue Modal Overlay -->
-    <div id="dialogue-modal">
-      <div class="dialogue-card">
-        <div class="dialogue-header">
-          <div id="dialogue-avatar" class="dialogue-avatar">💬</div>
-          <div class="dialogue-speaker-info">
-            <div id="dialogue-speaker-name" class="dialogue-speaker-name">ชื่อ NPC</div>
-            <div id="dialogue-speaker-title" class="dialogue-speaker-title">ตำแหน่ง / อาชีพ</div>
-          </div>
-          <button id="dialogue-btn-close" class="dialogue-btn-close" title="Close (Esc)">✕</button>
-        </div>
-        <div id="dialogue-text" class="dialogue-body">
-          ข้อความบทสนทนา...
-        </div>
-        <div id="dialogue-options-grid" class="dialogue-options-grid">
-          <!-- Dynamic dialogue options -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Merchant Shop Modal Overlay -->
-    <div id="shop-modal">
-      <div class="shop-card">
-        <div class="shop-header">
-          <div class="shop-title-box">
-            <div class="shop-title-icon">🏪</div>
-            <div id="shop-title-text" class="shop-title-text">ร้านค้าทั่วไป (General Store)</div>
-          </div>
-          <div class="shop-header-right">
-            <div class="shop-gold-badge">
-              <span>🪙</span>
-              <span id="shop-gold-val">0 G</span>
+      <!-- Inventory & Item Consumption Modal Overlay -->
+      <div id="inventory-modal">
+        <div class="inventory-card">
+          <div class="inventory-header">
+            <div class="inventory-header-titles">
+              <h2>🎒 กระเป๋าสัมภาระ (INVENTORY)</h2>
+              <p>จัดการไอเทมยา เสบียง และใบวาร์ป (ความจุ 20 ช่อง)</p>
             </div>
-            <button id="shop-btn-close" class="shop-btn-close" title="Close (Esc)">✕</button>
+            <button
+              id="btn-close-inv-modal"
+              class="btn-close-modal"
+              title="Close (Hotkey: Esc or I)"
+            >
+              ✕ Close
+            </button>
           </div>
-        </div>
 
-        <div class="shop-tabs-row">
-          <button id="shop-tab-buy" class="shop-tab-btn active">🛒 ซื้อสินค้า (Buy)</button>
-          <button id="shop-tab-sell" class="shop-tab-btn">🪙 ขายสินค้า (Sell)</button>
-        </div>
-
-        <div class="shop-body">
-          <div id="shop-items-list" class="shop-items-list">
-            <!-- Dynamic items list -->
-          </div>
-        </div>
-
-        <div class="shop-footer">
-          <div class="shop-transact-row">
-            <div class="shop-qty-control">
-              <button id="shop-qty-minus" class="shop-qty-btn">-</button>
-              <input type="number" id="shop-qty-input" class="shop-qty-input" value="1" min="1" max="99" />
-              <button id="shop-qty-plus" class="shop-qty-btn">+</button>
-              <div class="shop-qty-shortcuts">
-                <button id="shop-qty-x1" class="shop-shortcut-btn">x1</button>
-                <button id="shop-qty-x5" class="shop-shortcut-btn">x5</button>
-                <button id="shop-qty-x10" class="shop-shortcut-btn">x10</button>
-                <button id="shop-qty-max" class="shop-shortcut-btn">Max</button>
+          <div class="inventory-body">
+            <!-- Left Column: 20-Slot Grid -->
+            <div class="inventory-grid-wrap">
+              <div class="inventory-grid-title">
+                <span id="inv-capacity-header">SLOTS (3 / 20)</span>
+                <span>คลิกที่ช่องเพื่อดูไอเทม</span>
+              </div>
+              <div id="inv-grid-container" class="inventory-grid">
+                <!-- Dynamically populated 20 slots -->
+              </div>
+              <div class="inventory-gold-bar">
+                <span>🪙 เหรียญทอง (GOLD)</span>
+                <span id="inv-gold-val" class="inventory-gold-val"
+                  >200 Gold</span
+                >
               </div>
             </div>
 
-            <div class="shop-total-box">
-              <span>ยอดรวม:</span>
-              <span id="shop-total-val" class="shop-total-val">0 G</span>
+            <!-- Right Column: Item Inspector -->
+            <div class="inv-inspector">
+              <div id="inv-inspector-empty" class="inv-inspector-empty">
+                <div style="font-size: 32px">🎒</div>
+                <div>เลือกไอเทมในกระเป๋าเพื่อดูรายละเอียดและใช้งาน</div>
+              </div>
+
+              <div
+                id="inv-inspector-details"
+                class="inv-inspector-details"
+                style="display: none"
+              >
+                <div class="inv-item-hero-row">
+                  <div id="inv-detail-icon" class="inv-inspector-icon">🥟</div>
+                  <div>
+                    <div id="inv-detail-name" class="inv-item-name">
+                      Steamed Bun
+                    </div>
+                    <span
+                      id="inv-detail-badge"
+                      class="inv-item-type-badge badge-hp-restore"
+                      >HP Restore (+80)</span
+                    >
+                  </div>
+                </div>
+
+                <div id="inv-detail-desc" class="inv-item-desc">
+                  A hot, freshly steamed bun that restores 80 HP to a single
+                  ally.
+                </div>
+
+                <div class="inv-item-meta">
+                  <span
+                    >ราคาขาย:
+                    <b id="inv-detail-price" style="color: #fbbf24"
+                      >20 G</b
+                    ></span
+                  >
+                  <span
+                    >จำนวนที่มี:
+                    <b id="inv-detail-qty" style="color: #38bdf8">x5</b></span
+                  >
+                </div>
+
+                <div class="inv-target-section">
+                  <div id="inv-target-title" class="inv-target-title">
+                    เลือกเป้าหมายที่จะใช้:
+                  </div>
+                  <div class="inv-action-row">
+                    <button
+                      id="btn-use-item-scroll"
+                      class="btn-inv-use"
+                      style="background: #7c3aed; display: none"
+                    >
+                      ⚡ ใช้วาร์ปกลับเมือง (Teleport to Novice Town)
+                    </button>
+                    <button id="btn-use-item-hero" class="btn-inv-use">
+                      🧙 ใช้กับ Hero (<span id="inv-hero-hp-label"
+                        >120/120 HP</span
+                      >)
+                    </button>
+                    <button id="btn-use-item-beast" class="btn-inv-use">
+                      🦁 ใช้กับ Active Beast (<span id="inv-beast-hp-label"
+                        >60/60 HP</span
+                      >)
+                    </button>
+                    <button
+                      id="btn-equip-item-hero"
+                      class="btn-inv-use"
+                      style="background: #2563eb; display: none"
+                    >
+                      ⚔️ สวมใส่ให้ Hero (<span id="inv-hero-equip-label"
+                        >ตัวหลัก</span
+                      >)
+                    </button>
+                    <button
+                      id="btn-equip-item-beast"
+                      class="btn-inv-use"
+                      style="background: #d97706; display: none"
+                    >
+                      🛡️ สวมใส่ให้ Champion (<span id="inv-beast-equip-label"
+                        >ขุนพล</span
+                      >)
+                    </button>
+                    <button id="btn-drop-item" class="btn-inv-drop">
+                      🗑️ ทิ้งไอเทม 1 ชิ้น (Drop 1)
+                    </button>
+                  </div>
+                </div>
+
+                <div id="inv-feedback-msg" class="inv-feedback-msg"></div>
+              </div>
             </div>
           </div>
 
-          <button id="shop-confirm-btn" class="shop-confirm-btn btn-buy">
-            🛒 ซื้อสินค้า
-          </button>
+          <div class="roster-footer">
+            <button id="btn-close-inv-bottom" class="btn-confirm-formation">
+              ✔️ เรียบร้อย (Done)
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Beast Roster & Formation Grid Modal Overlay -->
-    <div id="roster-modal">
-      <div class="roster-card">
-        <div class="roster-header">
-          <div class="roster-header-titles">
-            <h2>🐾 BEAST ROSTER & FORMATION GRID</h2>
-            <p>Manage captured Beasts and configure 2x5 Formation Grid tactics</p>
+      <!-- NPC Dialogue Modal Overlay -->
+      <div id="dialogue-modal">
+        <div class="dialogue-card">
+          <div class="dialogue-header">
+            <div id="dialogue-avatar" class="dialogue-avatar">💬</div>
+            <div class="dialogue-speaker-info">
+              <div id="dialogue-speaker-name" class="dialogue-speaker-name">
+                ชื่อ NPC
+              </div>
+              <div id="dialogue-speaker-title" class="dialogue-speaker-title">
+                ตำแหน่ง / อาชีพ
+              </div>
+            </div>
+            <button
+              id="dialogue-btn-close"
+              class="dialogue-btn-close"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
           </div>
-          <button id="btn-close-modal" class="btn-close-modal" title="Close (Hotkey: Esc or B)">✕ Close</button>
+          <div id="dialogue-text" class="dialogue-body">ข้อความบทสนทนา...</div>
+          <div id="dialogue-options-grid" class="dialogue-options-grid">
+            <!-- Dynamic dialogue options -->
+          </div>
         </div>
+      </div>
 
-        <div class="roster-body">
-          <!-- Left Column: Beast Roster -->
-          <div class="roster-col-left">
-            <div class="roster-col-title">
-              <span id="roster-capacity-header">BEAST ROSTER (1/10)</span>
+      <!-- Merchant Shop Modal Overlay -->
+      <div id="shop-modal">
+        <div class="shop-card">
+          <div class="shop-header">
+            <div class="shop-title-box">
+              <div class="shop-title-icon">🏪</div>
+              <div id="shop-title-text" class="shop-title-text">
+                ร้านค้าทั่วไป (General Store)
+              </div>
             </div>
-            <div id="beast-list-container" class="beast-list-container">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-
-          <!-- Right Column: Formation Grid -->
-          <div class="roster-col-right">
-            <div class="roster-col-title">
-              <span>TACTICAL FORMATION (2x5 GRID)</span>
-            </div>
-
-            <!-- Unit Selection Group -->
-            <div class="unit-switch-group">
-              <button id="btn-select-hero" class="btn-unit-select selected-hero">
-                🧙 Move Hero
+            <div class="shop-header-right">
+              <div class="shop-gold-badge">
+                <span>🪙</span>
+                <span id="shop-gold-val">0 G</span>
+              </div>
+              <button
+                id="shop-btn-close"
+                class="shop-btn-close"
+                title="Close (Esc)"
+              >
+                ✕
               </button>
-              <button id="btn-select-beast" class="btn-unit-select">
-                🦁 Move Active Beast
-              </button>
+            </div>
+          </div>
+
+          <div class="shop-tabs-row">
+            <button id="shop-tab-buy" class="shop-tab-btn active">
+              🛒 ซื้อสินค้า (Buy)
+            </button>
+            <button id="shop-tab-sell" class="shop-tab-btn">
+              🪙 ขายสินค้า (Sell)
+            </button>
+          </div>
+
+          <div class="shop-body">
+            <div id="shop-items-list" class="shop-items-list">
+              <!-- Dynamic items list -->
+            </div>
+          </div>
+
+          <div class="shop-footer">
+            <div class="shop-transact-row">
+              <div class="shop-qty-control">
+                <button id="shop-qty-minus" class="shop-qty-btn">-</button>
+                <input
+                  type="number"
+                  id="shop-qty-input"
+                  class="shop-qty-input"
+                  value="1"
+                  min="1"
+                  max="99"
+                />
+                <button id="shop-qty-plus" class="shop-qty-btn">+</button>
+                <div class="shop-qty-shortcuts">
+                  <button id="shop-qty-x1" class="shop-shortcut-btn">x1</button>
+                  <button id="shop-qty-x5" class="shop-shortcut-btn">x5</button>
+                  <button id="shop-qty-x10" class="shop-shortcut-btn">
+                    x10
+                  </button>
+                  <button id="shop-qty-max" class="shop-shortcut-btn">
+                    Max
+                  </button>
+                </div>
+              </div>
+
+              <div class="shop-total-box">
+                <span>ยอดรวม:</span>
+                <span id="shop-total-val" class="shop-total-val">0 G</span>
+              </div>
             </div>
 
-            <!-- Formation Grid Rows -->
-            <div class="formation-grid-section">
-              <div class="row-header front">--- FRONT ROW (Intercepts Melee Attacks) ---</div>
-              <div id="grid-front-row" class="grid-slots-row">
-                <!-- 5 slots: Col 0..4 -->
-              </div>
+            <button id="shop-confirm-btn" class="shop-confirm-btn btn-buy">
+              🛒 ซื้อสินค้า
+            </button>
+          </div>
+        </div>
+      </div>
 
-              <div class="row-header back" style="margin-top: 6px;">--- BACK ROW (Shielded by Front Row) ---</div>
-              <div id="grid-back-row" class="grid-slots-row">
-                <!-- 5 slots: Col 0..4 -->
+      <!-- Beast Roster & Formation Grid Modal Overlay -->
+      <div id="roster-modal">
+        <div class="roster-card">
+          <div class="roster-header">
+            <div class="roster-header-titles">
+              <h2>🐾 BEAST ROSTER & FORMATION GRID</h2>
+              <p>
+                Manage captured Beasts and configure 2x5 Formation Grid tactics
+              </p>
+            </div>
+            <button
+              id="btn-close-modal"
+              class="btn-close-modal"
+              title="Close (Hotkey: Esc or B)"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div class="roster-body">
+            <!-- Left Column: Beast Roster -->
+            <div class="roster-col-left">
+              <div class="roster-col-title">
+                <span id="roster-capacity-header">BEAST ROSTER (1/10)</span>
+              </div>
+              <div id="beast-list-container" class="beast-list-container">
+                <!-- Dynamically populated -->
               </div>
             </div>
 
-            <!-- Formation Summary & Tips -->
-            <div class="formation-summary-box">
-              <div id="formation-summary-text" style="font-weight: 500; margin-bottom: 6px;">
-                Hero: Front Row [Col 2] | Aqua Fin: Back Row [Col 2]
+            <!-- Right Column: Formation Grid -->
+            <div class="roster-col-right">
+              <div class="roster-col-title">
+                <span>TACTICAL FORMATION (2x5 GRID)</span>
               </div>
-              <div class="tactics-tip">
-                💡 <b>TS Online Tactics:</b> Front Row intercepts enemy melee attacks, protecting the Back Row unit in the same column until the front unit is cleared.
+
+              <!-- Unit Selection Group -->
+              <div class="unit-switch-group">
+                <button
+                  id="btn-select-hero"
+                  class="btn-unit-select selected-hero"
+                >
+                  🧙 Move Hero
+                </button>
+                <button id="btn-select-beast" class="btn-unit-select">
+                  🦁 Move Active Beast
+                </button>
+              </div>
+
+              <!-- Formation Grid Rows -->
+              <div class="formation-grid-section">
+                <div class="row-header front">
+                  --- FRONT ROW (Intercepts Melee Attacks) ---
+                </div>
+                <div id="grid-front-row" class="grid-slots-row">
+                  <!-- 5 slots: Col 0..4 -->
+                </div>
+
+                <div class="row-header back" style="margin-top: 6px">
+                  --- BACK ROW (Shielded by Front Row) ---
+                </div>
+                <div id="grid-back-row" class="grid-slots-row">
+                  <!-- 5 slots: Col 0..4 -->
+                </div>
+              </div>
+
+              <!-- Formation Summary & Tips -->
+              <div class="formation-summary-box">
+                <div
+                  id="formation-summary-text"
+                  style="font-weight: 500; margin-bottom: 6px"
+                >
+                  Hero: Front Row [Col 2] | Aqua Fin: Back Row [Col 2]
+                </div>
+                <div class="tactics-tip">
+                  💡 <b>TS Online Tactics:</b> Front Row intercepts enemy melee
+                  attacks, protecting the Back Row unit in the same column until
+                  the front unit is cleared.
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="roster-footer">
-          <button id="btn-confirm-formation" class="btn-confirm-formation">
-            ✔️ Confirm & Close
-          </button>
+          <div class="roster-footer">
+            <button id="btn-confirm-formation" class="btn-confirm-formation">
+              ✔️ Confirm & Close
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Developer Debug / QA Toolbar Toggle Button -->
+      <button
+        id="btn-toggle-debug"
+        title="Toggle Developer QA Toolbar (Hotkey: ~ or T)"
+      >
+        🛠️ QA DEBUG [~]
+      </button>
+
+      <!-- Developer Debug Panel Drawer -->
+      <div id="debug-panel">
+        <div class="debug-header">
+          <span>🛠️ QA DEVELOPER TOOLBAR</span>
+          <button id="btn-close-debug" class="btn-debug-close">✕</button>
+        </div>
+        <div class="debug-body">
+          <div class="debug-section-title">🌟 EXP & LEVEL UP</div>
+          <div class="debug-btn-grid">
+            <button id="dbg-exp-500" class="btn-dbg">+500 EXP (Hero)</button>
+            <button id="dbg-exp-beast" class="btn-dbg">+500 EXP (Beast)</button>
+            <button
+              id="dbg-level-up"
+              class="btn-dbg"
+              style="background: #d97706; grid-column: span 2"
+            >
+              ⭐ Level Up ทันที
+            </button>
+            <button
+              id="dbg-stat-points"
+              class="btn-dbg"
+              style="grid-column: span 2"
+            >
+              ⭐ +5 Stat Points
+            </button>
+          </div>
+
+          <div class="debug-section-title">❤️ HEALTH & SPIRIT</div>
+          <div class="debug-btn-grid">
+            <button
+              id="dbg-full-heal"
+              class="btn-dbg"
+              style="background: #059669"
+            >
+              💖 ฟื้นฟูเลือด/มานาเต็ม
+            </button>
+            <button
+              id="dbg-hurt-hero"
+              class="btn-dbg"
+              style="background: #991b1b"
+            >
+              🩸 ลดเลือด -40 HP
+            </button>
+          </div>
+
+          <div class="debug-section-title">🦁 SPAWN BEASTS</div>
+          <div class="debug-btn-grid">
+            <button id="dbg-add-fire-beast" class="btn-dbg">
+              +Flame Imp (🔥)
+            </button>
+            <button id="dbg-add-wind-beast" class="btn-dbg">
+              +Gale Hawk (🌪️)
+            </button>
+            <button id="dbg-add-earth-beast" class="btn-dbg">
+              +Rock Boar (🌍)
+            </button>
+            <button id="dbg-add-water-beast" class="btn-dbg">
+              +Aqua Serpent (💧)
+            </button>
+          </div>
+
+          <div class="debug-section-title">🎒 INVENTORY & GOLD</div>
+          <div class="debug-btn-grid">
+            <button id="dbg-item-buns" class="btn-dbg">
+              +5 ซาลาเปา (Buns)
+            </button>
+            <button id="dbg-item-tea" class="btn-dbg">
+              +5 ชาสมุนไพร (Tea)
+            </button>
+            <button id="dbg-item-feather" class="btn-dbg">
+              +1 ขนนกฟีนิกซ์
+            </button>
+            <button
+              id="dbg-item-equipment"
+              class="btn-dbg"
+              style="background: #2563eb"
+            >
+              ⚔️ +Gear Set (อุปกรณ์)
+            </button>
+            <button
+              id="dbg-add-gold"
+              class="btn-dbg"
+              style="background: #d97706; grid-column: span 2"
+            >
+              +1,000 เหรียญทอง
+            </button>
+          </div>
+
+          <div class="debug-section-title">⚔️ ENCOUNTER & TELEPORT</div>
+          <div class="debug-btn-grid">
+            <button
+              id="dbg-instant-battle"
+              class="btn-dbg"
+              style="background: #7c3aed; grid-column: span 2"
+            >
+              ⚔️ ตัดเข้าสู้ทันที (Instant Battle)
+            </button>
+            <button id="dbg-warp-town" class="btn-dbg">
+              🏡 วาร์ปกลับเมือง
+            </button>
+            <button id="dbg-warp-meadow" class="btn-dbg">
+              🌾 วาร์ปไปทุ่งหญ้า
+            </button>
+            <button
+              id="dbg-warp-cave"
+              class="btn-dbg"
+              style="background: #1e293b; border-color: #64748b"
+            >
+              🪨 วาร์ปไปถ้ำกรวด
+            </button>
+            <button
+              id="dbg-warp-forest"
+              class="btn-dbg"
+              style="background: #064e3b; border-color: #059669"
+            >
+              🎋 วาร์ปไปป่าไผ่
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-container"></div>
+    </div>
+    <div id="status-bar">
+      Authoritative Colyseus Server Room &bull; TS Online Isometric Combat
+      Mechanics
     </div>
 
-    <!-- Developer Debug / QA Toolbar Toggle Button -->
-    <button id="btn-toggle-debug" title="Toggle Developer QA Toolbar (Hotkey: ~ or T)">
-      🛠️ QA DEBUG [~]
-    </button>
-
-    <!-- Developer Debug Panel Drawer -->
-    <div id="debug-panel">
-      <div class="debug-header">
-        <span>🛠️ QA DEVELOPER TOOLBAR</span>
-        <button id="btn-close-debug" class="btn-debug-close">✕</button>
-      </div>
-      <div class="debug-body">
-        <div class="debug-section-title">🌟 EXP & LEVEL UP</div>
-        <div class="debug-btn-grid">
-          <button id="dbg-exp-500" class="btn-dbg">+500 EXP (Hero)</button>
-          <button id="dbg-exp-beast" class="btn-dbg">+500 EXP (Beast)</button>
-          <button id="dbg-level-up" class="btn-dbg" style="background: #d97706; grid-column: span 2;">⭐ Level Up ทันที</button>
-          <button id="dbg-stat-points" class="btn-dbg" style="grid-column: span 2;">⭐ +5 Stat Points</button>
-        </div>
-
-        <div class="debug-section-title">❤️ HEALTH & SPIRIT</div>
-        <div class="debug-btn-grid">
-          <button id="dbg-full-heal" class="btn-dbg" style="background: #059669;">💖 ฟื้นฟูเลือด/มานาเต็ม</button>
-          <button id="dbg-hurt-hero" class="btn-dbg" style="background: #991b1b;">🩸 ลดเลือด -40 HP</button>
-        </div>
-
-        <div class="debug-section-title">🦁 SPAWN BEASTS</div>
-        <div class="debug-btn-grid">
-          <button id="dbg-add-fire-beast" class="btn-dbg">+Flame Imp (🔥)</button>
-          <button id="dbg-add-wind-beast" class="btn-dbg">+Gale Hawk (🌪️)</button>
-          <button id="dbg-add-earth-beast" class="btn-dbg">+Rock Boar (🌍)</button>
-          <button id="dbg-add-water-beast" class="btn-dbg">+Aqua Serpent (💧)</button>
-        </div>
-
-        <div class="debug-section-title">🎒 INVENTORY & GOLD</div>
-        <div class="debug-btn-grid">
-          <button id="dbg-item-buns" class="btn-dbg">+5 ซาลาเปา (Buns)</button>
-          <button id="dbg-item-tea" class="btn-dbg">+5 ชาสมุนไพร (Tea)</button>
-          <button id="dbg-item-feather" class="btn-dbg">+1 ขนนกฟีนิกซ์</button>
-          <button id="dbg-add-gold" class="btn-dbg" style="background: #d97706;">+1,000 เหรียญทอง</button>
-        </div>
-
-        <div class="debug-section-title">⚔️ ENCOUNTER & TELEPORT</div>
-        <div class="debug-btn-grid">
-          <button id="dbg-instant-battle" class="btn-dbg" style="background: #7c3aed; grid-column: span 2;">⚔️ ตัดเข้าสู้ทันที (Instant Battle)</button>
-          <button id="dbg-warp-town" class="btn-dbg">🏡 วาร์ปกลับเมือง</button>
-          <button id="dbg-warp-meadow" class="btn-dbg">🌾 วาร์ปไปทุ่งหญ้า</button>
-          <button id="dbg-warp-cave" class="btn-dbg" style="background: #1e293b; border-color: #64748b;">🪨 วาร์ปไปถ้ำกรวด</button>
-          <button id="dbg-warp-forest" class="btn-dbg" style="background: #064e3b; border-color: #059669;">🎋 วาร์ปไปป่าไผ่</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="game-container"></div>
-  </div>
-  <div id="status-bar">Authoritative Colyseus Server Room &bull; TS Online Isometric Combat Mechanics</div>
-
-  <script type="module" src="/src/main.ts"></script>
-</body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

@@ -4,13 +4,14 @@
  */
 
 export enum Element {
-  Earth = 'Earth',
-  Water = 'Water',
-  Fire = 'Fire',
-  Wind = 'Wind'
+  Earth = "Earth",
+  Water = "Water",
+  Fire = "Fire",
+  Wind = "Wind",
 }
 
-export type CombatActionType = 'attack' | 'skill' | 'defend' | 'pass' | 'capture' | 'item' | 'flee';
+export type CombatActionType =
+  "attack" | "skill" | "defend" | "pass" | "capture" | "item" | "flee";
 
 export interface CombatAction {
   type: CombatActionType;
@@ -41,6 +42,8 @@ export interface Combatant extends Attributes {
   statPoints?: number;
   action?: CombatAction;
   isDefending?: boolean;
+  equipment?: EntityEquipment;
+  baseAttributes?: Attributes;
 }
 
 export interface TeamFormation {
@@ -48,7 +51,7 @@ export interface TeamFormation {
   back: (Combatant | null)[];
 }
 
-export type BattleOutcome = 'ongoing' | 'victory' | 'defeat' | 'escaped';
+export type BattleOutcome = "ongoing" | "victory" | "defeat" | "escaped";
 
 export interface BattleState {
   round: number;
@@ -61,22 +64,22 @@ export interface BattleState {
 export type TeamActionsMap = Record<string, CombatAction>;
 
 export type BattleEventType =
-  | 'attack'
-  | 'skill'
-  | 'damage'
-  | 'blocked'
-  | 'combo'
-  | 'defend'
-  | 'pass'
-  | 'heal'
-  | 'sp_restore'
-  | 'revive'
-  | 'capture_success'
-  | 'capture_fail'
-  | 'faint'
-  | 'flee'
-  | 'victory'
-  | 'defeat';
+  | "attack"
+  | "skill"
+  | "damage"
+  | "blocked"
+  | "combo"
+  | "defend"
+  | "pass"
+  | "heal"
+  | "sp_restore"
+  | "revive"
+  | "capture_success"
+  | "capture_fail"
+  | "faint"
+  | "flee"
+  | "victory"
+  | "defeat";
 
 export interface BattleEvent {
   type: BattleEventType;
@@ -99,16 +102,16 @@ export interface TileCoord {
 }
 
 export type Direction =
-  | 'up'
-  | 'down'
-  | 'left'
-  | 'right'
-  | 'up-left'
-  | 'up-right'
-  | 'down-left'
-  | 'down-right';
+  | "up"
+  | "down"
+  | "left"
+  | "right"
+  | "up-left"
+  | "up-right"
+  | "down-left"
+  | "down-right";
 
-export type ZoneType = 'safe' | 'wild';
+export type ZoneType = "safe" | "wild";
 
 export interface ZoneBounds {
   minX: number;
@@ -151,7 +154,7 @@ export interface PortalDefinition {
 export interface NPCDialogueOption {
   id: string;
   label: string;
-  action: 'shop' | 'heal' | 'advice' | 'close';
+  action: "shop" | "heal" | "advice" | "close";
   response?: string;
 }
 
@@ -167,7 +170,8 @@ export interface NPCDefinition {
   shopItemIds?: string[];
 }
 
-export type MapTheme = 'meadow' | 'cave' | 'forest' | 'coliseum' | 'sanctuary' | 'abyss';
+export type MapTheme =
+  "meadow" | "cave" | "forest" | "coliseum" | "sanctuary" | "abyss";
 
 export interface MapConfig {
   id: string;
@@ -200,11 +204,11 @@ export interface MovementResult {
   };
   portalTriggered?: boolean;
   portal?: PortalDefinition;
-  reason?: 'out_of_bounds' | 'obstacle_blocked' | 'invalid_distance';
+  reason?: "out_of_bounds" | "obstacle_blocked" | "invalid_distance";
 }
 
 export interface FormationSlot {
-  row: 'front' | 'back';
+  row: "front" | "back";
   col: number; // 0..4
 }
 
@@ -218,7 +222,21 @@ export interface PlayerRosterState {
   };
 }
 
-export type ItemType = 'hp_restore' | 'sp_restore' | 'revive' | 'scroll' | 'loot';
+export type EquipmentSlot = "weapon" | "head" | "armor" | "boots" | "accessory";
+
+export type EntityEquipment = Record<EquipmentSlot, string | null>;
+
+export interface EquipmentStats {
+  atk?: number;
+  def?: number;
+  int?: number;
+  agi?: number;
+  maxHp?: number;
+  maxSp?: number;
+}
+
+export type ItemType =
+  "hp_restore" | "sp_restore" | "revive" | "scroll" | "loot" | "equipment";
 
 export interface ItemDefinition {
   id: string;
@@ -231,6 +249,9 @@ export interface ItemDefinition {
   stackMax: number;
   usableInCombat: boolean;
   usableOnOverworld: boolean;
+  slot?: EquipmentSlot;
+  stats?: EquipmentStats;
+  requiredLevel?: number;
 }
 
 export interface ItemStack {
