@@ -9,6 +9,7 @@ import {
 } from '../types.js';
 import { calculateDamage, getElementMultiplier, canTriggerCombo } from '../formulas.js';
 import { BattleSkillExecutor } from './battle-skill-executor.js';
+import { BattleSwapExecutor } from './battle-swap-executor.js';
 import { getItemDefinition } from '../inventory/item-database.js';
 
 export class BattleEngine {
@@ -19,11 +20,13 @@ export class BattleEngine {
   public static resolveTurn(
     state: BattleState,
     actions: TeamActionsMap,
-    rng: () => number = Math.random
+    rng: () => number = Math.random,
+    reserveBeasts?: Combatant[]
   ): TurnResolutionResult {
     // 1. Deep clone state
     const nextState: BattleState = JSON.parse(JSON.stringify(state));
     const events: BattleEvent[] = [];
+    const effectiveReserves: Combatant[] = reserveBeasts ?? (nextState.alliesReserve || []);
 
     // Helper to find combatant in state and its position
     function findCombatant(id: string): { unit: Combatant; team: 'allies' | 'enemies'; row: 'front' | 'back'; col: number } | null {
@@ -53,17 +56,10 @@ export class BattleEngine {
         row.forEach(slot => {
           if (slot && slot.hp > 0) {
             slot.isDefending = false;
-            if (actions[slot.id]) {
-              slot.action = actions[slot.id];
-            }
-            // Pre-process Defend action
+            if (actions[slot.id]) slot.action = actions[slot.id];
             if (slot.action?.type === 'defend') {
               slot.isDefending = true;
-              events.push({
-                type: 'defend',
-                actorId: slot.id,
-                message: `${slot.name} assumes a defensive guard!`
-              });
+              events.push({ type: 'defend', actorId: slot.id, message: `${slot.name} assumes a defensive guard!` });
             }
             allLivingUnits.push(slot);
           }
@@ -228,20 +224,24 @@ export class BattleEngine {
         const roll = rng();
         if (roll <= escapeChance) {
           nextState.outcome = 'escaped';
-          events.push({
-            type: 'flee',
-            actorId: actor.id,
-            message: `${actor.name} successfully escaped the battle!`
-          });
+          events.push({ type: 'flee', actorId: actor.id, message: `${actor.name} successfully escaped the battle!` });
           return { nextState, events };
         } else {
-          events.push({
-            type: 'flee',
-            actorId: actor.id,
-            message: `${actor.name} failed to escape!`
-          });
+          events.push({ type: 'flee', actorId: actor.id, message: `${actor.name} failed to escape!` });
           continue;
         }
+      }
+
+      if (actor.action.type === 'swap') {
+        BattleSwapExecutor.executeSwap({
+          nextState,
+          actor,
+          swapBeastId: actor.action.swapBeastId || '',
+          reserveBeasts: effectiveReserves,
+          events,
+          actedUnitIds
+        });
+        continue;
       }
 
       // Action requires a valid target

@@ -5,10 +5,10 @@ import {
   Element, BattleEngine, ProgressionEngine, InventoryManager, LootEngine,
   getItemDefinition, getItemIcon, getSkillDefinition,
   type Combatant, type BattleState, type CombatAction, type CombatActionType,
-  type BattleEvent, type InventoryState, type LootReward, type ItemStack
+  type BattleEvent, type InventoryState, type LootReward, type ItemStack, type PlayerRosterState
 } from '@poktsonline/shared';
 import { soundManager } from '../audio/SoundManager.js';
-import { BattleSkillMenuController } from '../ui/BattleSkillMenuController.js';
+import { BattleSkillMenuController, BattleSwapMenuController } from '../ui/index.js';
 
 export class BattleScene extends Phaser.Scene {
   private network!: BattleNetwork;
@@ -16,6 +16,7 @@ export class BattleScene extends Phaser.Scene {
 
   // Domain state
   private battleState!: BattleState;
+  private roster!: PlayerRosterState;
   private inventory: InventoryState = InventoryManager.createInitialInventory();
   private currentTurnActorId: string = 'hero_1';
   private selectedActionType: CombatActionType | null = null;
@@ -28,6 +29,7 @@ export class BattleScene extends Phaser.Scene {
   private timerProgressBar!: Phaser.GameObjects.Rectangle;
   private itemMenuContainer?: Phaser.GameObjects.Container;
   private skillMenuController?: BattleSkillMenuController;
+  private swapMenuController?: BattleSwapMenuController;
   private timerText!: Phaser.GameObjects.Text;
   private statusBannerText!: Phaser.GameObjects.Text;
   private activeActorText!: Phaser.GameObjects.Text;
@@ -40,6 +42,7 @@ export class BattleScene extends Phaser.Scene {
     spBar: Phaser.GameObjects.Rectangle;
     hpText: Phaser.GameObjects.Text;
     sprite: Phaser.GameObjects.Image;
+    nameText: Phaser.GameObjects.Text;
     badge: Phaser.GameObjects.Text;
     unit: Combatant;
     x: number;
@@ -55,7 +58,8 @@ export class BattleScene extends Phaser.Scene {
 
   init(data: any) {
     this.encounterData = data;
-    this.network = data.battleNetwork || new BattleNetwork();
+    this.network = data.battleNetwork || data.network || new BattleNetwork();
+    this.roster = data.roster;
     this.inventory = data.inventory || InventoryManager.createInitialInventory();
     this.stagedActions = {};
     this.selectedActionType = null;
@@ -370,6 +374,7 @@ export class BattleScene extends Phaser.Scene {
       spBar,
       hpText,
       sprite,
+      nameText,
       badge,
       unit,
       x,
@@ -381,103 +386,63 @@ export class BattleScene extends Phaser.Scene {
     const vis = this.combatantVisuals.get(actorId);
     if (!vis) return;
     const iconMap: Record<CombatActionType, string> = {
-      attack: '🗡️',
-      skill: '✨',
-      defend: '🛡️',
-      pass: '⏸️',
-      capture: '🕸️',
-      item: '🎒',
-      flee: '🏃'
+      attack: '🗡️', skill: '✨', defend: '🛡️', swap: '🔄', pass: '⏸️', capture: '🕸️', item: '🎒', flee: '🏃'
     };
     vis.badge.setText(iconMap[actionType] || '✔️');
     vis.badge.setVisible(true);
   }
 
   private clearAllStagingBadges() {
-    this.combatantVisuals.forEach(vis => {
-      vis.badge.setVisible(false);
-    });
+    this.combatantVisuals.forEach(vis => vis.badge.setVisible(false));
   }
 
   private createActionHUD() {
     const { width, height } = this.scale;
     const hudY = height - 100;
 
-    // HUD Panel Box
     const panelBg = this.add.rectangle(width / 2, hudY, 940, 140, 0x0f172a, 0.95);
     panelBg.setStrokeStyle(2, 0xd4af37, 0.8);
 
-    // Active Actor Tag
-    this.add.text(width / 2 - 380, hudY - 50, '👉 SELECTING ACTION FOR:', {
-      fontSize: '12px',
-      color: '#94a3b8',
-      fontStyle: 'bold'
-    });
+    this.add.text(width / 2 - 380, hudY - 50, '👉 SELECTING ACTION FOR:', { fontSize: '12px', color: '#94a3b8', fontStyle: 'bold' });
+    this.activeActorText = this.add.text(width / 2 - 200, hudY - 50, '🧙 Hero (Lv.5 Water)', { fontSize: '13px', color: '#38bdf8', fontStyle: 'bold' });
+    this.add.text(width / 2 + 100, hudY - 50, '⏳ TIME REMAINING:', { fontSize: '12px', color: '#94a3b8', fontStyle: 'bold' });
 
-    this.activeActorText = this.add.text(width / 2 - 200, hudY - 50, '🧙 Hero (Lv.5 Water)', {
-      fontSize: '13px',
-      color: '#38bdf8',
-      fontStyle: 'bold'
-    });
-
-    // 30s Countdown Timer Bar
-    this.add.text(width / 2 + 100, hudY - 50, '⏳ TIME REMAINING:', {
-      fontSize: '12px',
-      color: '#94a3b8',
-      fontStyle: 'bold'
-    });
-
-    const timerBg = this.add.rectangle(width / 2 + 280, hudY - 48, 140, 10, 0x1e293b);
+    this.add.rectangle(width / 2 + 280, hudY - 48, 140, 10, 0x1e293b);
     this.timerProgressBar = this.add.rectangle(width / 2 + 280, hudY - 48, 140, 10, 0x22c55e);
 
-    this.timerText = this.add.text(width / 2 + 370, hudY - 48, '30s', {
-      fontSize: '12px',
-      color: '#facc15',
-      fontStyle: 'bold'
-    }).setOrigin(0, 0.5);
+    this.timerText = this.add.text(width / 2 + 370, hudY - 48, '30s', { fontSize: '12px', color: '#facc15', fontStyle: 'bold' }).setOrigin(0, 0.5);
 
-    // Action Buttons (7 buttons including Pass)
+    // Action Buttons (8 buttons including Swap)
     const actions: { type: CombatActionType; label: string; icon: string; color: number }[] = [
       { type: 'attack', label: 'Attack', icon: '🗡️', color: 0xd97706 },
       { type: 'skill', label: 'Skill (Water)', icon: '✨', color: 0x2563eb },
-      { type: 'defend', label: 'Defend (-50%)', icon: '🛡️', color: 0x059669 },
-      { type: 'pass', label: 'Pass (Wait)', icon: '⏸️', color: 0x475569 },
+      { type: 'defend', label: 'Defend', icon: '🛡️', color: 0x059669 },
+      { type: 'swap', label: 'Swap', icon: '🔄', color: 0x0284c7 },
+      { type: 'pass', label: 'Pass', icon: '⏸️', color: 0x475569 },
       { type: 'capture', label: 'Capture', icon: '🕸️', color: 0x7c3aed },
       { type: 'item', label: 'Item', icon: '🎒', color: 0x334155 },
-      { type: 'flee', label: 'Flee Run', icon: '🏃', color: 0xdc2626 }
+      { type: 'flee', label: 'Flee', icon: '🏃', color: 0xdc2626 }
     ];
 
-    const btnW = 118;
+    const btnW = 104;
     const btnH = 44;
-    const totalW = actions.length * btnW + (actions.length - 1) * 8;
+    const totalW = actions.length * btnW + (actions.length - 1) * 6;
     const startX = width / 2 - totalW / 2 + btnW / 2;
     const btnY = hudY + 14;
 
     actions.forEach((act, idx) => {
-      const btnX = startX + idx * (btnW + 8);
+      const btnX = startX + idx * (btnW + 6);
       const btnContainer = this.add.container(btnX, btnY);
-
       const bg = this.add.rectangle(0, 0, btnW, btnH, act.color, 0.85);
       bg.setStrokeStyle(1, 0xfde047, 0.6);
-
-      const label = this.add.text(0, 0, `${act.icon} ${act.label}`, {
-        fontSize: '11px',
-        color: '#ffffff',
-        fontStyle: 'bold'
-      }).setOrigin(0.5, 0.5);
-
-      if (act.type === 'skill') {
-        this.skillButtonText = label;
-      }
-
+      const label = this.add.text(0, 0, `${act.icon} ${act.label}`, { fontSize: '11px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5, 0.5);
+      if (act.type === 'skill') this.skillButtonText = label;
       btnContainer.add([bg, label]);
       btnContainer.setSize(btnW, btnH);
       btnContainer.setInteractive({ useHandCursor: true });
-
       btnContainer.on('pointerover', () => bg.setFillStyle(act.color, 1.0));
       btnContainer.on('pointerout', () => bg.setFillStyle(act.color, 0.85));
       btnContainer.on('pointerdown', () => this.handleActionClick(act.type));
-
       this.actionButtons.push(btnContainer);
     });
 
@@ -505,6 +470,7 @@ export class BattleScene extends Phaser.Scene {
       this.itemMenuContainer = undefined;
     }
     this.skillMenuController?.hide();
+    this.swapMenuController?.hide();
 
     this.selectedActionType = actionType;
     this.selectedSkillId = null;
@@ -515,6 +481,34 @@ export class BattleScene extends Phaser.Scene {
       this.stagedActions[this.currentTurnActorId] = { type: actionType };
       this.updateActorStagingBadge(this.currentTurnActorId, actionType);
       this.advanceTurnInput();
+    } else if (actionType === 'swap') {
+      const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
+      const actor = activeVis?.unit;
+      if (!actor || !actor.isHero) {
+        this.statusBannerText.setText('Only the Hero can command companion swapping!');
+        this.statusBannerText.setColor('#ef4444');
+        return;
+      }
+      if (!this.swapMenuController) {
+        this.swapMenuController = new BattleSwapMenuController(this, {
+          onSelectReserveBeast: (beastId) => {
+            this.stagedActions[this.currentTurnActorId] = { type: 'swap', swapBeastId: beastId };
+            this.updateActorStagingBadge(this.currentTurnActorId, 'swap');
+            this.advanceTurnInput();
+          },
+          onCancelled: () => {
+            this.statusBannerText.setText('Action cancelled. Choose an action:');
+            this.statusBannerText.setColor('#ffffff');
+          },
+          onWarning: (msg) => {
+            this.statusBannerText.setText(msg);
+            this.statusBannerText.setColor('#ef4444');
+          }
+        });
+      }
+      this.swapMenuController.show(actor, this.roster?.beasts || [], this.roster?.activeBeastId);
+      this.statusBannerText.setText('Select a reserve companion to summon:');
+      this.statusBannerText.setColor('#38bdf8');
     } else if (actionType === 'skill') {
       const activeVis = this.combatantVisuals.get(this.currentTurnActorId);
       const actor = activeVis?.unit;
@@ -522,7 +516,7 @@ export class BattleScene extends Phaser.Scene {
 
       if (!this.skillMenuController) {
         this.skillMenuController = new BattleSkillMenuController(this, {
-          onSkillSelected: (skillId) => {
+          onSkillSelected: (skillId: string) => {
             const skillDef = getSkillDefinition(skillId);
             this.selectedSkillId = skillId;
             const validTargetIds = getValidTargets('skill', 'allies', this.battleState, undefined, skillDef?.category);
@@ -535,7 +529,7 @@ export class BattleScene extends Phaser.Scene {
             this.statusBannerText.setText('Action cancelled. Choose an action:');
             this.statusBannerText.setColor('#ffffff');
           },
-          onWarning: (msg) => {
+          onWarning: (msg: string) => {
             this.statusBannerText.setText(msg);
             this.statusBannerText.setColor('#ef4444');
           }
@@ -546,25 +540,18 @@ export class BattleScene extends Phaser.Scene {
       this.statusBannerText.setText(`Choose a skill for ${actor.name}:`);
       this.statusBannerText.setColor('#38bdf8');
     } else if (actionType === 'item') {
-      const usableItems = this.inventory.slots.filter(s => {
-        if (!s || s.quantity <= 0) return false;
-        const def = getItemDefinition(s.itemId);
-        return def && def.usableInCombat;
-      }) as ItemStack[];
-
+      const usableItems = this.inventory.slots.filter(s => s && s.quantity > 0 && getItemDefinition(s.itemId)?.usableInCombat) as ItemStack[];
       if (usableItems.length === 0) {
         this.cameras.main.shake(120, 0.005);
         this.statusBannerText.setText('No combat-usable items in Inventory!');
         this.statusBannerText.setColor('#ef4444');
         return;
       }
-
       this.showItemSelectionMenu(usableItems);
     } else {
       // Actions requiring target selection (attack, capture)
       const validTargetIds = getValidTargets(actionType, 'allies', this.battleState);
       this.highlightValidTargets(validTargetIds);
-
       this.statusBannerText.setText(`Select target for ${actionType.toUpperCase()}! (Highlighted)`);
       this.statusBannerText.setColor('#facc15');
     }
@@ -597,38 +584,24 @@ export class BattleScene extends Phaser.Scene {
       const icon = getItemIcon(item.itemId);
       const btnX = startX + idx * (btnWidth + 8);
       const btn = this.add.container(btnX, 0);
-
       const btnBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x1e293b, 0.95);
       btnBg.setStrokeStyle(1, 0x38bdf8, 0.6);
-
-      const label = this.add.text(0, 0, `${icon} ${def?.name.split(' ')[0] || item.itemId} (x${item.quantity})`, {
-        fontSize: '11px',
-        color: '#facc15',
-        fontStyle: 'bold'
-      }).setOrigin(0.5, 0.5);
-
+      const label = this.add.text(0, 0, `${icon} ${def?.name.split(' ')[0] || item.itemId} (x${item.quantity})`, { fontSize: '11px', color: '#facc15', fontStyle: 'bold' }).setOrigin(0.5, 0.5);
       btn.add([btnBg, label]);
       btn.setSize(btnWidth, btnHeight);
       btn.setInteractive({ useHandCursor: true });
-
       btn.on('pointerover', () => btnBg.setFillStyle(0x0284c7, 1.0));
       btn.on('pointerout', () => btnBg.setFillStyle(0x1e293b, 0.95));
       btn.on('pointerdown', () => {
         soundManager.playButtonClick();
         this.selectedItemId = item.itemId;
         this.selectedActionType = 'item';
-        if (this.itemMenuContainer) {
-          this.itemMenuContainer.destroy();
-          this.itemMenuContainer = undefined;
-        }
-
-        const validTargetIds = getValidTargets('item', 'allies', this.battleState, def?.type);
-        this.highlightValidTargets(validTargetIds);
-
+        this.itemMenuContainer?.destroy();
+        this.itemMenuContainer = undefined;
+        this.highlightValidTargets(getValidTargets('item', 'allies', this.battleState, def?.type));
         this.statusBannerText.setText(`Using ${def?.name || item.itemId}! Select friendly ally target:`);
         this.statusBannerText.setColor('#38bdf8');
       });
-
       this.itemMenuContainer!.add(btn);
     });
 
@@ -637,12 +610,7 @@ export class BattleScene extends Phaser.Scene {
     const cancelBtn = this.add.container(cancelX, 0);
     const cancelBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x991b1b, 0.95);
     cancelBg.setStrokeStyle(1, 0xf87171, 0.6);
-    const cancelLabel = this.add.text(0, 0, '✕ Cancel', {
-      fontSize: '11px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0.5);
-
+    const cancelLabel = this.add.text(0, 0, '✕ Cancel', { fontSize: '11px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5, 0.5);
     cancelBtn.add([cancelBg, cancelLabel]);
     cancelBtn.setSize(btnWidth, btnHeight);
     cancelBtn.setInteractive({ useHandCursor: true });
@@ -650,16 +618,13 @@ export class BattleScene extends Phaser.Scene {
     cancelBtn.on('pointerout', () => cancelBg.setFillStyle(0x991b1b, 0.95));
     cancelBtn.on('pointerdown', () => {
       soundManager.playButtonClick();
-      if (this.itemMenuContainer) {
-        this.itemMenuContainer.destroy();
-        this.itemMenuContainer = undefined;
-      }
+      this.itemMenuContainer?.destroy();
+      this.itemMenuContainer = undefined;
       this.selectedActionType = null;
       this.selectedItemId = null;
       this.statusBannerText.setText('Action Phase: Select tactical command for your units');
       this.statusBannerText.setColor('#60a5fa');
     });
-
     this.itemMenuContainer.add(cancelBtn);
   }
 
@@ -730,6 +695,7 @@ export class BattleScene extends Phaser.Scene {
 
   private advanceTurnInput() {
     this.skillMenuController?.hide();
+    this.swapMenuController?.hide();
     const livingAllies: Combatant[] = [];
     ['front', 'back'].forEach(r => {
       this.battleState.allies[r as 'front' | 'back'].forEach(u => {
@@ -849,7 +815,8 @@ export class BattleScene extends Phaser.Scene {
     }
 
     // 2. Deterministically resolve using pure shared BattleEngine
-    const result = BattleEngine.resolveTurn(this.battleState, fullActionsMap);
+    const reserveBeasts = (this.roster?.beasts || []).filter((b: Combatant) => b.id !== this.roster?.activeBeastId);
+    const result = BattleEngine.resolveTurn(this.battleState, fullActionsMap, undefined, reserveBeasts);
     this.battleState = result.nextState;
 
     // 3. Play actual events
@@ -946,6 +913,28 @@ export class BattleScene extends Phaser.Scene {
       const actor = this.combatantVisuals.get(evt.actorId);
       if (actor) {
         this.showFloatingCombatText(actor.container.x, actor.container.y - 20, 'FLEE 🏃', '#f87171');
+      }
+      return;
+    }
+
+    if (evt.type === 'swap') {
+      soundManager.playRevive();
+      const heroVis = this.combatantVisuals.get(evt.actorId);
+      if (heroVis) this.showFloatingCombatText(heroVis.container.x, heroVis.container.y - 20, 'SWAP! 🔄', '#38bdf8');
+      const beastVis = Array.from(this.combatantVisuals.values()).find(v => !v.unit.isHero);
+      if (evt.targetId && beastVis) {
+        const newBeast = (this.roster?.beasts || []).find((b: Combatant) => b.id === evt.targetId);
+        if (newBeast) {
+          this.combatantVisuals.delete(beastVis.unit.id);
+          beastVis.unit = JSON.parse(JSON.stringify(newBeast));
+          this.combatantVisuals.set(newBeast.id, beastVis);
+          if (this.roster) this.roster.activeBeastId = newBeast.id;
+          beastVis.nameText?.setText(`${newBeast.name} [${newBeast.element}]`);
+          beastVis.container.setAlpha(1.0);
+          this.updateHealthBar(beastVis);
+          this.updateSpBar(beastVis);
+          this.tweens.add({ targets: beastVis.container, scaleX: { from: 0.2, to: 1.0 }, scaleY: { from: 0.2, to: 1.0 }, duration: 250, ease: 'Back.easeOut' });
+        }
       }
       return;
     }
@@ -1255,7 +1244,8 @@ export class BattleScene extends Phaser.Scene {
           levelUps,
           updatedAllies,
           inventory: this.inventory,
-          loot
+          loot,
+          activeBeastId: this.roster?.activeBeastId
         };
 
         // Resume OverworldScene BEFORE shutting down BattleScene to ensure event delivery

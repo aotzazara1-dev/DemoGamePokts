@@ -11,13 +11,14 @@ export enum Element {
 }
 
 export type CombatActionType =
-  "attack" | "skill" | "defend" | "pass" | "capture" | "item" | "flee";
+  "attack" | "skill" | "defend" | "pass" | "capture" | "item" | "flee" | "swap";
 
 export interface CombatAction {
   type: CombatActionType;
   targetId?: string;
   skillId?: string;
   itemId?: string;
+  swapBeastId?: string;
 }
 
 export interface Attributes {
@@ -87,6 +88,7 @@ export interface BattleState {
   allies: TeamFormation;
   enemies: TeamFormation;
   capturedBeastIds: string[];
+  alliesReserve?: Combatant[];
 }
 
 export type TeamActionsMap = Record<string, CombatAction>;
@@ -105,6 +107,7 @@ export type BattleEventType =
   | "revive"
   | "capture_success"
   | "capture_fail"
+  | "swap"
   | "faint"
   | "flee"
   | "victory"

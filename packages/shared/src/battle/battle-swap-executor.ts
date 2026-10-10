@@ -1,0 +1,142 @@
+import type { Combatant, BattleState, BattleEvent } from "../types.js";
+
+export interface ExecuteSwapParams {
+  nextState: BattleState;
+  actor: Combatant;
+  swapBeastId: string;
+  reserveBeasts?: Combatant[];
+  events: BattleEvent[];
+  actedUnitIds: Set<string>;
+}
+
+/**
+ * Deep module encapsulating authoritative In-Combat Companion Swapping (ADR 0011).
+ * Isolates validation, grid substitution, and reserve sync from BattleEngine.
+ */
+export class BattleSwapExecutor {
+  public static executeSwap(params: ExecuteSwapParams): boolean {
+    const {
+      nextState,
+      actor,
+      swapBeastId,
+      reserveBeasts = [],
+      events,
+      actedUnitIds,
+    } = params;
+
+    // 1. Only Heroes can issue Swap
+    if (!actor.isHero) {
+      events.push({
+        type: "swap",
+        actorId: actor.id,
+        message: `${actor.name} tried to swap companions, but only Heroes can command a swap!`,
+      });
+      return false;
+    }
+
+    // 2. Candidate lookup in reserves
+    const candidateIdx = reserveBeasts.findIndex((b) => b.id === swapBeastId);
+    if (candidateIdx === -1) {
+      events.push({
+        type: "swap",
+        actorId: actor.id,
+        message: `Swap failed: Companion ${swapBeastId} was not found in reserve!`,
+      });
+      return false;
+    }
+
+    const candidate = reserveBeasts[candidateIdx];
+
+    // 3. Candidate consciousness validation
+    if (candidate.hp <= 0) {
+      events.push({
+        type: "swap",
+        actorId: actor.id,
+        targetId: candidate.id,
+        message: `Cannot summon fallen companion ${candidate.name}!`,
+      });
+      return false;
+    }
+
+    // 4. Verify candidate is not already deployed on the grid
+    let isAlreadyDeployed = false;
+    for (const row of [nextState.allies.front, nextState.allies.back]) {
+      for (const slot of row) {
+        if (slot && slot.id === candidate.id) {
+          isAlreadyDeployed = true;
+          break;
+        }
+      }
+    }
+    if (isAlreadyDeployed) {
+      events.push({
+        type: "swap",
+        actorId: actor.id,
+        targetId: candidate.id,
+        message: `${candidate.name} is already deployed on the battlefield!`,
+      });
+      return false;
+    }
+
+    // 5. Find target slot on allies formation (where beast was or should be)
+    let targetRow: "front" | "back" = "back";
+    let targetCol = 2;
+    let oldBeast: Combatant | null = null;
+    let foundSlot = false;
+
+    for (const r of ["back", "front"] as const) {
+      for (let c = 0; c < 5; c++) {
+        const u = nextState.allies[r][c];
+        if (u && !u.isHero) {
+          targetRow = r;
+          targetCol = c;
+          oldBeast = u;
+          foundSlot = true;
+          break;
+        }
+      }
+      if (foundSlot) break;
+    }
+
+    // Fallback: If no existing beast found, find first open slot in back row
+    if (!foundSlot) {
+      for (const c of [2, 1, 3, 0, 4]) {
+        if (!nextState.allies.back[c]) {
+          targetRow = "back";
+          targetCol = c;
+          break;
+        }
+      }
+    }
+
+    // 6. Withdraw old beast and deploy new candidate
+    const newBeast: Combatant = JSON.parse(JSON.stringify(candidate));
+    newBeast.action = undefined;
+    newBeast.isDefending = false;
+
+    // Swap positions
+    nextState.allies[targetRow][targetCol] = newBeast;
+
+    // Update reserves list in-place
+    reserveBeasts.splice(candidateIdx, 1);
+    if (oldBeast) {
+      reserveBeasts.push(oldBeast);
+    }
+    nextState.alliesReserve = reserveBeasts;
+
+    // Incoming beast cannot act in the deployment turn
+    actedUnitIds.add(newBeast.id);
+
+    // 7. Emit swap event
+    events.push({
+      type: "swap",
+      actorId: actor.id,
+      targetId: newBeast.id,
+      message: oldBeast
+        ? `${actor.name} withdrew ${oldBeast.name} and summoned ${newBeast.name} into battle!`
+        : `${actor.name} summoned ${newBeast.name} into battle!`,
+    });
+
+    return true;
+  }
+}

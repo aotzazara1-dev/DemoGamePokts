@@ -93,8 +93,16 @@ A marked region of the Overworld containing distinct environmental tiles, encoun
 _Avoid_: Area, biome, map sector
 
 **Combat Action**:
-One of six distinct battle commands (Attack, Skill, Defend, Capture, Flee, Item) selected during the Action Phase.
+One of seven distinct battle commands (Attack, Skill, Defend, Capture, Item, Flee, Swap) selected during the Action Phase.
 _Avoid_: Turn move, command, tactic
+
+**Reserve Beast**:
+A Beast currently held in the Hero's active Roster but not deployed on the Formation Grid, available to be summoned into combat via the Swap action.
+_Avoid_: Bench beast, backup monster, reserve pet
+
+**Swap**:
+A tactical combat action executed by a Hero during the Action Phase to withdraw the deployed Active Beast from the Formation Grid and summon a conscious Reserve Beast in the same slot.
+_Avoid_: Switch, recall, substitute
 
 **Skill Tree**:
 A branching progression path of elemental abilities unique to each of the four Elements consisting of two specialized tactical branches and a capstone ultimate.

@@ -72,15 +72,15 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/BattleScene.ts": {
-    "mtime": 1791625094.7886238,
-    "seen": 1791625327.3426626,
-    "ast_hash": "fd3893c0256133dfbc672fe3563a4011",
+    "mtime": 1791636169.133584,
+    "seen": 1791636218.415327,
+    "ast_hash": "493d3732f69db03ef858134c0cbf1f26",
     "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791631455.2349112,
-    "seen": 1791631537.2365713,
-    "ast_hash": "c0d36fe7a0e93d19b18467610f7d6500",
+    "mtime": 1791636082.005187,
+    "seen": 1791636218.4153295,
+    "ast_hash": "779b35eefa307ba5230524393113ad20",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/index.ts": {
-    "mtime": 1791629645.3478088,
-    "seen": 1791629860.7692177,
-    "ast_hash": "d05e55892dafc1832810942bad66bb71",
+    "mtime": 1791636124.7053027,
+    "seen": 1791636218.415367,
+    "ast_hash": "a8e3a85e698f1437d8af84eee74b659b",
     "semantic_hash": ""
   },
   "packages/client/src/utils/isometric.ts": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/battle/battle-engine.ts": {
-    "mtime": 1791625046.0044248,
-    "seen": 1791625327.3427486,
-    "ast_hash": "a11deddc903d5fa935028bbc1f883a7c",
+    "mtime": 1791635697.0493436,
+    "seen": 1791636218.415467,
+    "ast_hash": "40ccef941da65cea51c37f39674a4a48",
     "semantic_hash": ""
   },
   "packages/shared/src/data/skills.ts": {
@@ -396,9 +396,9 @@
     "semantic_hash": "d54460a2af1cc58258cd88468749adaa"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1791629316.2726834,
-    "seen": 1791629860.7693052,
-    "ast_hash": "7862771b29dc9bd4a282d1ea653b088e",
+    "mtime": 1791635705.0937822,
+    "seen": 1791636218.415484,
+    "ast_hash": "c727422ce01916475d44a30c9af6377e",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/inventory-manager.ts": {
@@ -420,9 +420,9 @@
     "semantic_hash": "13957b02778592b8036643af8d18ba4b"
   },
   "packages/shared/src/overworld/map-database.ts": {
-    "mtime": 1791631500.4430394,
-    "seen": 1791631537.2366965,
-    "ast_hash": "55b7b644143d1416f664d9f51f595015",
+    "mtime": 1791631549.7830417,
+    "seen": 1791636218.4154987,
+    "ast_hash": "f9d9870fb8b343734b1aa4f59329ae7a",
     "semantic_hash": ""
   },
   "packages/shared/src/overworld/overworld-engine.ts": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791629506.134699,
-    "seen": 1791629860.76933,
-    "ast_hash": "9d7676907a049a7bb11a7cfc7261361d",
+    "mtime": 1791635639.6573243,
+    "seen": 1791636218.4155169,
+    "ast_hash": "5e4fdf0864ca122a22fec36d905c71a4",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791629869.633909,
-    "seen": 1791631537.2368464,
-    "ast_hash": "80bd19f8c0591449d14416cc2d8c12a0",
+    "mtime": 1791635570.0088446,
+    "seen": 1791636218.4157066,
+    "ast_hash": "5a0bbd4b35e0f59aca9364149c176bca",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -882,9 +882,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0011-beast-roster-and-reserve-swapping.md": {
-    "mtime": 1791523745.07072,
-    "seen": 1791560439.0290117,
-    "ast_hash": "ed660627ed6dfd89237ccc698c60ccfd",
+    "mtime": 1791635561.4177365,
+    "seen": 1791636218.4157302,
+    "ast_hash": "8ce2b4daede4d9440ed8e0ccfe71cc4a",
     "semantic_hash": ""
   },
   "docs/adr/0012-inventory-and-item-system.md": {
@@ -1383,6 +1383,54 @@
     "mtime": 1791629257.7759097,
     "seen": 1791629860.7694979,
     "ast_hash": "f6ef32e6c1fda9b97011c07fdd405ef4",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/BattleSwapMenuController.ts": {
+    "mtime": 1791635778.5806456,
+    "seen": 1791636218.4153366,
+    "ast_hash": "292a5378d4c3b96af576f3b2db5202c6",
+    "semantic_hash": ""
+  },
+  "packages/client/test/battle-swap-ui.test.ts": {
+    "mtime": 1791635794.0806088,
+    "seen": 1791636218.4153771,
+    "ast_hash": "00262f3b729dac8300fdd569d36a5f2b",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/battle/battle-swap-executor.ts": {
+    "mtime": 1791635647.5538094,
+    "seen": 1791636218.4154708,
+    "ast_hash": "ef12b8f42fefb23bfa6c012784656553",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/battle-swap.test.ts": {
+    "mtime": 1791635717.1619678,
+    "seen": 1791636218.4155254,
+    "ast_hash": "2d706eb193ba9a950b8e8a509b0c2053",
+    "semantic_hash": ""
+  },
+  ".scratch/in-combat-beast-swapping/issues/01-shared-swap-types-and-battle-swap-executor.md": {
+    "mtime": 1791635584.1817813,
+    "seen": 1791636218.415586,
+    "ast_hash": "3e43d3b07dc0e51d5951fb26cdac4f37",
+    "semantic_hash": ""
+  },
+  ".scratch/in-combat-beast-swapping/issues/02-battle-swap-menu-controller-and-ui.md": {
+    "mtime": 1791635589.5303495,
+    "seen": 1791636218.415588,
+    "ast_hash": "233216753a6c192e3e5ddb05722de173",
+    "semantic_hash": ""
+  },
+  ".scratch/in-combat-beast-swapping/issues/03-battle-scene-swap-action-and-sprite-rendering.md": {
+    "mtime": 1791635593.6113932,
+    "seen": 1791636218.4155898,
+    "ast_hash": "b09bf16a493cf56473d5ce3fd028acd7",
+    "semantic_hash": ""
+  },
+  ".scratch/in-combat-beast-swapping/spec.md": {
+    "mtime": 1791635579.6011102,
+    "seen": 1791636218.4155917,
+    "ast_hash": "d4c9e73f7a05e2ff772b6212edf8288e",
     "semantic_hash": ""
   }
 }

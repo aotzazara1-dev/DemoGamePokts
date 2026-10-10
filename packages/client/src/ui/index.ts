@@ -12,3 +12,5 @@ export * from "./EquipmentModalController.js";
 export * from "./SkillTreeModalController.js";
 export * from "./WarehouseModalController.js";
 export * from "./InnStorageModalController.js";
+export * from "./BattleSwapMenuController.js";
+export * from "./BattleSkillMenuController.js";

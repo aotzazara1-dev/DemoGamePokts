@@ -223,6 +223,7 @@ export class OverworldScene extends Phaser.Scene {
           updatedAllies?: Combatant[];
           inventory?: InventoryState;
           loot?: LootReward;
+          activeBeastId?: string;
         }
       ) => {
         this.isMoving = false;
@@ -259,6 +260,11 @@ export class OverworldScene extends Phaser.Scene {
         }
 
         const zoneDisplay = document.getElementById("zone-display");
+
+        // Sync active beast swapped during combat
+        if (data?.activeBeastId && this.roster.beasts.some((b) => b.id === data.activeBeastId)) {
+          this.roster.activeBeastId = data.activeBeastId;
+        }
 
         // Sync progression updates from server or fallback
         if (data?.updatedAllies && data.updatedAllies.length > 0) {
@@ -326,7 +332,7 @@ export class OverworldScene extends Phaser.Scene {
           }
         }
 
-        if (data?.inventory || data?.loot || data?.expAwarded) {
+        if (data?.inventory || data?.loot || data?.expAwarded || data?.activeBeastId) {
           this.inventoryModal.setInventory(this.inventory);
           this.shopModal?.setInventory(this.inventory);
           this.skillTreeModal?.setHero(this.roster.hero);
