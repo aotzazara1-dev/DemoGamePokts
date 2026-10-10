@@ -1,5 +1,6 @@
 import { Combatant, CombatantSkillSlot, Element } from "../types.js";
 import { SkillDefinition, getSkillDefinition } from "../data/skills.js";
+import { calculateDamage, getElementMultiplier } from "../formulas.js";
 
 /**
  * Deep Module for 5-Slot Skill Architecture and Elemental Affinity (ADR 0021)
@@ -80,6 +81,31 @@ export class SkillManager {
     return Number(
       (skill.multiplier * this.CROSS_ELEMENT_MULTIPLIER).toFixed(2)
     );
+  }
+
+  /**
+   * Calculates projected damage for a skill attack, accounting for attacker/defender stats,
+   * STAB/cross-element modifiers, and elemental advantages.
+   */
+  public static calculateSkillDamage(
+    attacker: Combatant,
+    defender: Combatant,
+    skillOrId: SkillDefinition | string
+  ): number {
+    const skill =
+      typeof skillOrId === "string" ? getSkillDefinition(skillOrId) : skillOrId;
+    if (!skill || skill.category !== "attack") return 0;
+
+    const effectiveMultiplier = this.getEffectiveSkillMultiplier(
+      attacker,
+      skill
+    );
+    const elemFactor =
+      skill.element === "neutral"
+        ? 1.0
+        : getElementMultiplier(skill.element, defender.element);
+    const effectiveAtk = attacker.atk * effectiveMultiplier;
+    return calculateDamage(effectiveAtk, defender.def, elemFactor, 1.0);
   }
 
   /**
@@ -314,7 +340,7 @@ export class SkillManager {
       ];
     }
 
-    // Default monster / generic beast
+    // Default wild beast / generic champion
     let defaultBasic = "rock_throw";
     if (element === Element.Water) defaultBasic = "aqua_jet";
     else if (element === Element.Fire) defaultBasic = "flame_strike";

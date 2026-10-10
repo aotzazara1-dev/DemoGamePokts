@@ -787,5 +787,89 @@ describe("BattleEngine Turn Resolution (Ticket 02)", () => {
       const healEvent = result.events.find((e) => e.type === "heal");
       expect(healEvent?.value).toBe(0);
     });
+
+    it("intercepts basic attack fallback with front row guard when SP is depleted", () => {
+      const hero = makeUnit({
+        id: "hero",
+        name: "Hero",
+        hp: 100,
+        sp: 0, // Depleted SP
+        atk: 30,
+        agi: 50,
+      });
+      const enemyGuard = makeUnit({
+        id: "enemy_guard",
+        name: "Enemy Guard",
+        hp: 100,
+        def: 20,
+      });
+      const enemyBack = makeUnit({
+        id: "enemy_back",
+        name: "Enemy Back",
+        hp: 50,
+        def: 10,
+      });
+
+      // Front guard is at column 2, enemyBack is at back column 2
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, null, null, null],
+        [null, null, enemyGuard, null, null],
+        [null, null, enemyBack, null, null]
+      );
+
+      // Hero tries to cast a skill at enemyBack, but has 0 SP
+      const actions: TeamActionsMap = {
+        hero: {
+          type: "skill",
+          skillId: "flame_strike",
+          targetId: "enemy_back",
+        },
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      // Front guard intercepts the melee attack fallback
+      const blockedEvent = result.events.find((e) => e.type === "blocked");
+      expect(blockedEvent).toBeDefined();
+      expect(blockedEvent?.message).toContain(
+        "intercepted by Enemy Guard in the Front Row"
+      );
+      // Back unit should NOT take damage
+      expect(result.nextState.enemies.back[2]?.hp).toBe(50);
+    });
+
+    it("applies stat buffs during combat execution", () => {
+      const hero = makeUnit({
+        id: "hero",
+        name: "Hero",
+        hp: 100,
+        sp: 50,
+        atk: 40,
+        def: 30,
+        agi: 20,
+      });
+
+      const state = createBattleState(
+        [null, null, hero, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null]
+      );
+
+      const actions: TeamActionsMap = {
+        hero: {
+          type: "skill",
+          skillId: "skill_earth_shield",
+          targetId: "hero",
+        },
+      };
+
+      const result = BattleEngine.resolveTurn(state, actions);
+      const buffEvent = result.events.find((e) => e.type === "buff");
+      expect(buffEvent).toBeDefined();
+      expect(buffEvent?.message).toContain("DEF increased");
+      // def was 30 -> 30 * 1.35 = 40.5 -> 41
+      expect(result.nextState.allies.front[2]?.def).toBe(41);
+    });
   });
 });

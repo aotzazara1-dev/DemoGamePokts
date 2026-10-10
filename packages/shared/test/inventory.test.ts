@@ -6,6 +6,7 @@ import {
   getItemCategory,
   getItemCategoryLabel,
   InventoryManager,
+  ShopManager,
   LootEngine,
   Combatant,
   Element,
@@ -335,7 +336,7 @@ describe("Inventory & Consumable System", () => {
       it("successfully purchases items and deducts gold when funds and space are sufficient", () => {
         let inv = InventoryManager.createInitialInventory(); // 200 gold, bun(5), tea(3), feather(1)
         // Steamed Bun price: 20 G each. Buying 3 buns costs 60 G.
-        const res = InventoryManager.buyItem(inv, "item_steamed_bun", 3);
+        const res = ShopManager.buyItem(inv, "item_steamed_bun", 3);
         expect(res.success).toBe(true);
         expect(res.inventory.gold).toBe(140); // 200 - 60
         // Existing stack at slot 0 should increase from 5 to 8
@@ -345,7 +346,7 @@ describe("Inventory & Consumable System", () => {
       it("rejects purchase when player does not have enough gold", () => {
         let inv = InventoryManager.createInitialInventory(); // 200 gold
         // Phoenix feather price: 150 G each. Buying 2 feathers costs 300 G > 200 G.
-        const res = InventoryManager.buyItem(inv, "item_phoenix_feather", 2);
+        const res = ShopManager.buyItem(inv, "item_phoenix_feather", 2);
         expect(res.success).toBe(false);
         expect(res.reason).toContain("Not enough gold");
         expect(res.inventory.gold).toBe(200);
@@ -357,7 +358,7 @@ describe("Inventory & Consumable System", () => {
           .fill(null)
           .map(() => ({ itemId: "item_steamed_bun", quantity: 99 }));
         const fullInv = { slots: fullSlots, gold: 5000 };
-        const res = InventoryManager.buyItem(fullInv, "item_herbal_tea", 1);
+        const res = ShopManager.buyItem(fullInv, "item_herbal_tea", 1);
         expect(res.success).toBe(false);
         expect(res.reason).toContain("full");
         expect(res.inventory.gold).toBe(5000);
@@ -365,7 +366,7 @@ describe("Inventory & Consumable System", () => {
 
       it("successfully sells items from inventory, adds gold at 50% price, and removes items", () => {
         let inv = InventoryManager.createInitialInventory(); // 200 gold, slots[0] is 5 buns (20 G each -> sell 10 G)
-        const res = InventoryManager.sellItem(inv, 0, 2);
+        const res = ShopManager.sellItem(inv, 0, 2);
         expect(res.success).toBe(true);
         expect(res.goldEarned).toBe(20); // 2 * 10 G
         expect(res.inventory.gold).toBe(220); // 200 + 20
@@ -374,7 +375,7 @@ describe("Inventory & Consumable System", () => {
 
       it("clears slot to null when selling entire quantity", () => {
         let inv = InventoryManager.createInitialInventory(); // slots[2] is 1 feather (150 G -> sell 75 G)
-        const res = InventoryManager.sellItem(inv, 2, 1);
+        const res = ShopManager.sellItem(inv, 2, 1);
         expect(res.success).toBe(true);
         expect(res.goldEarned).toBe(75);
         expect(res.inventory.gold).toBe(275);
@@ -383,10 +384,10 @@ describe("Inventory & Consumable System", () => {
 
       it("rejects selling from empty slot or invalid quantity", () => {
         let inv = InventoryManager.createInitialInventory();
-        const resEmpty = InventoryManager.sellItem(inv, 10, 1); // slot 10 is null
+        const resEmpty = ShopManager.sellItem(inv, 10, 1); // slot 10 is null
         expect(resEmpty.success).toBe(false);
 
-        const resExcess = InventoryManager.sellItem(inv, 0, 99); // slot 0 has 5, trying to sell 99
+        const resExcess = ShopManager.sellItem(inv, 0, 99); // slot 0 has 5, trying to sell 99
         expect(resExcess.success).toBe(false);
       });
     });

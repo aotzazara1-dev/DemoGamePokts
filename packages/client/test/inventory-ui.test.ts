@@ -254,4 +254,39 @@ describe("InventoryModalController Category Tabs & Filtering", () => {
     expect(controller.getActiveCategory()).toBe("equipment");
     expect(tabEquipment?.classList.contains("active")).toBe(true);
   });
+
+  it("handles Skill Tome inspection displaying hero/beast targets and learns skill without town teleport", () => {
+    const onWarpTown = vi.fn();
+    const tomeInventory: InventoryState = {
+      gold: 100,
+      slots: [
+        { itemId: "item_tome_aqua_jet", quantity: 1 },
+        ...new Array(19).fill(null),
+      ],
+    };
+    const testController = new InventoryModalController(
+      tomeInventory,
+      sampleHero,
+      { onWarpTown }
+    );
+    testController.toggle(true);
+
+    const slot0 = document.querySelector<HTMLElement>(".inv-slot");
+    slot0?.click();
+
+    const targetTitle = document.getElementById("inv-target-title");
+    expect(targetTitle?.textContent).toContain("เรียนรู้วิชา");
+
+    const btnScroll = document.getElementById("btn-use-item-scroll");
+    expect(btnScroll?.style.display).toBe("none");
+
+    const btnHero = document.getElementById(
+      "btn-use-item-hero"
+    ) as HTMLButtonElement;
+    expect(btnHero?.style.display).toBe("flex");
+
+    // Click use on hero
+    btnHero?.click();
+    expect(onWarpTown).not.toHaveBeenCalled();
+  });
 });

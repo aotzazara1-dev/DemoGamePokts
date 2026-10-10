@@ -3,6 +3,7 @@ import {
   Combatant,
   SkillManager,
   getSkillDefinition,
+  getSkillDisplayName,
 } from "@poktsonline/shared";
 import { soundManager } from "../audio/SoundManager.js";
 
@@ -122,7 +123,7 @@ export class BattleSkillMenuController {
       btnBg.setStrokeStyle(1.5, borderColor, 0.9);
       btnBg.setInteractive({ useHandCursor: canCast });
 
-      const shortName = skill.name.split(" (")[0].slice(0, 14);
+      const shortName = getSkillDisplayName(skill, 14);
       const prefix = isSig ? "⭐ " : "";
       const label = `${prefix}${shortName}\n${spCost} SP`;
 

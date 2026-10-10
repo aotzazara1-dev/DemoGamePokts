@@ -1,7 +1,6 @@
 import { InventoryState, ItemStack, Combatant } from "../types.js";
 import { getItemDefinition } from "./item-database.js";
 import { SkillManager } from "../skills/skill-manager.js";
-import { ShopManager } from "./shop-manager.js";
 
 export class InventoryManager {
   public static readonly INVENTORY_CAPACITY = 20;
@@ -330,28 +329,5 @@ export class InventoryManager {
       ...inventory,
       gold: Math.max(0, inventory.gold + amount),
     };
-  }
-
-  /**
-   * Purchases `quantity` of `itemId`, deducting total cost in Gold and adding to inventory slots.
-   */
-  public static buyItem(
-    inventory: InventoryState,
-    itemId: string,
-    quantity: number
-  ) {
-    return ShopManager.buyItem(inventory, itemId, quantity);
-  }
-
-  /**
-   * Sells `quantity` of items from `slotIndex` at 50% of the item's purchase price,
-   * adding the earned gold and removing the items.
-   */
-  public static sellItem(
-    inventory: InventoryState,
-    slotIndex: number,
-    quantity: number
-  ) {
-    return ShopManager.sellItem(inventory, slotIndex, quantity);
   }
 }

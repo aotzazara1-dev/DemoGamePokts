@@ -4,6 +4,7 @@ import {
   Combatant,
   SkillManager,
   getSkillDefinition,
+  getSkillDisplayName,
   SKILL_DATABASE,
 } from "../src/index.js";
 
@@ -301,6 +302,45 @@ describe("SkillManager & 5-Slot Skill Architecture (ADR 0021)", () => {
       const res = SkillManager.canLearnSkill(luBu, "flame_strike");
       expect(res.canLearn).toBe(false);
       expect(res.reason).toContain("already knows");
+    });
+  });
+
+  describe("calculateSkillDamage API (Spec 2.1)", () => {
+    it("calculates skill damage with STAB and elemental advantage", () => {
+      // Lu Bu (Fire, ATK=45) uses Flame Strike (Fire, mult=1.5 -> STAB 1.88) on Adam (Earth, DEF=22)
+      // Fire against Earth is 1.0 (Earth defends Water 1.5, Fire defends Wind 1.5)
+      const dmg = SkillManager.calculateSkillDamage(luBu, adam, "flame_strike");
+      expect(dmg).toBeGreaterThan(0);
+      expect(typeof dmg).toBe("number");
+    });
+
+    it("returns 0 damage for heal or buff skills", () => {
+      const healDmg = SkillManager.calculateSkillDamage(
+        kojiro,
+        luBu,
+        "skill_healing_spring"
+      );
+      expect(healDmg).toBe(0);
+
+      const buffDmg = SkillManager.calculateSkillDamage(
+        adam,
+        adam,
+        "skill_earth_shield"
+      );
+      expect(buffDmg).toBe(0);
+    });
+  });
+
+  describe("getSkillDisplayName helper", () => {
+    it("extracts English title and truncates if maxLength specified", () => {
+      expect(getSkillDisplayName("Flame Strike (คมดาบเพลิงโลกันตร์)")).toBe(
+        "Flame Strike"
+      );
+      expect(getSkillDisplayName("Flame Strike (คมดาบเพลิงโลกันตร์)", 5)).toBe(
+        "Flame"
+      );
+      const skill = getSkillDefinition("skill_healing_spring")!;
+      expect(getSkillDisplayName(skill)).toBe("Healing Spring");
     });
   });
 });

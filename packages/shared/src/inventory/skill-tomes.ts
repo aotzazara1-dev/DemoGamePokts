@@ -3,7 +3,7 @@ import { ItemDefinition } from "../types.js";
 /**
  * Skill Tomes Catalog (คัมภีร์ตำราสกิล)
  * Consumable scroll items that teach skills to Hero or Active Champion,
- * functioning similarly to TMs in Pokémon.
+ * functioning as learnable skill scrolls.
  */
 export const SKILL_TOMES: Record<string, ItemDefinition> = {
   // --- EARTH TOMES ---

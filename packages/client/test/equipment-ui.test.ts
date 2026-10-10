@@ -348,6 +348,34 @@ describe("Equipment UI Controllers", () => {
       expect(skillsRow?.textContent).toContain("Skills:");
       expect(skillsRow?.textContent).toContain("⭐");
     });
+
+    it("renders forget skill button on flexible skill slots and calls SkillManager.forgetSkill", () => {
+      const onRosterUpdated = vi.fn();
+      const champion = sampleRoster.beasts[0];
+      champion.skillSlots = [
+        { slotIndex: 0, skillId: "skill_sky_piercer", isSignature: true },
+        { slotIndex: 1, skillId: "skill_god_of_war_rage", isSignature: true },
+        { slotIndex: 2, skillId: "flame_strike", isSignature: false },
+        { slotIndex: 3, skillId: null, isSignature: false },
+        { slotIndex: 4, skillId: null, isSignature: false },
+      ];
+
+      const controller = new RosterModalController(sampleRoster, {
+        onRosterUpdated,
+      });
+      controller.toggle(true);
+
+      const forgetBtn =
+        document.querySelector<HTMLButtonElement>(".btn-forget-skill");
+      expect(forgetBtn).not.toBeNull();
+      expect(forgetBtn?.textContent).toContain("Flame Strike ✕");
+
+      forgetBtn?.click();
+      expect(onRosterUpdated).toHaveBeenCalled();
+      expect(
+        controller.getRoster().beasts[0].skillSlots?.[2].skillId
+      ).toBeNull();
+    });
   });
 
   describe("InventoryModalController Equipment Flow", () => {

@@ -6,25 +6,25 @@ import { calculateDamage, getElementMultiplier } from "../formulas.js";
 /**
  * Deep Module for resolving combat skill execution (ADR 0021).
  * Handles SP deduction, STAB/cross-element modifiers, heals, buffs,
- * and graceful fallback to basic attack on depleted SP.
+ * and signals fallback to basic attack on depleted SP.
  */
 export class BattleSkillExecutor {
   /**
    * Executes a skill action from actor onto target, updating states and appending battle events.
+   * Returns true if skill execution was completed, or false if depleted SP/missing skill requires basic attack fallback.
    */
   public static executeSkill(
     actor: Combatant,
     target: Combatant,
     action: CombatAction,
     events: BattleEvent[]
-  ): void {
+  ): boolean {
     const skillId = action.skillId;
     const skill = skillId ? getSkillDefinition(skillId) : undefined;
 
     // 1. Missing skill fallback
     if (!skill) {
-      this.executeBasicAttackFallback(actor, target, events);
-      return;
+      return false;
     }
 
     // 2. SP validation & surcharge check
@@ -36,8 +36,7 @@ export class BattleSkillExecutor {
         targetId: target.id,
         message: `${actor.name} lacks sufficient SP for ${skill.name} (${actor.sp}/${spCost} SP) and reverts to a standard attack!`,
       });
-      this.executeBasicAttackFallback(actor, target, events);
-      return;
+      return false;
     }
 
     // Deduct SP
@@ -61,7 +60,7 @@ export class BattleSkillExecutor {
         value: actualHeal,
         message: `${skill.name} restores ${actualHeal} HP to ${target.name}! (${target.hp}/${target.maxHp})`,
       });
-      return;
+      return true;
     }
 
     // 4. Buff Skills
@@ -76,16 +75,31 @@ export class BattleSkillExecutor {
           value: restored,
           message: `${actor.name} focuses inner spirit and recovers ${restored} SP!`,
         });
-        return;
+        return true;
+      }
+
+      let buffDetail = "";
+      if (skill.id === "skill_earth_shield") {
+        const oldVal = target.def;
+        target.def = Math.round(target.def * 1.35);
+        buffDetail = `DEF increased from ${oldVal} to ${target.def} (+35%)`;
+      } else if (skill.id === "skill_raging_flame") {
+        const oldVal = target.atk;
+        target.atk = Math.round(target.atk * 1.3);
+        buffDetail = `ATK increased from ${oldVal} to ${target.atk} (+30%)`;
+      } else if (skill.id === "skill_wind_haste") {
+        const oldVal = target.agi;
+        target.agi = Math.round(target.agi * 1.35);
+        buffDetail = `AGI increased from ${oldVal} to ${target.agi} (+35%)`;
       }
 
       events.push({
         type: "buff",
         actorId: actor.id,
         targetId: target.id,
-        message: `${actor.name} invokes ${skill.name}, empowering ${target.name}!`,
+        message: `${actor.name} invokes ${skill.name}, empowering ${target.name}!${buffDetail ? ` (${buffDetail})` : ""}`,
       });
-      return;
+      return true;
     }
 
     // 5. Attack Skills
@@ -127,44 +141,7 @@ export class BattleSkillExecutor {
         message: `${target.name} was defeated!`,
       });
     }
-  }
 
-  /**
-   * Basic physical attack fallback when SP is insufficient or skill is missing.
-   */
-  private static executeBasicAttackFallback(
-    actor: Combatant,
-    target: Combatant,
-    events: BattleEvent[]
-  ): void {
-    const elemFactor = getElementMultiplier(actor.element, target.element);
-    let damage = calculateDamage(actor.atk, target.def, elemFactor, 1.0);
-    if (target.isDefending) {
-      damage = Math.max(1, Math.round(damage * 0.5));
-    }
-    target.hp = Math.max(0, target.hp - damage);
-
-    events.push({
-      type: "attack",
-      actorId: actor.id,
-      targetId: target.id,
-      message: `${actor.name} attacks ${target.name}!`,
-    });
-
-    events.push({
-      type: "damage",
-      actorId: actor.id,
-      targetId: target.id,
-      value: damage,
-      message: `${target.name} takes ${damage} damage!`,
-    });
-
-    if (target.hp === 0) {
-      events.push({
-        type: "faint",
-        actorId: target.id,
-        message: `${target.name} was defeated!`,
-      });
-    }
+    return true;
   }
 }

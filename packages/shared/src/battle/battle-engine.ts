@@ -301,11 +301,29 @@ export class BattleEngine {
         continue;
       }
 
-      // Handle Attack or Skill:
+      // Execute Skill or Physical Attack
+      let isPhysicalAttack = actor.action.type === 'attack';
+      if (actor.action.type === 'skill') {
+        const handled = BattleSkillExecutor.executeSkill(actor, target, actor.action, events);
+        if (!handled) {
+          isPhysicalAttack = true;
+        } else {
+          continue;
+        }
+      }
+
+      if (!isPhysicalAttack) continue;
+
+      // Prevent friendly fire for melee attacks
+      const actorInfo = findCombatant(actor.id);
+      if (actorInfo && targetInfo.team === actorInfo.team) {
+        continue;
+      }
+
       // Front Row Shielding check:
       // If direct physical melee attack targets Back Row at column c,
       // and target team has a living Front Row unit at column c, the attack is BLOCKED!
-      if (actor.action.type === 'attack' && targetInfo.row === 'back') {
+      if (targetInfo.row === 'back') {
         const opposingTeam = nextState[targetInfo.team];
         const frontGuard = opposingTeam.front[targetInfo.col];
         if (frontGuard && frontGuard.hp > 0) {
@@ -317,12 +335,6 @@ export class BattleEngine {
           });
           continue;
         }
-      }
-
-      // Execute Skill or Physical Attack
-      if (actor.action.type === 'skill') {
-        BattleSkillExecutor.executeSkill(actor, target, actor.action, events);
-        continue;
       }
 
       // Calculate Physical Attack Damage

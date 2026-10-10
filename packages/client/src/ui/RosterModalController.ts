@@ -10,6 +10,7 @@ import {
   getItemIcon,
   SkillManager,
   getSkillDefinition,
+  getSkillDisplayName,
 } from "@poktsonline/shared";
 
 export interface RosterModalCallbacks {
@@ -18,6 +19,21 @@ export interface RosterModalCallbacks {
   onClose?: () => void;
   onUnequipChampionItem?: (championId: string, slot: EquipmentSlot) => void;
 }
+
+const EQUIP_SLOTS: EquipmentSlot[] = [
+  "head",
+  "weapon",
+  "armor",
+  "boots",
+  "accessory",
+];
+const EQUIP_ICONS: Record<EquipmentSlot, string> = {
+  head: "🪖",
+  weapon: "⚔️",
+  armor: "🛡️",
+  boots: "👢",
+  accessory: "💍",
+};
 
 /**
  * Deep UI Controller for Beast Roster & 2x5 Formation Grid Modal.
@@ -58,19 +74,12 @@ export class RosterModalController {
   public toggle(forceOpen?: boolean): void {
     const modal = document.getElementById("roster-modal");
     if (!modal) return;
-
-    if (forceOpen !== undefined) {
-      this.isModalOpen = forceOpen;
-    } else {
-      this.isModalOpen = !this.isModalOpen;
-    }
-
+    this.isModalOpen = forceOpen !== undefined ? forceOpen : !this.isModalOpen;
+    modal.classList.toggle("open", this.isModalOpen);
     if (this.isModalOpen) {
-      modal.classList.add("open");
       this.render();
       this.callbacks.onOpen?.();
     } else {
-      modal.classList.remove("open");
       this.callbacks.onClose?.();
     }
   }
@@ -145,31 +154,14 @@ export class RosterModalController {
               </div>
               <div class="beast-equipment-row" style="margin-top: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                 <span style="font-size: 10px; color: #94a3b8;">Gear:</span>
-                ${(
-                  [
-                    "head",
-                    "weapon",
-                    "armor",
-                    "boots",
-                    "accessory",
-                  ] as EquipmentSlot[]
-                )
-                  .map((slot) => {
-                    const itemId = beast.equipment?.[slot];
-                    const itemDef = itemId ? getItemDefinition(itemId) : null;
-                    const icons: Record<EquipmentSlot, string> = {
-                      head: "🪖",
-                      weapon: "⚔️",
-                      armor: "🛡️",
-                      boots: "👢",
-                      accessory: "💍",
-                    };
-                    if (itemDef) {
-                      return `<button class="btn-beast-slot equipped" data-slot="${slot}" title="${itemDef.name}\n[Click to Unequip]" style="background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; border-radius: 4px; padding: 2px 5px; font-size: 10px; cursor: pointer; color: #fbbf24;">${getItemIcon(itemDef.id)} ${itemDef.name.split(" (")[0].slice(0, 10)} ✕</button>`;
-                    }
-                    return `<span title="${slot} (Empty)" style="opacity: 0.35; font-size: 11px; padding: 1px 3px;">${icons[slot]}</span>`;
-                  })
-                  .join("")}
+                ${EQUIP_SLOTS.map((slot) => {
+                  const itemId = beast.equipment?.[slot];
+                  const itemDef = itemId ? getItemDefinition(itemId) : null;
+                  if (itemDef) {
+                    return `<button class="btn-beast-slot equipped" data-slot="${slot}" title="${itemDef.name}\n[Click to Unequip]" style="background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; border-radius: 4px; padding: 2px 5px; font-size: 10px; cursor: pointer; color: #fbbf24;">${getItemIcon(itemDef.id)} ${getSkillDisplayName(itemDef.name, 10)} ✕</button>`;
+                  }
+                  return `<span title="${slot} (Empty)" style="opacity: 0.35; font-size: 11px; padding: 1px 3px;">${EQUIP_ICONS[slot]}</span>`;
+                }).join("")}
               </div>
               <div class="beast-skills-row" style="margin-top: 5px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                 <span style="font-size: 10px; color: #94a3b8;">Skills:</span>
@@ -181,7 +173,11 @@ export class RosterModalController {
                     if (!def)
                       return `<span title="Slot ${idx + 1} (Empty)" style="border: 1px dashed #475569; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: #64748b;">(Empty)</span>`;
                     const color = s.isSignature ? "#f59e0b" : "#38bdf8";
-                    return `<span title="${def.name}\n${def.description}\nCost: ${def.spCost} SP" style="border: 1px solid ${color}; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: ${color};">${s.isSignature ? "⭐ " : ""}${def.name.split(" (")[0].slice(0, 12)}</span>`;
+                    const shortName = getSkillDisplayName(def, 12);
+                    if (s.isSignature) {
+                      return `<span title="${def.name}\n${def.description}\n[Innate Signature - Locked]" style="border: 1px solid ${color}; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: ${color};">⭐ ${shortName}</span>`;
+                    }
+                    return `<button class="btn-forget-skill" data-beast-id="${beast.id}" data-slot-idx="${idx}" title="${def.name}\n${def.description}\n[Click to Forget Skill]" style="background: rgba(56, 189, 248, 0.1); border: 1px solid ${color}; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: ${color}; cursor: pointer;">${shortName} ✕</button>`;
                   })
                   .join("")}
               </div>
@@ -250,6 +246,27 @@ export class RosterModalController {
               };
             });
 
+          card
+            .querySelectorAll<HTMLButtonElement>(".btn-forget-skill")
+            .forEach((btn) => {
+              btn.onclick = (e) => {
+                e.stopPropagation();
+                const slotIdx = parseInt(
+                  btn.getAttribute("data-slot-idx") || "0",
+                  10
+                );
+                const res = SkillManager.forgetSkill(beast, slotIdx);
+                if (res.success) {
+                  const idx = this.roster.beasts.findIndex(
+                    (b: Combatant) => b.id === beast.id
+                  );
+                  if (idx !== -1) this.roster.beasts[idx] = res.combatant;
+                  this.render();
+                  this.callbacks.onRosterUpdated?.(this.roster);
+                }
+              };
+            });
+
           beastContainer.appendChild(card);
         });
       }
@@ -314,18 +331,13 @@ export class RosterModalController {
       const isBeastHere =
         this.roster.formation.beastSlot.row === row &&
         this.roster.formation.beastSlot.col === col;
-
       const slotBox = document.createElement("div");
       slotBox.className = `slot-box ${isHeroHere ? "hero-slot" : isBeastHere ? "beast-slot" : ""}`;
-
-      if (isHeroHere) {
-        slotBox.innerHTML =
-          '<div>🧙 Hero</div><div style="font-size: 9px; opacity: 0.85;">Lv.5</div>';
-      } else if (isBeastHere) {
-        slotBox.innerHTML = `<div>🦁 ${activeBeast?.name?.split(" ")[0] || "Beast"}</div><div style="font-size: 9px; opacity: 0.85;">Lv.${activeBeast?.level || 1}</div>`;
-      } else {
-        slotBox.innerHTML = `<div>Slot ${col}</div><div style="font-size: 9px; opacity: 0.5;">Empty</div>`;
-      }
+      slotBox.innerHTML = isHeroHere
+        ? '<div>🧙 Hero</div><div style="font-size: 9px; opacity: 0.85;">Lv.5</div>'
+        : isBeastHere
+          ? `<div>🦁 ${activeBeast?.name?.split(" ")[0] || "Beast"}</div><div style="font-size: 9px; opacity: 0.85;">Lv.${activeBeast?.level || 1}</div>`
+          : `<div>Slot ${col}</div><div style="font-size: 9px; opacity: 0.5;">Empty</div>`;
 
       slotBox.onclick = () => {
         this.roster = RosterManager.setFormationSlot(
@@ -336,7 +348,6 @@ export class RosterModalController {
         this.render();
         this.callbacks.onRosterUpdated?.(this.roster);
       };
-
       rowEl.appendChild(slotBox);
     }
   }
@@ -347,50 +358,37 @@ export class RosterModalController {
       htmlBtn.style.display = "flex";
       htmlBtn.onclick = () => this.toggle();
     }
-
-    const btnClose = document.getElementById("btn-close-modal");
-    if (btnClose) btnClose.onclick = () => this.toggle(false);
-
-    const btnConfirm = document.getElementById("btn-confirm-formation");
-    if (btnConfirm) btnConfirm.onclick = () => this.toggle(false);
-
+    document
+      .getElementById("btn-close-modal")
+      ?.addEventListener("click", () => this.toggle(false));
+    document
+      .getElementById("btn-confirm-formation")
+      ?.addEventListener("click", () => this.toggle(false));
     const modal = document.getElementById("roster-modal");
     if (modal) {
       modal.onclick = (e) => {
-        if (e.target === modal) {
-          this.toggle(false);
-        }
+        if (e.target === modal) this.toggle(false);
       };
     }
   }
 
   private getElementColor(element: Element): string {
-    switch (element) {
-      case Element.Water:
-        return "#38bdf8";
-      case Element.Fire:
-        return "#f87171";
-      case Element.Earth:
-        return "#fb923c";
-      case Element.Wind:
-        return "#4ade80";
-      default:
-        return "#e2e8f0";
-    }
+    const map: Record<Element, string> = {
+      [Element.Water]: "#38bdf8",
+      [Element.Fire]: "#f87171",
+      [Element.Earth]: "#fb923c",
+      [Element.Wind]: "#4ade80",
+    };
+    return map[element] || "#e2e8f0";
   }
 
   private getElementIcon(element: Element): string {
-    switch (element) {
-      case Element.Water:
-        return "💧";
-      case Element.Fire:
-        return "🔥";
-      case Element.Earth:
-        return "🌍";
-      case Element.Wind:
-        return "🌪️";
-      default:
-        return "✨";
-    }
+    const map: Record<Element, string> = {
+      [Element.Water]: "💧",
+      [Element.Fire]: "🔥",
+      [Element.Earth]: "🌍",
+      [Element.Wind]: "🌪️",
+    };
+    return map[element] || "✨";
   }
 }

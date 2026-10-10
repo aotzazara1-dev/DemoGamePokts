@@ -54,16 +54,11 @@ export class InventoryModalController {
 
   public setInventory(inventory: InventoryState): void {
     this.inventory = inventory;
-    if (this.selectedSlotIndex !== null) {
-      const slot = this.inventory.slots[this.selectedSlotIndex];
-      if (!slot) {
-        this.selectedSlotIndex = null;
-      }
+    if (this.selectedSlotIndex !== null && !this.inventory.slots[this.selectedSlotIndex]) {
+      this.selectedSlotIndex = null;
     }
     this.updateHeaderBadge();
-    if (this.isModalOpen) {
-      this.render();
-    }
+    if (this.isModalOpen) this.render();
   }
 
   public getInventory(): InventoryState {
@@ -78,11 +73,7 @@ export class InventoryModalController {
     this.activeCategory = category;
     if (this.selectedSlotIndex !== null) {
       const slot = this.inventory.slots[this.selectedSlotIndex];
-      if (
-        slot &&
-        this.activeCategory !== "all" &&
-        getItemCategory(slot.itemId) !== this.activeCategory
-      ) {
+      if (slot && this.activeCategory !== "all" && getItemCategory(slot.itemId) !== this.activeCategory) {
         this.selectedSlotIndex = null;
       }
     }
@@ -90,13 +81,7 @@ export class InventoryModalController {
   }
 
   public getCategoryCounts(): Record<ItemCategory, number> {
-    const counts: Record<ItemCategory, number> = {
-      all: 0,
-      consumable: 0,
-      equipment: 0,
-      material: 0,
-    };
-
+    const counts: Record<ItemCategory, number> = { all: 0, consumable: 0, equipment: 0, material: 0 };
     for (const slot of this.inventory.slots) {
       if (slot) {
         counts.all++;
@@ -104,22 +89,17 @@ export class InventoryModalController {
         counts[cat] = (counts[cat] || 0) + 1;
       }
     }
-
     return counts;
   }
 
   public setHero(hero: Combatant): void {
     this.hero = hero;
-    if (this.isModalOpen) {
-      this.renderInspector();
-    }
+    if (this.isModalOpen) this.renderInspector();
   }
 
   public setActiveBeast(beast?: Combatant): void {
     this.activeBeast = beast;
-    if (this.isModalOpen) {
-      this.renderInspector();
-    }
+    if (this.isModalOpen) this.renderInspector();
   }
 
   public isOpen(): boolean {
@@ -424,10 +404,17 @@ export class InventoryModalController {
     } else if (def.type === "scroll") {
       if (btnEquipHero) btnEquipHero.style.display = "none";
       if (btnEquipBeast) btnEquipBeast.style.display = "none";
-      if (targetTitle) targetTitle.innerText = "ใช้งานไอเทมพิเศษ (Use Item):";
-      if (btnUseScroll) btnUseScroll.style.display = "flex";
-      if (btnUseHero) btnUseHero.style.display = "none";
-      if (btnUseBeast) btnUseBeast.style.display = "none";
+      if (def.skillId) {
+        if (targetTitle) targetTitle.innerText = "เลือกผู้ที่จะเรียนรู้วิชา (Learn Skill):";
+        if (btnUseScroll) btnUseScroll.style.display = "none";
+        if (btnUseHero) btnUseHero.style.display = "flex";
+        if (btnUseBeast) btnUseBeast.style.display = this.activeBeast ? "flex" : "none";
+      } else {
+        if (targetTitle) targetTitle.innerText = "ใช้งานไอเทมพิเศษ (Use Item):";
+        if (btnUseScroll) btnUseScroll.style.display = "flex";
+        if (btnUseHero) btnUseHero.style.display = "none";
+        if (btnUseBeast) btnUseBeast.style.display = "none";
+      }
     } else if (cat === "material") {
       if (btnEquipHero) btnEquipHero.style.display = "none";
       if (btnEquipBeast) btnEquipBeast.style.display = "none";
@@ -472,8 +459,8 @@ export class InventoryModalController {
     const def = getItemDefinition(slot.itemId);
     if (!def) return;
 
-    // Special scroll handling (Town teleport)
-    if (def.type === "scroll") {
+    // Special scroll handling (Town teleport for non-tome scrolls)
+    if (def.type === "scroll" && !def.skillId) {
       this.handleUseScroll();
       return;
     }
@@ -507,7 +494,7 @@ export class InventoryModalController {
     if (!slot) return;
 
     const def = getItemDefinition(slot.itemId);
-    if (!def || def.type !== "scroll") return;
+    if (!def || def.type !== "scroll" || def.skillId) return;
 
     const result = InventoryManager.useItemOnCombatant(
       this.inventory,

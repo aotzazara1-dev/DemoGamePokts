@@ -525,7 +525,7 @@ export class BattleScene extends Phaser.Scene {
           onSkillSelected: (skillId) => {
             const skillDef = getSkillDefinition(skillId);
             this.selectedSkillId = skillId;
-            const validTargetIds = getValidTargets('skill', 'allies', this.battleState);
+            const validTargetIds = getValidTargets('skill', 'allies', this.battleState, undefined, skillDef?.category);
             this.highlightValidTargets(validTargetIds);
             this.statusBannerText.setText(`Selected ${skillDef?.name || 'Skill'}! Select target:`);
             this.statusBannerText.setColor('#38bdf8');
@@ -691,24 +691,14 @@ export class BattleScene extends Phaser.Scene {
   private handleTargetSelected(targetId: string) {
     if (!this.selectedActionType) return;
 
-    const itemDef = this.selectedActionType === 'item' && this.selectedItemId
-      ? getItemDefinition(this.selectedItemId)
-      : undefined;
-
-    const validTargets = getValidTargets(
-      this.selectedActionType,
-      'allies',
-      this.battleState,
-      itemDef?.type
-    );
+    const itemDef = this.selectedActionType === 'item' && this.selectedItemId ? getItemDefinition(this.selectedItemId) : undefined;
+    const skillDef = this.selectedActionType === 'skill' && this.selectedSkillId ? getSkillDefinition(this.selectedSkillId) : undefined;
+    const validTargets = getValidTargets(this.selectedActionType, 'allies', this.battleState, itemDef?.type, skillDef?.category);
 
     if (!validTargets.includes(targetId)) {
       this.cameras.main.shake(100, 0.005);
-      this.statusBannerText.setText(
-        this.selectedActionType === 'item'
-          ? 'Invalid ally target for this item!'
-          : 'Target blocked by Front Row unit!'
-      );
+      const isFriendlyTarget = this.selectedActionType === 'item' || (skillDef && (skillDef.category === 'heal' || skillDef.category === 'buff'));
+      this.statusBannerText.setText(isFriendlyTarget ? 'Invalid ally target for this action!' : 'Target blocked by Front Row unit!');
       this.statusBannerText.setColor('#ef4444');
       return;
     }

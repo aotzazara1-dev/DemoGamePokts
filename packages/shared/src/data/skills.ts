@@ -285,3 +285,15 @@ export const ELEMENTAL_SKILLS = SKILL_DATABASE;
 export function getSkillDefinition(id: string): SkillDefinition | undefined {
   return SKILL_DATABASE[id];
 }
+
+/**
+ * Extracts display name by removing localized parentheses suffix (e.g. "Flame Strike (คมดาบ...)" -> "Flame Strike").
+ */
+export function getSkillDisplayName(
+  skillOrName: SkillDefinition | string,
+  maxLength?: number
+): string {
+  const name = typeof skillOrName === "string" ? skillOrName : skillOrName.name;
+  const base = name.split(" (")[0];
+  return maxLength ? base.slice(0, maxLength) : base;
+}
