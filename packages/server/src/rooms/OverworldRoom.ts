@@ -569,18 +569,12 @@ export class OverworldRoom extends Room<OverworldState> {
       info.fullState.mapId = payload.mapId || player.mapId;
     }
 
-    if (payload.inventory) {
-      info.fullState.inventory = payload.inventory;
-    }
-    if (payload.gold !== undefined) {
-      info.fullState.inventory.gold = payload.gold;
-    }
-    if (payload.roster) {
-      info.fullState.roster = payload.roster;
-    }
-    if (payload.hero) {
-      info.fullState.hero = { ...info.fullState.hero, ...payload.hero };
-    }
+    if (payload.inventory) info.fullState.inventory = payload.inventory;
+    if (payload.gold !== undefined) info.fullState.inventory.gold = payload.gold;
+    if (payload.warehouse) info.fullState.warehouse = payload.warehouse;
+    if (payload.innStorage) info.fullState.innStorage = payload.innStorage;
+    if (payload.roster) info.fullState.roster = payload.roster;
+    if (payload.hero) info.fullState.hero = { ...info.fullState.hero, ...payload.hero };
 
     this.heroRepo.saveHeroState(info.heroId, info.fullState);
   }

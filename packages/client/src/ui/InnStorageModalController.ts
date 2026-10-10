@@ -128,8 +128,14 @@ export class InnStorageModalController {
             </div>
             <div class="inn-beast-stats">
               <span>Lv.${beast.level} [${beast.element}]</span>
-              <span class="inn-beast-hp">HP: ${beast.hp}/${beast.maxHp}</span>
-              <span class="inn-beast-sp">SP: ${beast.sp}/${beast.maxSp}</span>
+              <div class="inn-bar-wrap">
+                <span class="inn-beast-hp">HP: ${beast.hp}/${beast.maxHp}</span>
+                <div class="inn-bar-track"><div class="inn-bar-fill hp" style="width: ${Math.round((beast.hp / Math.max(1, beast.maxHp)) * 100)}%;"></div></div>
+              </div>
+              <div class="inn-bar-wrap">
+                <span class="inn-beast-sp">SP: ${beast.sp}/${beast.maxSp}</span>
+                <div class="inn-bar-track"><div class="inn-bar-fill sp" style="width: ${Math.round((beast.sp / Math.max(1, beast.maxSp)) * 100)}%;"></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -183,8 +189,14 @@ export class InnStorageModalController {
             </div>
             <div class="inn-beast-stats">
               <span>Lv.${beast.level} [${beast.element}]</span>
-              <span class="inn-beast-hp">HP: ${beast.hp}/${beast.maxHp}</span>
-              <span class="inn-beast-sp">SP: ${beast.sp}/${beast.maxSp}</span>
+              <div class="inn-bar-wrap">
+                <span class="inn-beast-hp">HP: ${beast.hp}/${beast.maxHp}</span>
+                <div class="inn-bar-track"><div class="inn-bar-fill hp" style="width: ${Math.round((beast.hp / Math.max(1, beast.maxHp)) * 100)}%;"></div></div>
+              </div>
+              <div class="inn-bar-wrap">
+                <span class="inn-beast-sp">SP: ${beast.sp}/${beast.maxSp}</span>
+                <div class="inn-bar-track"><div class="inn-bar-fill sp" style="width: ${Math.round((beast.sp / Math.max(1, beast.maxSp)) * 100)}%;"></div></div>
+              </div>
             </div>
           </div>
         </div>

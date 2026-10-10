@@ -1361,41 +1361,17 @@ export class OverworldScene extends Phaser.Scene {
         );
         if (targetType === "hero") {
           this.roster.hero = updatedTarget;
-          this.characterModal?.setHero(this.roster.hero);
-          this.skillTreeModal?.setHero(this.roster.hero);
+          this.handleHeroSync(this.roster.hero);
         } else {
-          const idx = this.roster.beasts.findIndex(
-            (b) => b.id === championId
-          );
-          if (idx !== -1) {
-            this.roster.beasts[idx] = updatedTarget;
-          }
-          this.rosterModal?.setRoster(this.roster);
+          const idx = this.roster.beasts.findIndex((b) => b.id === championId);
+          if (idx !== -1) this.roster.beasts[idx] = updatedTarget;
+          this.handleRosterSync(this.roster);
         }
-        this.equipmentModal?.setHero(this.roster.hero);
-        this.equipmentModal?.setRoster(this.roster);
-        this.equipmentModal?.setInventory(this.inventory);
-        this.inventoryModal?.setInventory(this.inventory);
-        this.inventoryModal?.setHero(this.roster.hero);
-        const activeBeast = this.roster.beasts.find(
-          (b) => b.id === this.roster.activeBeastId
-        );
-        this.inventoryModal?.setActiveBeast(activeBeast);
-        this.syncHeroSaveState({
-          hero: this.roster.hero,
-          roster: this.roster,
-          inventory: this.inventory,
-        });
+        this.handleInventorySync(this.inventory);
         const def = getItemDefinition(itemId);
-        this.showToast(
-          `⚔️ สวมใส่ ${def?.name || itemId} ให้กับ ${target.name} สำเร็จ!`,
-          "#34d399"
-        );
+        this.showToast(`⚔️ สวมใส่ ${def?.name || itemId} ให้กับ ${target.name} สำเร็จ!`, "#34d399");
       } else {
-        this.showToast(
-          `❌ ${res.reason || "ไม่สามารถสวมใส่อุปกรณ์ได้"}`,
-          "#f87171"
-        );
+        this.showToast(`❌ ${res.reason || "ไม่สามารถสวมใส่อุปกรณ์ได้"}`, "#f87171");
       }
     }
   }
@@ -1414,53 +1390,58 @@ export class OverworldScene extends Phaser.Scene {
     if (this.network.getRoom()) {
       this.network.sendUnequipItem({ targetType, championId, slot });
     } else {
-      const curEq =
-        target.equipment || EquipmentManager.createEmptyEquipment();
+      const curEq = target.equipment || EquipmentManager.createEmptyEquipment();
       const res = EquipmentManager.unequipItem(this.inventory, curEq, slot);
       if (res.success) {
         this.inventory = res.inventory;
-        const updatedTarget = EquipmentManager.applyEquipmentToCombatant(
-          target,
-          res.equipment
-        );
+        const updatedTarget = EquipmentManager.applyEquipmentToCombatant(target, res.equipment);
         if (targetType === "hero") {
           this.roster.hero = updatedTarget;
-          this.characterModal?.setHero(this.roster.hero);
-          this.skillTreeModal?.setHero(this.roster.hero);
+          this.handleHeroSync(this.roster.hero);
         } else {
-          const idx = this.roster.beasts.findIndex(
-            (b) => b.id === championId
-          );
-          if (idx !== -1) {
-            this.roster.beasts[idx] = updatedTarget;
-          }
-          this.rosterModal?.setRoster(this.roster);
+          const idx = this.roster.beasts.findIndex((b) => b.id === championId);
+          if (idx !== -1) this.roster.beasts[idx] = updatedTarget;
+          this.handleRosterSync(this.roster);
         }
-        this.equipmentModal?.setHero(this.roster.hero);
-        this.equipmentModal?.setRoster(this.roster);
-        this.equipmentModal?.setInventory(this.inventory);
-        this.inventoryModal?.setInventory(this.inventory);
-        this.inventoryModal?.setHero(this.roster.hero);
-        const activeBeast = this.roster.beasts.find(
-          (b) => b.id === this.roster.activeBeastId
-        );
-        this.inventoryModal?.setActiveBeast(activeBeast);
-        this.syncHeroSaveState({
-          hero: this.roster.hero,
-          roster: this.roster,
-          inventory: this.inventory,
-        });
-        this.showToast(
-          `🛡️ ${target.name} ถอดอุปกรณ์ ${slot} เรียบร้อย!`,
-          "#38bdf8"
-        );
+        this.handleInventorySync(this.inventory);
+        this.showToast(`🛡️ ${target.name} ถอดอุปกรณ์ ${slot} เรียบร้อย!`, "#38bdf8");
       } else {
-        this.showToast(
-          `❌ ${res.reason || "ไม่สามารถถอดอุปกรณ์ได้"}`,
-          "#f87171"
-        );
+        this.showToast(`❌ ${res.reason || "ไม่สามารถถอดอุปกรณ์ได้"}`, "#f87171");
       }
     }
+  }
+
+  private handleClearPathAndMarker(): void {
+    this.currentPath = [];
+    this.clearDestinationMarker();
+  }
+
+  private handleHeroSync(hero: Combatant): void {
+    this.roster.hero = hero;
+    this.characterModal?.setHero(hero);
+    this.skillTreeModal?.setHero(hero);
+    this.equipmentModal?.setHero(hero);
+    this.inventoryModal?.setHero(hero);
+    this.syncHeroSaveState({ hero: this.roster.hero });
+  }
+
+  private handleRosterSync(newRoster: PlayerRosterState): void {
+    this.roster = newRoster;
+    this.rosterModal?.setRoster(newRoster);
+    this.characterModal?.setHero(newRoster.hero);
+    this.equipmentModal?.setRoster(newRoster);
+    this.innStorageModal?.setRoster(newRoster);
+    this.inventoryModal?.setActiveBeast(this.roster.beasts.find((b) => b.id === this.roster.activeBeastId));
+    this.syncHeroSaveState({ roster: this.roster });
+  }
+
+  private handleInventorySync(newInv: InventoryState): void {
+    this.inventory = newInv;
+    this.inventoryModal?.setInventory(newInv);
+    this.shopModal?.setInventory(newInv);
+    this.warehouseModal?.setInventory(newInv);
+    this.equipmentModal?.setInventory(newInv);
+    this.syncHeroSaveState({ inventory: this.inventory });
   }
 
   // ==========================================
@@ -1472,32 +1453,14 @@ export class OverworldScene extends Phaser.Scene {
       this.roster.beasts.find((b) => b.id === this.roster.activeBeastId);
 
     this.characterModal = new CharacterModalController(this.roster.hero, {
-      onHeroUpdated: (hero) => {
-        this.roster.hero = hero;
-        this.skillTreeModal?.setHero(hero);
-        this.equipmentModal?.setHero(hero);
-        this.inventoryModal?.setHero(hero);
-        this.syncHeroSaveState({ hero: this.roster.hero });
-      },
-      onOpen: () => {
-        this.currentPath = [];
-        this.clearDestinationMarker();
-      },
+      onHeroUpdated: (hero) => this.handleHeroSync(hero),
+      onOpen: () => this.handleClearPathAndMarker(),
     });
 
     this.skillTreeModal = new SkillTreeModalController(this.roster.hero, {
-      onHeroUpdated: (hero) => {
-        this.roster.hero = hero;
-        this.characterModal.setHero(hero);
-        this.equipmentModal?.setHero(hero);
-        this.inventoryModal?.setHero(hero);
-        this.syncHeroSaveState({ hero: this.roster.hero });
-      },
+      onHeroUpdated: (hero) => this.handleHeroSync(hero),
       onShowToast: (msg, color) => this.showToast(msg, color),
-      onOpen: () => {
-        this.currentPath = [];
-        this.clearDestinationMarker();
-      },
+      onOpen: () => this.handleClearPathAndMarker(),
     });
 
     const headerBtnTree = document.getElementById("header-btn-skill-tree");
@@ -1510,25 +1473,14 @@ export class OverworldScene extends Phaser.Scene {
       {
         onEquipItem: (itemId, targetType, championId) => this.handleEquipItem(itemId, targetType, championId),
         onUnequipItem: (targetType, championId, slot) => this.handleUnequipItem(targetType, championId, slot),
-        onOpen: () => {
-          this.currentPath = [];
-          this.clearDestinationMarker();
-        },
+        onOpen: () => this.handleClearPathAndMarker(),
       }
     );
 
     this.rosterModal = new RosterModalController(this.roster, {
-      onRosterUpdated: (newRoster) => {
-        this.roster = newRoster;
-        this.innStorageModal?.setRoster(newRoster);
-        this.inventoryModal?.setActiveBeast(getActiveBeast());
-        this.syncHeroSaveState({ roster: this.roster });
-      },
+      onRosterUpdated: (newRoster) => this.handleRosterSync(newRoster),
       onUnequipChampionItem: (championId, slot) => this.handleUnequipItem("champion", championId, slot),
-      onOpen: () => {
-        this.currentPath = [];
-        this.clearDestinationMarker();
-      },
+      onOpen: () => this.handleClearPathAndMarker(),
     });
 
     this.dialogueModal = new DialogueModalController({
@@ -1544,15 +1496,7 @@ export class OverworldScene extends Phaser.Scene {
         this.innStorageModal.open();
       },
       onHeal: (npc) => {
-        this.roster = RosterManager.restoreFullParty(this.roster);
-        this.characterModal.setHero(this.roster.hero);
-        this.rosterModal.setRoster(this.roster);
-        this.innStorageModal?.setRoster(this.roster);
-        this.equipmentModal?.setHero(this.roster.hero);
-        this.equipmentModal?.setRoster(this.roster);
-        this.inventoryModal.setHero(this.roster.hero);
-        this.inventoryModal.setActiveBeast(getActiveBeast());
-        this.syncHeroSaveState({ roster: this.roster });
+        this.handleRosterSync(RosterManager.restoreFullParty(this.roster));
         this.showToast(
           `💖 ${npc.name} ได้ฟื้นฟูพลังชีวิตและจิตวิญญาณให้ทีมของคุณเต็ม 100%!`,
           "#34d399"
@@ -1562,54 +1506,29 @@ export class OverworldScene extends Phaser.Scene {
     });
 
     this.shopModal = new ShopModalController(this.inventory, {
-      onInventoryUpdated: (newInv) => {
-        this.inventory = newInv;
-        this.inventoryModal.setInventory(newInv);
-        this.warehouseModal?.setInventory(newInv);
-        this.equipmentModal?.setInventory(newInv);
-        this.syncHeroSaveState({ inventory: this.inventory });
-      },
+      onInventoryUpdated: (newInv) => this.handleInventorySync(newInv),
       onShowToast: (msg, color) => this.showToast(msg, color),
       onClose: () => {},
     });
 
     this.warehouseModal = new WarehouseModalController(this.inventory, this.warehouse, {
-      onInventoryUpdated: (newInv) => {
-        this.inventory = newInv;
-        this.inventoryModal.setInventory(newInv);
-        this.shopModal?.setInventory(newInv);
-        this.equipmentModal?.setInventory(newInv);
-        this.syncHeroSaveState({ inventory: this.inventory });
-      },
+      onInventoryUpdated: (newInv) => this.handleInventorySync(newInv),
       onWarehouseUpdated: (newWh) => {
         this.warehouse = newWh;
         this.syncHeroSaveState({ warehouse: this.warehouse });
       },
       onShowToast: (msg, color) => this.showToast(msg, color),
-      onOpen: () => {
-        this.currentPath = [];
-        this.clearDestinationMarker();
-      },
+      onOpen: () => this.handleClearPathAndMarker(),
     });
 
     this.innStorageModal = new InnStorageModalController(this.roster, this.innStorage, {
-      onRosterUpdated: (newRoster) => {
-        this.roster = newRoster;
-        this.rosterModal.setRoster(newRoster);
-        this.characterModal.setHero(this.roster.hero);
-        this.equipmentModal?.setRoster(newRoster);
-        this.inventoryModal.setActiveBeast(getActiveBeast());
-        this.syncHeroSaveState({ roster: this.roster });
-      },
+      onRosterUpdated: (newRoster) => this.handleRosterSync(newRoster),
       onInnStorageUpdated: (newInn) => {
         this.innStorage = newInn;
         this.syncHeroSaveState({ innStorage: this.innStorage });
       },
       onShowToast: (msg, color) => this.showToast(msg, color),
-      onOpen: () => {
-        this.currentPath = [];
-        this.clearDestinationMarker();
-      },
+      onOpen: () => this.handleClearPathAndMarker(),
     });
 
     this.inventoryModal = new InventoryModalController(
@@ -1617,31 +1536,17 @@ export class OverworldScene extends Phaser.Scene {
       this.roster.hero,
       getActiveBeast(),
       {
-        onHeroUpdated: (hero) => {
-          this.roster.hero = hero;
-          this.characterModal.setHero(hero);
-          this.equipmentModal?.setHero(hero);
-          this.syncHeroSaveState({ hero: this.roster.hero });
-        },
+        onHeroUpdated: (hero) => this.handleHeroSync(hero),
         onBeastUpdated: (beast) => {
           const idx = this.roster.beasts.findIndex((b) => b.id === beast.id);
           if (idx !== -1) {
             this.roster.beasts[idx] = beast;
-            this.rosterModal.setRoster(this.roster);
-            this.innStorageModal?.setRoster(this.roster);
-            this.equipmentModal?.setRoster(this.roster);
-            this.syncHeroSaveState({ roster: this.roster });
+            this.handleRosterSync(this.roster);
           }
         },
         onEquipItem: (itemId, targetType, championId) =>
           this.handleEquipItem(itemId, targetType, championId),
-        onInventoryUpdated: (inv) => {
-          this.inventory = inv;
-          this.shopModal?.setInventory(inv);
-          this.warehouseModal?.setInventory(inv);
-          this.equipmentModal?.setInventory(inv);
-          this.syncHeroSaveState({ inventory: this.inventory });
-        },
+        onInventoryUpdated: (inv) => this.handleInventorySync(inv),
         onWarpTown: () => {
           this.inventoryModal.close();
           this.network.sendWarpTown();
@@ -1655,10 +1560,7 @@ export class OverworldScene extends Phaser.Scene {
             "#6ee7b7"
           );
         },
-        onOpen: () => {
-          this.currentPath = [];
-          this.clearDestinationMarker();
-        },
+        onOpen: () => this.handleClearPathAndMarker(),
       }
     );
 
@@ -1666,25 +1568,9 @@ export class OverworldScene extends Phaser.Scene {
       () => this.roster.hero,
       () => this.roster,
       {
-        onHeroUpdated: (hero) => {
-          this.roster.hero = hero;
-          this.characterModal.setHero(hero);
-          this.equipmentModal?.setHero(hero);
-          this.inventoryModal.setHero(hero);
-        },
-        onRosterUpdated: (newRoster) => {
-          this.roster = newRoster;
-          this.rosterModal.setRoster(newRoster);
-          this.equipmentModal?.setRoster(newRoster);
-          this.inventoryModal.setActiveBeast(getActiveBeast());
-        },
-        onInventoryUpdated: (newInv) => {
-          this.inventory = newInv;
-          this.inventoryModal.setInventory(newInv);
-          this.equipmentModal?.setInventory(newInv);
-          this.shopModal?.setInventory(newInv);
-          this.syncHeroSaveState({ inventory: this.inventory });
-        },
+        onHeroUpdated: (hero) => this.handleHeroSync(hero),
+        onRosterUpdated: (newRoster) => this.handleRosterSync(newRoster),
+        onInventoryUpdated: (newInv) => this.handleInventorySync(newInv),
         onInstantBattle: (payload) => {
           this.triggerBattleTransition(payload);
         },

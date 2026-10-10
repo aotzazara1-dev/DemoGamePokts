@@ -143,12 +143,13 @@ export const MAP_DATABASE: Record<string, MapConfig> = {
         options: [
           {
             id: "opt_warehouse",
-            label: "📦 คลังเก็บไอเทมและเหรียญทอง (Open Personal Warehouse)",
+            label:
+              "📦 คลังเก็บไอเทมและเหรียญทอง (Personal Item & Gold Warehouse)",
             action: "warehouse",
           },
           {
             id: "opt_inn_beasts",
-            label: "🐎 โรงเตี๊ยมรับฝากขุนพล (Open Inn Beast Storage & Daycare)",
+            label: "🐎 โรงเตี๊ยมรับฝากขุนพล (Inn Beast Daycare & Storage)",
             action: "inn_beasts",
           },
           { id: "opt_close", label: "✕ ลาก่อน (Goodbye)", action: "close" },

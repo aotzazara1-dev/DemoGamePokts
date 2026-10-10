@@ -238,6 +238,35 @@
   color: #38bdf8;
 }
 
+.inn-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inn-bar-track {
+  width: 44px;
+  height: 5px;
+  background: #0f172a;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.inn-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.inn-bar-fill.hp {
+  background: #10b981;
+}
+
+.inn-bar-fill.sp {
+  background: #38bdf8;
+}
+
 .inn-action-btn {
   padding: 6px 10px;
   border: none;

@@ -45,36 +45,42 @@ export class DialogueModalController {
 
     if (optionsGrid) {
       optionsGrid.innerHTML = "";
+      const actionClasses: Record<string, string> = {
+        shop: "btn-action-primary",
+        warehouse: "btn-action-primary",
+        inn_beasts: "btn-action-primary",
+        heal: "btn-action-heal",
+      };
+
       npc.options.forEach((opt: NPCDialogueOption) => {
         const btn = document.createElement("button");
-        const isPrimary =
-          opt.action === "shop" ||
-          opt.action === "warehouse" ||
-          opt.action === "inn_beasts";
-        btn.className = `dialogue-opt-btn ${isPrimary ? "btn-action-primary" : opt.action === "heal" ? "btn-action-heal" : ""}`;
+        btn.className = `dialogue-opt-btn ${actionClasses[opt.action] || ""}`;
         btn.textContent = opt.label;
 
         btn.onclick = () => {
-          if (opt.action === "shop") {
-            this.close();
-            this.callbacks.onOpenShop(npc);
-          } else if (opt.action === "warehouse") {
-            this.close();
-            this.callbacks.onOpenWarehouse?.(npc);
-          } else if (opt.action === "inn_beasts") {
-            this.close();
-            this.callbacks.onOpenInnStorage?.(npc);
-          } else if (opt.action === "heal") {
-            this.callbacks.onHeal(npc);
-            if (opt.response && textEl) {
-              textEl.textContent = opt.response;
-            }
-          } else if (opt.action === "advice") {
-            if (opt.response && textEl) {
-              textEl.textContent = opt.response;
-            }
-          } else {
-            this.close();
+          switch (opt.action) {
+            case "shop":
+              this.close();
+              this.callbacks.onOpenShop(npc);
+              break;
+            case "warehouse":
+              this.close();
+              this.callbacks.onOpenWarehouse?.(npc);
+              break;
+            case "inn_beasts":
+              this.close();
+              this.callbacks.onOpenInnStorage?.(npc);
+              break;
+            case "heal":
+              this.callbacks.onHeal(npc);
+              if (opt.response && textEl) textEl.textContent = opt.response;
+              break;
+            case "advice":
+              if (opt.response && textEl) textEl.textContent = opt.response;
+              break;
+            default:
+              this.close();
+              break;
           }
         };
 

@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
-    "mtime": 1791629764.7053933,
-    "seen": 1791629860.7691905,
-    "ast_hash": "0b5bfbde58ab94978979afcab95e614c",
+    "mtime": 1791631455.2349112,
+    "seen": 1791631537.2365713,
+    "ast_hash": "c0d36fe7a0e93d19b18467610f7d6500",
     "semantic_hash": ""
   },
   "packages/client/src/ui/AuthModalController.ts": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/DialogueModalController.ts": {
-    "mtime": 1791629519.015266,
-    "seen": 1791629860.7692032,
-    "ast_hash": "5d5a3f06db9a18abbdf492b88f39f66f",
+    "mtime": 1791631507.357731,
+    "seen": 1791631537.2365837,
+    "ast_hash": "f2def1569c9ac58465d6d57681401323",
     "semantic_hash": ""
   },
   "packages/client/src/ui/InventoryModalController.ts": {
@@ -288,9 +288,9 @@
     "semantic_hash": "a66be9293c52d8857d762b5c49e56b74"
   },
   "packages/server/src/rooms/OverworldRoom.ts": {
-    "mtime": 1791616398.7424672,
-    "seen": 1791617459.294993,
-    "ast_hash": "1428f524e44c606af3d99bfe6595470f",
+    "mtime": 1791631312.0838466,
+    "seen": 1791631537.236647,
+    "ast_hash": "72823a4e0288ebbff4545c473a37f18e",
     "semantic_hash": ""
   },
   "packages/server/src/schema/BattleState.ts": {
@@ -372,9 +372,9 @@
     "semantic_hash": "b192b046597a6b4bb5b737214a30efdb"
   },
   "packages/shared/src/auth/types.ts": {
-    "mtime": 1791629390.8919845,
-    "seen": 1791629860.7692924,
-    "ast_hash": "3076a714ad969f63ba5f1bc9763cf74d",
+    "mtime": 1791629870.452073,
+    "seen": 1791631537.2366724,
+    "ast_hash": "34be64d2ec28330356d2d1db29b713b1",
     "semantic_hash": ""
   },
   "packages/shared/src/battle/battle-engine.ts": {
@@ -420,9 +420,9 @@
     "semantic_hash": "13957b02778592b8036643af8d18ba4b"
   },
   "packages/shared/src/overworld/map-database.ts": {
-    "mtime": 1791629510.9718914,
-    "seen": 1791629860.7693164,
-    "ast_hash": "1f6955cc113fb7a78cd5d7740d47c4a4",
+    "mtime": 1791631500.4430394,
+    "seen": 1791631537.2366965,
+    "ast_hash": "55b7b644143d1416f664d9f51f595015",
     "semantic_hash": ""
   },
   "packages/shared/src/overworld/overworld-engine.ts": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791629247.6385612,
-    "seen": 1791629860.7694635,
-    "ast_hash": "1bdeb5ab36d1cbe559e5adbc5333b0b6",
+    "mtime": 1791629869.633909,
+    "seen": 1791631537.2368464,
+    "ast_hash": "80bd19f8c0591449d14416cc2d8c12a0",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "packages/client/index.html": {
-    "mtime": 1791629601.1174054,
-    "seen": 1791629860.7695036,
-    "ast_hash": "801cff2c99467a4a685df28a4a24d75f",
+    "mtime": 1791629869.968359,
+    "seen": 1791631537.2368863,
+    "ast_hash": "d25b1d3e2c9c1689b263e3030a840bbd",
     "semantic_hash": ""
   },
   "packages/client/public/prototype-hex6.html": {
@@ -1296,87 +1296,87 @@
     "semantic_hash": ""
   },
   "packages/client/src/ui/InnStorageModalController.ts": {
-    "mtime": 1791629758.5103586,
-    "seen": 1791629860.7692068,
-    "ast_hash": "9c1610fa75a73d7c872dc571c05be984",
+    "mtime": 1791631483.1046264,
+    "seen": 1791631537.2365873,
+    "ast_hash": "777abbd1fd8590cd0c95731600b4aad2",
     "semantic_hash": ""
   },
   "packages/client/src/ui/WarehouseModalController.ts": {
-    "mtime": 1791629747.2389474,
-    "seen": 1791629860.7692165,
-    "ast_hash": "a22fc66309ef2a917f6802a3624e0532",
+    "mtime": 1791629870.313596,
+    "seen": 1791631537.2365966,
+    "ast_hash": "f910d5ed8833651e0e54203daf33f078",
     "semantic_hash": ""
   },
   "packages/client/test/dialogue-warehouse-actions.test.ts": {
-    "mtime": 1791629529.0018568,
-    "seen": 1791629860.7692294,
-    "ast_hash": "14d18300b7c7d2a088476bd40a36b169",
+    "mtime": 1791629870.3494792,
+    "seen": 1791631537.23661,
+    "ast_hash": "ce146a79a6cb4d18d701886c49f48b08",
     "semantic_hash": ""
   },
   "packages/client/test/warehouse-inn-ui.test.ts": {
-    "mtime": 1791629805.3186352,
-    "seen": 1791629860.7692478,
-    "ast_hash": "d0ad8548b052cd1f3dc17942837c77ec",
+    "mtime": 1791629870.3990953,
+    "seen": 1791631537.236628,
+    "ast_hash": "733b71127f7f6ed6038044d6057abbc6",
     "semantic_hash": ""
   },
   "packages/server/test/warehouse-inn-persistence.test.ts": {
-    "mtime": 1791629450.1231544,
-    "seen": 1791629860.7692876,
-    "ast_hash": "94ea398ed9f5a159669aad3f593a80c6",
+    "mtime": 1791629870.4366434,
+    "seen": 1791631537.2366674,
+    "ast_hash": "ef9f6329bdeb5f8170e2919705919cd0",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/warehouse-manager.ts": {
-    "mtime": 1791629299.6385546,
-    "seen": 1791629860.769315,
-    "ast_hash": "d43cfc0a9f199aa3db15c136e00aea5a",
+    "mtime": 1791629870.4815686,
+    "seen": 1791631537.2366953,
+    "ast_hash": "ebb84fe72fe5fcf18ef659edd761dde8",
     "semantic_hash": ""
   },
   "packages/shared/src/roster/inn-storage-manager.ts": {
-    "mtime": 1791629306.1645894,
-    "seen": 1791629860.7693238,
-    "ast_hash": "89def9a476f63656953a5c02518b5910",
+    "mtime": 1791629870.5258002,
+    "seen": 1791631537.2367043,
+    "ast_hash": "3dbf28d99972949a896fd51709d0a5b6",
     "semantic_hash": ""
   },
   "packages/shared/test/inn-storage-manager.test.ts": {
-    "mtime": 1791629327.3617258,
-    "seen": 1791629860.769338,
-    "ast_hash": "5418f81fe49e539eb9fab6254f7ad64c",
+    "mtime": 1791629870.5695374,
+    "seen": 1791631537.236719,
+    "ast_hash": "3ccbf6f1adda9e97c323ed71f2553bf9",
     "semantic_hash": ""
   },
   "packages/shared/test/warehouse-manager.test.ts": {
-    "mtime": 1791629344.0328176,
-    "seen": 1791629860.7693532,
-    "ast_hash": "a0931e9abf9add530772f2c48b558dcd",
+    "mtime": 1791629870.585262,
+    "seen": 1791631537.2367349,
+    "ast_hash": "b1e05321f3268661dd64505079a20e07",
     "semantic_hash": ""
   },
   ".scratch/warehouse-and-inn-storage/issues/01-shared-warehouse-and-inn-domain-types.md": {
-    "mtime": 1791629367.2950654,
-    "seen": 1791629860.769454,
-    "ast_hash": "3efd8293dd0e0d99de8ceae510f9f14f",
+    "mtime": 1791629869.466225,
+    "seen": 1791631537.236837,
+    "ast_hash": "6aff88fbbd826286d672ad5ad8fd427b",
     "semantic_hash": ""
   },
   ".scratch/warehouse-and-inn-storage/issues/02-server-sqlite-schema-and-persistence.md": {
-    "mtime": 1791629493.1187594,
-    "seen": 1791629860.7694557,
-    "ast_hash": "db43e4c1dcbed86c297ea7b24e5191da",
+    "mtime": 1791629869.4849994,
+    "seen": 1791631537.236838,
+    "ast_hash": "49c4cd0f9f416869ad70918345340a6d",
     "semantic_hash": ""
   },
   ".scratch/warehouse-and-inn-storage/issues/03-npc-innkeeper-dialogue-and-overworld-integration.md": {
-    "mtime": 1791629536.7536006,
-    "seen": 1791629860.7694566,
-    "ast_hash": "3ebd4e9b090fdcfbfd191f393730bf05",
+    "mtime": 1791629869.4995306,
+    "seen": 1791631537.2368398,
+    "ast_hash": "eb1cc24baf0faec70ab0b897d0656f58",
     "semantic_hash": ""
   },
   ".scratch/warehouse-and-inn-storage/issues/04-client-warehouse-and-inn-modal-controllers.md": {
-    "mtime": 1791629852.0568006,
-    "seen": 1791629860.7694578,
-    "ast_hash": "66805f40feb7f3dbe0c74f4d9d2cd697",
+    "mtime": 1791629869.51623,
+    "seen": 1791631537.2368407,
+    "ast_hash": "d77e0ccaf36f1bc86a0a474f14ac0750",
     "semantic_hash": ""
   },
   ".scratch/warehouse-and-inn-storage/spec.md": {
-    "mtime": 1791629263.6967676,
-    "seen": 1791629860.7694592,
-    "ast_hash": "96b94da1c8886c59a1a7bde086857f20",
+    "mtime": 1791629869.5538495,
+    "seen": 1791631537.2368422,
+    "ast_hash": "d9b6ee29eac1389f953a9e5aaf2dfcb5",
     "semantic_hash": ""
   },
   "docs/adr/0022-warehouse-and-inn-beast-storage.md": {
