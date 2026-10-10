@@ -8,7 +8,7 @@ import {
   type BattleOutcome
 } from '../types.js';
 import { calculateDamage, getElementMultiplier, canTriggerCombo } from '../formulas.js';
-import { ELEMENTAL_SKILLS } from '../data/skills.js';
+import { BattleSkillExecutor } from './battle-skill-executor.js';
 import { getItemDefinition } from '../inventory/item-database.js';
 
 export class BattleEngine {
@@ -319,26 +319,15 @@ export class BattleEngine {
         }
       }
 
-      // Calculate Damage
-      const isSkill = actor.action.type === 'skill';
-      let skillMultiplier = 1.3;
-      let spCost = 10;
-      let skillName = 'Elemental Strike';
-
-      if (isSkill) {
-        const skillId = actor.action.skillId;
-        if (skillId && ELEMENTAL_SKILLS[skillId]) {
-          const def = ELEMENTAL_SKILLS[skillId];
-          skillMultiplier = def.multiplier;
-          spCost = def.spCost;
-          skillName = def.name;
-        }
-        actor.sp = Math.max(0, actor.sp - spCost);
+      // Execute Skill or Physical Attack
+      if (actor.action.type === 'skill') {
+        BattleSkillExecutor.executeSkill(actor, target, actor.action, events);
+        continue;
       }
 
+      // Calculate Physical Attack Damage
       const elemFactor = getElementMultiplier(actor.element, target.element);
-      const effectiveAtk = isSkill ? actor.atk * skillMultiplier : actor.atk;
-      let damage = calculateDamage(effectiveAtk, target.def, elemFactor, 1.0);
+      let damage = calculateDamage(actor.atk, target.def, elemFactor, 1.0);
 
       if (target.isDefending) {
         damage = Math.max(1, Math.round(damage * 0.5));
@@ -347,12 +336,10 @@ export class BattleEngine {
       target.hp = Math.max(0, target.hp - damage);
 
       events.push({
-        type: isSkill ? 'skill' : 'attack',
+        type: 'attack',
         actorId: actor.id,
         targetId: target.id,
-        message: isSkill
-          ? `${actor.name} casts ${skillName} at ${target.name}!`
-          : `${actor.name} attacks ${target.name}!`
+        message: `${actor.name} attacks ${target.name}!`
       });
 
       events.push({

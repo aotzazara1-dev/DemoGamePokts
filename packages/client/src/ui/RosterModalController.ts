@@ -8,6 +8,8 @@ import {
   type EquipmentSlot,
   getItemDefinition,
   getItemIcon,
+  SkillManager,
+  getSkillDefinition,
 } from "@poktsonline/shared";
 
 export interface RosterModalCallbacks {
@@ -169,6 +171,20 @@ export class RosterModalController {
                   })
                   .join("")}
               </div>
+              <div class="beast-skills-row" style="margin-top: 5px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                <span style="font-size: 10px; color: #94a3b8;">Skills:</span>
+                ${SkillManager.ensureSkillSlots(beast)
+                  .map((s, idx) => {
+                    const def = s.skillId
+                      ? getSkillDefinition(s.skillId)
+                      : null;
+                    if (!def)
+                      return `<span title="Slot ${idx + 1} (Empty)" style="border: 1px dashed #475569; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: #64748b;">(Empty)</span>`;
+                    const color = s.isSignature ? "#f59e0b" : "#38bdf8";
+                    return `<span title="${def.name}\n${def.description}\nCost: ${def.spCost} SP" style="border: 1px solid ${color}; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: ${color};">${s.isSignature ? "⭐ " : ""}${def.name.split(" (")[0].slice(0, 12)}</span>`;
+                  })
+                  .join("")}
+              </div>
               ${
                 (beast.statPoints ?? 0) > 0
                   ? `
@@ -223,17 +239,16 @@ export class RosterModalController {
             };
           });
 
-          const slotBtns =
-            card.querySelectorAll<HTMLButtonElement>(".btn-beast-slot");
-          slotBtns.forEach((btn) => {
-            btn.onclick = (e) => {
-              e.stopPropagation();
-              const slot = btn.getAttribute("data-slot") as EquipmentSlot;
-              if (slot) {
-                this.callbacks.onUnequipChampionItem?.(beast.id, slot);
-              }
-            };
-          });
+          card
+            .querySelectorAll<HTMLButtonElement>(".btn-beast-slot")
+            .forEach((btn) => {
+              btn.onclick = (e) => {
+                e.stopPropagation();
+                const slot = btn.getAttribute("data-slot") as EquipmentSlot;
+                if (slot)
+                  this.callbacks.onUnequipChampionItem?.(beast.id, slot);
+              };
+            });
 
           beastContainer.appendChild(card);
         });
@@ -265,15 +280,12 @@ export class RosterModalController {
     }
 
     // 4. Formation Grid Slots
-    this.renderGridSlotsRow(
-      "front",
-      document.getElementById("grid-front-row"),
-      activeBeast
-    );
-    this.renderGridSlotsRow(
-      "back",
-      document.getElementById("grid-back-row"),
-      activeBeast
+    (["front", "back"] as const).forEach((r) =>
+      this.renderGridSlotsRow(
+        r,
+        document.getElementById(`grid-${r}-row`),
+        activeBeast
+      )
     );
 
     // 5. Summary Text

@@ -333,6 +333,21 @@ describe("Equipment UI Controllers", () => {
         "accessory"
       );
     });
+
+    it("renders champion 5 skill slots with signature badges", () => {
+      const controller = new RosterModalController(sampleRoster);
+      controller.toggle(true);
+
+      const beastCard = document.querySelector(
+        "#beast-list-container .beast-item"
+      );
+      expect(beastCard).not.toBeNull();
+
+      const skillsRow = beastCard?.querySelector(".beast-skills-row");
+      expect(skillsRow).not.toBeNull();
+      expect(skillsRow?.textContent).toContain("Skills:");
+      expect(skillsRow?.textContent).toContain("⭐");
+    });
   });
 
   describe("InventoryModalController Equipment Flow", () => {

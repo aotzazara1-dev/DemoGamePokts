@@ -3,3 +3,15 @@ dist
 graphify-out
 .husky
 package-lock.json
+
+# Legacy Whitelisted Files (Preserve git blame and exact ADR 0020 LOC baselines)
+packages/client/src/scenes/OverworldScene.ts
+packages/client/src/scenes/BattleScene.ts
+packages/client/src/renderer/OverworldRenderer.ts
+packages/client/src/ui/InventoryModalController.ts
+packages/server/src/rooms/OverworldRoom.ts
+packages/client/src/entities/OverworldEntityManager.ts
+packages/server/src/db/HeroRepository.ts
+packages/client/src/ui/DebugToolbarController.ts
+packages/shared/src/inventory/item-database.ts
+packages/shared/src/battle/battle-engine.ts

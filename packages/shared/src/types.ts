@@ -31,6 +31,12 @@ export interface Attributes {
   agi: number;
 }
 
+export interface CombatantSkillSlot {
+  slotIndex: number; // 0..4
+  skillId: string | null;
+  isSignature: boolean;
+}
+
 export interface Combatant extends Attributes {
   id: string;
   name: string;
@@ -44,6 +50,7 @@ export interface Combatant extends Attributes {
   isDefending?: boolean;
   equipment?: EntityEquipment;
   baseAttributes?: Attributes;
+  skillSlots?: CombatantSkillSlot[];
 }
 
 export interface TeamFormation {
@@ -73,6 +80,7 @@ export type BattleEventType =
   | "pass"
   | "heal"
   | "sp_restore"
+  | "buff"
   | "revive"
   | "capture_success"
   | "capture_fail"
@@ -261,6 +269,7 @@ export interface ItemDefinition {
   slot?: EquipmentSlot;
   stats?: EquipmentStats;
   requiredLevel?: number;
+  skillId?: string;
 }
 
 export interface ItemStack {

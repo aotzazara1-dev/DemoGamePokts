@@ -2,25 +2,13 @@ import Phaser from 'phaser';
 import { BattleNetwork } from '../network/BattleNetwork.js';
 import { getValidTargets } from '../battle/targeting.js';
 import {
-  Element,
-  BattleEngine,
-  ProgressionEngine,
-  ELEMENTAL_SKILLS,
-  InventoryManager,
-  LootEngine,
-  getItemDefinition,
-  getItemIcon,
-  type SkillDefinition,
-  type Combatant,
-  type BattleState,
-  type CombatAction,
-  type CombatActionType,
-  type BattleEvent,
-  type InventoryState,
-  type LootReward,
-  type ItemStack
+  Element, BattleEngine, ProgressionEngine, InventoryManager, LootEngine,
+  getItemDefinition, getItemIcon, getSkillDefinition,
+  type Combatant, type BattleState, type CombatAction, type CombatActionType,
+  type BattleEvent, type InventoryState, type LootReward, type ItemStack
 } from '@poktsonline/shared';
 import { soundManager } from '../audio/SoundManager.js';
+import { BattleSkillMenuController } from '../ui/BattleSkillMenuController.js';
 
 export class BattleScene extends Phaser.Scene {
   private network!: BattleNetwork;
@@ -39,6 +27,7 @@ export class BattleScene extends Phaser.Scene {
   private actionTimerSeconds: number = 30;
   private timerProgressBar!: Phaser.GameObjects.Rectangle;
   private itemMenuContainer?: Phaser.GameObjects.Container;
+  private skillMenuController?: BattleSkillMenuController;
   private timerText!: Phaser.GameObjects.Text;
   private statusBannerText!: Phaser.GameObjects.Text;
   private activeActorText!: Phaser.GameObjects.Text;
@@ -515,6 +504,7 @@ export class BattleScene extends Phaser.Scene {
       this.itemMenuContainer.destroy();
       this.itemMenuContainer = undefined;
     }
+    this.skillMenuController?.hide();
 
     this.selectedActionType = actionType;
     this.selectedSkillId = null;
@@ -530,24 +520,30 @@ export class BattleScene extends Phaser.Scene {
       const actor = activeVis?.unit;
       if (!actor) return;
 
-      // Select elemental skill according to actor's element
-      let skillDef: SkillDefinition = ELEMENTAL_SKILLS['aqua_jet'];
-      if (actor.element === Element.Earth) skillDef = ELEMENTAL_SKILLS['rock_throw'];
-      else if (actor.element === Element.Fire) skillDef = ELEMENTAL_SKILLS['flame_strike'];
-      else if (actor.element === Element.Wind) skillDef = ELEMENTAL_SKILLS['gale_slash'];
-
-      if (actor.sp < skillDef.spCost) {
-        this.cameras.main.shake(120, 0.005);
-        this.statusBannerText.setText(`Not enough SP! ${skillDef.name} costs ${skillDef.spCost} SP.`);
-        this.statusBannerText.setColor('#ef4444');
-        return;
+      if (!this.skillMenuController) {
+        this.skillMenuController = new BattleSkillMenuController(this, {
+          onSkillSelected: (skillId) => {
+            const skillDef = getSkillDefinition(skillId);
+            this.selectedSkillId = skillId;
+            const validTargetIds = getValidTargets('skill', 'allies', this.battleState);
+            this.highlightValidTargets(validTargetIds);
+            this.statusBannerText.setText(`Selected ${skillDef?.name || 'Skill'}! Select target:`);
+            this.statusBannerText.setColor('#38bdf8');
+          },
+          onCancelled: () => {
+            this.slotHighlightBoxes.forEach(b => b.destroy()); this.slotHighlightBoxes = [];
+            this.statusBannerText.setText('Action cancelled. Choose an action:');
+            this.statusBannerText.setColor('#ffffff');
+          },
+          onWarning: (msg) => {
+            this.statusBannerText.setText(msg);
+            this.statusBannerText.setColor('#ef4444');
+          }
+        });
       }
 
-      this.selectedSkillId = skillDef.id;
-      const validTargetIds = getValidTargets('skill', 'allies', this.battleState);
-      this.highlightValidTargets(validTargetIds);
-
-      this.statusBannerText.setText(`Selected ${skillDef.name} (${skillDef.spCost} SP)! Select enemy target:`);
+      this.skillMenuController.show(actor);
+      this.statusBannerText.setText(`Choose a skill for ${actor.name}:`);
       this.statusBannerText.setColor('#38bdf8');
     } else if (actionType === 'item') {
       const usableItems = this.inventory.slots.filter(s => {
@@ -743,6 +739,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private advanceTurnInput() {
+    this.skillMenuController?.hide();
     const livingAllies: Combatant[] = [];
     ['front', 'back'].forEach(r => {
       this.battleState.allies[r as 'front' | 'back'].forEach(u => {

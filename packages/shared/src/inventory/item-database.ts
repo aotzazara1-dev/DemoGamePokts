@@ -1,4 +1,5 @@
 import { ItemCategory, ItemDefinition } from "../types.js";
+import { SKILL_TOMES } from "./skill-tomes.js";
 
 export const ITEM_DATABASE: Record<string, ItemDefinition> = {
   item_small_herb: {
@@ -341,6 +342,7 @@ export const ITEM_DATABASE: Record<string, ItemDefinition> = {
     stats: { maxHp: 60, maxSp: 30 },
     requiredLevel: 2,
   },
+  ...SKILL_TOMES,
 };
 
 export function getItemDefinition(itemId: string): ItemDefinition | undefined {
@@ -350,19 +352,17 @@ export function getItemDefinition(itemId: string): ItemDefinition | undefined {
 export function getItemIcon(itemId: string): string {
   const item = ITEM_DATABASE[itemId];
   if (item?.type === "equipment") {
-    switch (item.slot) {
-      case "weapon":
-        return "⚔️";
-      case "head":
-        return "🪖";
-      case "armor":
-        return "🛡️";
-      case "boots":
-        return "👢";
-      case "accessory":
-        return "💍";
-    }
+    const slotIcons: Record<string, string> = {
+      weapon: "⚔️",
+      head: "🪖",
+      armor: "🛡️",
+      boots: "👢",
+      accessory: "💍",
+    };
+    if (item.slot && slotIcons[item.slot]) return slotIcons[item.slot];
   }
+
+  if (itemId.startsWith("item_tome_")) return "📖";
 
   switch (itemId) {
     case "item_small_herb":

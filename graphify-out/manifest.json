@@ -72,10 +72,10 @@
     "semantic_hash": ""
   },
   "packages/client/src/scenes/BattleScene.ts": {
-    "mtime": 1791548166.3372197,
-    "seen": 1791558675.807623,
-    "ast_hash": "5e39e13e793e92ccd4db53e5d71e2f9f",
-    "semantic_hash": "5e39e13e793e92ccd4db53e5d71e2f9f"
+    "mtime": 1791623599.277356,
+    "seen": 1791623636.441953,
+    "ast_hash": "61c609462c3caeef620a1032eeb56e20",
+    "semantic_hash": ""
   },
   "packages/client/src/scenes/OverworldScene.ts": {
     "mtime": 1791617468.0758977,
@@ -132,9 +132,9 @@
     "semantic_hash": "435646b473265f9283697458788cc71c"
   },
   "packages/client/src/ui/RosterModalController.ts": {
-    "mtime": 1791616398.5928118,
-    "seen": 1791617459.294952,
-    "ast_hash": "5df21f0d50ab3481573393df6295223c",
+    "mtime": 1791623539.1142468,
+    "seen": 1791623636.4419737,
+    "ast_hash": "85557eeb88e24ba030141f5b2de692eb",
     "semantic_hash": ""
   },
   "packages/client/src/ui/ShopModalController.ts": {
@@ -378,16 +378,16 @@
     "semantic_hash": "711fd32ae6e2b66a33e01ce6ae72a746"
   },
   "packages/shared/src/battle/battle-engine.ts": {
-    "mtime": 1791535782.7435286,
-    "seen": 1791558675.8076828,
-    "ast_hash": "a3427aa7bbaec5c179f35195c86677fd",
-    "semantic_hash": "a3427aa7bbaec5c179f35195c86677fd"
+    "mtime": 1791623412.1383533,
+    "seen": 1791623636.4420426,
+    "ast_hash": "546c93edad8b8dd78b79a14a8404dc98",
+    "semantic_hash": ""
   },
   "packages/shared/src/data/skills.ts": {
-    "mtime": 1791527091.5890827,
-    "seen": 1791558675.807684,
-    "ast_hash": "a9f063bf3d2b9981acfe9fb7cab95842",
-    "semantic_hash": "a9f063bf3d2b9981acfe9fb7cab95842"
+    "mtime": 1791623208.1368434,
+    "seen": 1791623636.4420457,
+    "ast_hash": "57b8dc951313bd74e0d72da0d904b5e8",
+    "semantic_hash": ""
   },
   "packages/shared/src/formulas.ts": {
     "mtime": 1791527087.8633175,
@@ -396,21 +396,21 @@
     "semantic_hash": "d54460a2af1cc58258cd88468749adaa"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1791616398.8115249,
-    "seen": 1791617459.2950206,
-    "ast_hash": "4c8d02ef6c8ac2b43118783b80cdb7d0",
+    "mtime": 1791623419.3439002,
+    "seen": 1791623636.442051,
+    "ast_hash": "83dff27e753fcf323e94b06c38d39257",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/inventory-manager.ts": {
-    "mtime": 1791541883.0507417,
-    "seen": 1791558675.8076875,
-    "ast_hash": "b3184937275138a599ab12ffb5dc8040",
-    "semantic_hash": "b3184937275138a599ab12ffb5dc8040"
+    "mtime": 1791623334.207269,
+    "seen": 1791623636.4420524,
+    "ast_hash": "feb9906a2329bba8e6abcac9d7ba18f3",
+    "semantic_hash": ""
   },
   "packages/shared/src/inventory/item-database.ts": {
-    "mtime": 1791618690.3595963,
-    "seen": 1791620382.6806316,
-    "ast_hash": "dfd90247e4a8080995a439d35edd1858",
+    "mtime": 1791623321.3348646,
+    "seen": 1791623636.4420536,
+    "ast_hash": "c5f802fd8bcf72ccff04768dc79d05fa",
     "semantic_hash": ""
   },
   "packages/shared/src/inventory/loot-engine.ts": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types.ts": {
-    "mtime": 1791618499.6413703,
-    "seen": 1791618680.768803,
-    "ast_hash": "2effaeb7a9d62af29a50ebdf26dd4497",
+    "mtime": 1791623394.0111952,
+    "seen": 1791623636.4420688,
+    "ast_hash": "333d9e4d5b839668b0bef854f5e41f68",
     "semantic_hash": ""
   },
   "packages/shared/src/types/chat.ts": {
@@ -468,10 +468,10 @@
     "semantic_hash": "c5d14657d7880b2f5e08de528b89320f"
   },
   "packages/shared/test/battle-engine.test.ts": {
-    "mtime": 1791535839.4068754,
-    "seen": 1791558675.8077004,
-    "ast_hash": "005ee830a3dfb472abe98e81b36886d6",
-    "semantic_hash": "005ee830a3dfb472abe98e81b36886d6"
+    "mtime": 1791623434.6332562,
+    "seen": 1791623636.442072,
+    "ast_hash": "47cd606d85cad340286dd3022b5150d3",
+    "semantic_hash": ""
   },
   "packages/shared/test/battle-formulas.test.ts": {
     "mtime": 1791524185.7383199,
@@ -480,9 +480,9 @@
     "semantic_hash": "53c4c21e88c72d25412a037b7cf7d2b5"
   },
   "packages/shared/test/inventory.test.ts": {
-    "mtime": 1791618690.4435272,
-    "seen": 1791620382.6806815,
-    "ast_hash": "a282671095ac1b97788ad7f05d49347b",
+    "mtime": 1791623353.6845229,
+    "seen": 1791623636.4420764,
+    "ast_hash": "af84d9e540c3b6bdfde26f576e0a8896",
     "semantic_hash": ""
   },
   "packages/shared/test/overworld-engine.test.ts": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1791620287.673045,
-    "seen": 1791620382.6808243,
-    "ast_hash": "5ef0e2a2e2307d1c4f254701d0bff8e6",
+    "mtime": 1791620396.8707373,
+    "seen": 1791623636.4421768,
+    "ast_hash": "0d1f8718afa0900c24f8696f7d438b95",
     "semantic_hash": ""
   },
   "CODING_STANDARDS.md": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "GLOSSARY.md": {
-    "mtime": 1791620279.9253225,
-    "seen": 1791620382.6808286,
-    "ast_hash": "7ca11d90ac2e945af92b8d132148c897",
+    "mtime": 1791620396.9430444,
+    "seen": 1791623636.4421794,
+    "ast_hash": "701571d0dc5c2a0e7f8490d4d2ff70a9",
     "semantic_hash": ""
   },
   "character_poses.md": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "packages/client/test/equipment-ui.test.ts": {
-    "mtime": 1791617468.2507625,
-    "seen": 1791618680.768726,
-    "ast_hash": "6d1f8666a42f98e8f6bf2e44b8abb37f",
+    "mtime": 1791623558.851439,
+    "seen": 1791623636.441988,
+    "ast_hash": "fd96fdabe27bc86770760248455d203b",
     "semantic_hash": ""
   },
   "packages/shared/src/equipment/equipment-manager.ts": {
@@ -1128,15 +1128,87 @@
     "semantic_hash": ""
   },
   "scripts/check-god-files.mjs": {
-    "mtime": 1791620325.7804785,
-    "seen": 1791620382.680698,
-    "ast_hash": "9a9542e20bff6d2fc76c12b75f9cd425",
+    "mtime": 1791620397.0762494,
+    "seen": 1791623636.4420881,
+    "ast_hash": "73c9dad2c39988dfa614aa7299f263b3",
     "semantic_hash": ""
   },
   "docs/adr/0020-anti-god-files-and-graphify-first.md": {
-    "mtime": 1791620334.530039,
-    "seen": 1791620382.6808777,
-    "ast_hash": "5691a4c2380255221253b8d2471712bc",
+    "mtime": 1791620396.9757326,
+    "seen": 1791623636.4422102,
+    "ast_hash": "a7986d64cf21d8695b48cc65f9ace94b",
+    "semantic_hash": ""
+  },
+  "packages/client/src/ui/BattleSkillMenuController.ts": {
+    "mtime": 1791623464.1107893,
+    "seen": 1791623636.4419591,
+    "ast_hash": "b6c5b69e8c5c4df7123b66b7710d8042",
+    "semantic_hash": ""
+  },
+  "packages/client/test/battle-skill-menu.test.ts": {
+    "mtime": 1791623569.1078563,
+    "seen": 1791623636.441983,
+    "ast_hash": "e3388cfa23a21ca9047a3ac1722c2269",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/battle/battle-skill-executor.ts": {
+    "mtime": 1791623401.4087698,
+    "seen": 1791623636.4420445,
+    "ast_hash": "e7858fabecd0b43faace230557ee6a19",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/inventory/skill-tomes.ts": {
+    "mtime": 1791623309.8781767,
+    "seen": 1791623636.4420564,
+    "ast_hash": "6c673f0b26aebbca379106d958ad2b23",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/skills/skill-manager.ts": {
+    "mtime": 1791623219.1672418,
+    "seen": 1791623636.4420671,
+    "ast_hash": "0d226018590b8a440e3648ddd4d49b45",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/skills.test.ts": {
+    "mtime": 1791623233.559147,
+    "seen": 1791623636.442085,
+    "ast_hash": "d7bc9957375998179baf7793c4c1f976",
+    "semantic_hash": ""
+  },
+  ".scratch/skill-system/issues/01-shared-skill-types-and-skill-manager.md": {
+    "mtime": 1791623170.3342843,
+    "seen": 1791623636.4421709,
+    "ast_hash": "cba94be12621f1f2bf08c5989dce82df",
+    "semantic_hash": ""
+  },
+  ".scratch/skill-system/issues/02-skill-tomes-and-inventory-learning.md": {
+    "mtime": 1791623364.6154265,
+    "seen": 1791623636.442172,
+    "ast_hash": "d528fa5b35c94af283940a5dfa61db88",
+    "semantic_hash": ""
+  },
+  ".scratch/skill-system/issues/03-battle-engine-skill-execution.md": {
+    "mtime": 1791623446.5916224,
+    "seen": 1791623636.4421732,
+    "ast_hash": "d2d160e21b5485490bffc3fe5627d94c",
+    "semantic_hash": ""
+  },
+  ".scratch/skill-system/issues/04-battle-scene-skill-menu-controller.md": {
+    "mtime": 1791623627.9256363,
+    "seen": 1791623636.4421742,
+    "ast_hash": "38f475b5593ad53970028a93f513a674",
+    "semantic_hash": ""
+  },
+  ".scratch/skill-system/spec.md": {
+    "mtime": 1791623165.5193691,
+    "seen": 1791623636.4421754,
+    "ast_hash": "fb1babb1eb986b571227e75f52d08820",
+    "semantic_hash": ""
+  },
+  "docs/adr/0021-five-slot-skill-system-and-elemental-affinity.md": {
+    "mtime": 1791623185.879349,
+    "seen": 1791623636.4422114,
+    "ast_hash": "aaad0da7259c0c166acb1a834ab3e988",
     "semantic_hash": ""
   }
 }

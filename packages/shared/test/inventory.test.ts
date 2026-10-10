@@ -214,6 +214,115 @@ describe("Inventory & Consumable System", () => {
       expect(res.inventory.slots[2]).toBeNull(); // Was 1 feather, now 0
     });
 
+    describe("Skill Tomes & Learning", () => {
+      it("teaches a skill to combatant and consumes the tome", () => {
+        let inv = InventoryManager.createInitialInventory();
+        inv = InventoryManager.addItem(
+          inv,
+          "item_tome_healing_spring",
+          1
+        ).inventory;
+        const hero = createMockHero();
+
+        const res = InventoryManager.useItemOnCombatant(
+          inv,
+          "item_tome_healing_spring",
+          hero
+        );
+        expect(res.success).toBe(true);
+        expect(res.message).toContain("Healing Spring");
+        expect(
+          InventoryManager.hasItem(res.inventory, "item_tome_healing_spring", 1)
+        ).toBe(false);
+        expect(
+          res.target.skillSlots?.some(
+            (s) => s.skillId === "skill_healing_spring"
+          )
+        ).toBe(true);
+      });
+
+      it("rejects learning opposing element skill and does not consume tome", () => {
+        let inv = InventoryManager.createInitialInventory();
+        inv = InventoryManager.addItem(
+          inv,
+          "item_tome_rock_throw",
+          1
+        ).inventory;
+        const waterHero = createMockHero(); // Water opposes Earth
+
+        const res = InventoryManager.useItemOnCombatant(
+          inv,
+          "item_tome_rock_throw",
+          waterHero
+        );
+        expect(res.success).toBe(false);
+        expect(res.reason).toContain("opposing Earth energy");
+        expect(
+          InventoryManager.hasItem(res.inventory, "item_tome_rock_throw", 1)
+        ).toBe(true);
+      });
+
+      it("teaches into a specific targetSlotIndex and overwrites non-signature slot", () => {
+        let inv = InventoryManager.createInitialInventory();
+        inv = InventoryManager.addItem(
+          inv,
+          "item_tome_frost_breath",
+          1
+        ).inventory;
+        const hero = createMockHero();
+
+        const res = InventoryManager.useItemOnCombatant(
+          inv,
+          "item_tome_frost_breath",
+          hero,
+          false,
+          2
+        );
+        expect(res.success).toBe(true);
+        expect(res.target.skillSlots?.[2].skillId).toBe("skill_frost_breath");
+      });
+
+      it("rejects overwriting an innate Signature slot and preserves tome", () => {
+        let inv = InventoryManager.createInitialInventory();
+        inv = InventoryManager.addItem(
+          inv,
+          "item_tome_frost_breath",
+          1
+        ).inventory;
+        const hero = createMockHero(); // Slot 0 is hero's signature skill
+
+        const res = InventoryManager.useItemOnCombatant(
+          inv,
+          "item_tome_frost_breath",
+          hero,
+          false,
+          0
+        );
+        expect(res.success).toBe(false);
+        expect(res.reason).toContain("Signature");
+        expect(
+          InventoryManager.hasItem(res.inventory, "item_tome_frost_breath", 1)
+        ).toBe(true);
+      });
+
+      it("rejects learning duplicate skills", () => {
+        let inv = InventoryManager.createInitialInventory();
+        inv = InventoryManager.addItem(inv, "item_tome_aqua_jet", 1).inventory;
+        const hero = createMockHero(); // Water hero already knows aqua_jet in starter slots
+
+        const res = InventoryManager.useItemOnCombatant(
+          inv,
+          "item_tome_aqua_jet",
+          hero
+        );
+        expect(res.success).toBe(false);
+        expect(res.reason).toContain("already knows");
+        expect(
+          InventoryManager.hasItem(res.inventory, "item_tome_aqua_jet", 1)
+        ).toBe(true);
+      });
+    });
+
     it("adds and subtracts gold accurately", () => {
       let inv = InventoryManager.createInitialInventory(); // 200 gold
       inv = InventoryManager.addGold(inv, 500);

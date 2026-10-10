@@ -14,3 +14,7 @@ export * from "./overworld/roaming-beast-manager.js";
 export * from "./auth/types.js";
 export * from "./types/chat.js";
 export * from "./equipment/equipment-manager.js";
+export * from "./skills/skill-manager.js";
+export * from "./inventory/skill-tomes.js";
+export * from "./inventory/shop-manager.js";
+export * from "./battle/battle-skill-executor.js";

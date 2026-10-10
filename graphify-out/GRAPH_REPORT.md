@@ -1,47 +1,48 @@
 # Graph Report - Poktsonline  (2026-10-10)
 
 ## Corpus Check
-- 174 files · ~189,309 words
+- 186 files · ~195,990 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: .css 13, (none) 5, .bat 4)
 
 ## Summary
-- 1216 nodes · 2990 edges · 94 communities (61 shown, 33 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 358 edges (avg confidence: 0.9)
+- 1287 nodes · 3177 edges · 104 communities (71 shown, 33 thin omitted)
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 375 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ba16562a`
+- Built from commit: `99f4d2eb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- hero-api.test.ts
-- CharacterSelectModalController
+- server/src/index.ts
+- OverworldScene.ts
 - BattleScene
 - src/types.ts
 - OverworldEntityManager
 - .setupUIControllers
 - soundManager
-- OverworldNetwork.ts
+- shared/src/index.ts
+- client/package.json
 - client/tsconfig.json
-- OverworldScene
-- overworld-engine.test.ts
-- InventoryModalController.ts
-- ChatMessagePayload
+- .create
+- OverworldEngine
+- PlayerRosterState
+- SkillManager
 - battle-engine.ts
-- OverworldRoom.ts
+- RoamingBeastNetworkState
 - InventoryModalController
 - OverworldRenderer
-- 03: Server Persistence and Colyseus Room Messages
+- BattleNetwork
 - compilerOptions
 - package.json
-- TileCoord
+- MinimapController
 - EquipmentModalController
 - .sendChatMessage
 - Feature Spec: Authentication, Multi-Hero Character Selection, and SQLite Persistence
 - ChatController
-- .create
+- DebugToolbarController
 - Combatant
 - BattleScene.ts
 - MapConfig
@@ -49,21 +50,21 @@
 - BattleRoom
 - shared/package.json
 - test-e2e-smoke.js
-- NPCDefinition
-- OverworldRenderer.ts
+- DialogueModalController
+- getItemDefinition
 - 05: Full System Verification and Smoke Test
 - 3. Architecture & Data Structures
 - OverworldRoom
 - server/package.json
-- 17. Record of Ragnarok Theme Pivot - Isekai Traveler, Gods/Einherjar Roster, and Valkyrie Völundr Mechanics
+- InventoryState
 - server/tsconfig.json
 - shared/tsconfig.json
-- Key Navigation Pointers
+- AGENTS.md
 - Domain Docs
 - Issue tracker: Local Markdown
 - Feature Specification: Inventory & Consumable Item System
 - BattleEngine
-- shared/src/index.ts
+- HeroRepository.ts
 - 2. Detailed Requirements
 - Issue 04: Stat Points Allocation UI for Hero and Beasts
 - Ticket 03: Client Chat UI Controller and Input Guard
@@ -94,34 +95,46 @@
 - 05-full-system-verification-and-smoke-test.md
 - 20. Anti-God Files Architecture and Mandatory Graphify-First Navigation
 - HeroRepository
-- 19. Equipment and Völundr System for Hero and Champions
+- dependencies
 - 18. Mock Boundaries and Testing Conventions
-- Issue 02: Authoritative Battle Room EXP Distribution & Victory Resolution
+- .addExpToCombatant
 - Issue 02: Battle Engine Item Action & BattleRoom Loot Rewards
 - AccountRepository
-- Implementation Decisions
-- Coding Standards
+- PlayerNetworkState
+- BattleSkillMenuController
+- 2. Requirements
 - .movePlayer
-- PortalDefinition
 - 04-client-roaming-beast-renderer-and-interaction
-- isometric.ts
+- 01: Shared Equipment Types and Catalog
 - DatabaseEngine
+- 21. 5-Slot Skill System, Signature Skills, and Elemental Affinity
 - 06: Dedicated Equipment Modal [E] and Unit Switcher
+- Issue 01: Shared Skill Types, Catalog, and SkillManager Deep Module
+- Issue 02: Skill Tomes and Inventory Learning Integration
+- Issue 03: BattleEngine Skill Resolution and Damage Calculation
+- Issue 04: BattleScene Skill Menu Controller and Roster Skill Slots
+- Issue 04: In-Combat Item Action Picker & QA Toolbar Cheats
+- Equipment and Völundr System Specification
+- Issue 01: Inventory Domain Model, InventoryManager & LootEngine
 - .onCreate
+- Requirements
+- 05-dual-encounter-coexistence-and-testing
 
 ## God Nodes (most connected - your core abstractions)
-1. `Combatant` - 71 edges
+1. `Combatant` - 86 edges
 2. `OverworldScene` - 55 edges
-3. `Element` - 48 edges
+3. `Element` - 54 edges
 4. `InventoryState` - 45 edges
 5. `InventoryModalController` - 42 edges
-6. `getItemDefinition()` - 39 edges
-7. `BattleScene` - 38 edges
+6. `BattleScene` - 40 edges
+7. `getItemDefinition()` - 39 edges
 8. `OverworldRoom` - 37 edges
 9. `MapConfig` - 35 edges
-10. `vitest` - 32 edges
+10. `vitest` - 34 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `Description` --references--> `BattleScene`  [INFERRED]
+  .scratch/inventory-system/issues/04-battle-scene-item-hud-and-qa-toolbar.md → packages/client/src/scenes/BattleScene.ts
 - `3.4 Client Battle Scene (`@poktsonline/client/src/scenes/BattleScene.ts`)` --references--> `OverworldScene`  [INFERRED]
   .scratch/level-progression/spec.md → packages/client/src/scenes/OverworldScene.ts
 - `2.3 Client Presentation & Interaction` --references--> `OverworldScene`  [INFERRED]
@@ -130,69 +143,75 @@
   .scratch/level-progression/issues/02-battle-room-exp-rewards.md → packages/server/src/rooms/BattleRoom.ts
 - `1. Seams Tested` --references--> `OverworldRoom`  [INFERRED]
   .scratch/login-system/spec.md → packages/server/src/rooms/OverworldRoom.ts
-- `Solution` --references--> `OverworldRoom`  [INFERRED]
-  .scratch/login-system/spec.md → packages/server/src/rooms/OverworldRoom.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (94 total, 33 thin omitted)
+## Communities (104 total, 33 thin omitted)
 
-### Community 0 - "hero-api.test.ts"
-Cohesion: 0.20
-Nodes (7): AuthenticatedRequest, PasswordUtils, AccountRecord, cors, express, sql.js, supertest
+### Community 0 - "server/src/index.ts"
+Cohesion: 0.14
+Nodes (10): toAccountSummary(), validateCredentials(), AuthenticatedRequest, PasswordUtils, AccountRecord, @colyseus/ws-transport, cors, express (+2 more)
 
-### Community 1 - "CharacterSelectModalController"
-Cohesion: 0.09
-Nodes (8): AuthService, AuthModalCallbacks, AuthModalController, CharacterSelectModalController, AccountSummary, AuthSessionResponse, 02: HTTP Authentication Endpoints and Client Auth Modal, 03: Multi-Hero Character Selection and Creation Interface
+### Community 1 - "OverworldScene.ts"
+Cohesion: 0.06
+Nodes (11): AuthService, HeroService, AuthModalCallbacks, AuthModalController, CharacterSelectCallbacks, CharacterSelectModalController, AccountSummary, AuthSessionResponse (+3 more)
 
 ### Community 2 - "BattleScene"
-Cohesion: 0.07
-Nodes (10): BattleNetwork, BattleScene, BattleEvent, Description, Issue 04: In-Combat Item Action Picker & QA Toolbar Cheats, Tasks, Verification, Issue 03: BattleScene Victory Banner EXP & Level Up Celebrations (+2 more)
+Cohesion: 0.13
+Nodes (6): getValidTargets(), BattleScene, CombatActionType, Issue 03: BattleScene Victory Banner EXP & Level Up Celebrations, Objective, Tasks
 
 ### Community 3 - "src/types.ts"
-Cohesion: 0.06
-Nodes (39): EquipmentModalCallbacks, ShopModalController, EquipmentManager, InventoryManager, getItemDefinition(), ITEM_DATABASE, LootEngine, Attributes (+31 more)
+Cohesion: 0.17
+Nodes (17): EquipmentManager, ITEM_DATABASE, SKILL_TOMES, Attributes, BattleEventType, EntityEquipment, EquipmentSlot, EquipmentStats (+9 more)
 
 ### Community 4 - "OverworldEntityManager"
-Cohesion: 0.18
-Nodes (5): OverworldEntityManager, rectContains(), PlayerNetData, getIsometricDepth(), isoToScreen()
+Cohesion: 0.09
+Nodes (15): 1. Parameters & Primitive Types, 2. Monorepo Architecture & Contracts, 3. Client State & Lifecycle, Coding Standards, OverworldEntityManager, rectContains(), PlayerNetData, getIsometricDepth() (+7 more)
 
-### Community 6 - "soundManager"
+### Community 7 - "shared/src/index.ts"
 Cohesion: 0.05
-Nodes (24): dependencies, colyseus.js, phaser, @poktsonline/shared, devDependencies, happy-dom, vite, @poktsonline/shared (+16 more)
+Nodes (31): ChatMessageCallback, EncounterCallback, EquipmentUpdatedCallback, HeroStateLoadedCallback, PlayerCallback, PlayerRemoveCallback, PortalTransitionCallback, OverworldRendererConfig (+23 more)
 
-### Community 7 - "OverworldNetwork.ts"
-Cohesion: 0.12
-Nodes (9): ChatMessageCallback, EncounterCallback, EquipmentUpdatedCallback, HeroStateLoadedCallback, PlayerCallback, PlayerRemoveCallback, PortalTransitionCallback, MoveMessagePayload (+1 more)
+### Community 8 - "client/package.json"
+Cohesion: 0.10
+Nodes (19): dependencies, colyseus.js, phaser, @poktsonline/shared, devDependencies, happy-dom, vite, @poktsonline/shared (+11 more)
 
 ### Community 9 - "client/tsconfig.json"
 Cohesion: 0.25
 Nodes (7): compilerOptions, noEmit, outDir, rootDir, extends, include, ../../tsconfig.json
 
-### Community 11 - "overworld-engine.test.ts"
-Cohesion: 0.19
-Nodes (4): DEFAULT_OVERWORLD_MAP, MAP_DATABASE, OverworldEngine, ZoneDefinition
+### Community 10 - ".create"
+Cohesion: 0.18
+Nodes (3): OverworldScene, findPath(), NPCDefinition
 
-### Community 13 - "ChatMessagePayload"
-Cohesion: 0.16
-Nodes (8): ChatControllerOptions, ChatChannel, ChatMessagePayload, SendChatMessagePayload, Context, Requirements, Ticket 01: Shared Chat Types and Server Overworld Room Broadcast, 1. Shared Types & Network Schema (`@poktsonline/shared`)
+### Community 11 - "OverworldEngine"
+Cohesion: 0.33
+Nodes (4): OverworldEngine, 04: Colyseus Authoritative Server Rooms, 3. Deep Module: `OverworldEngine` (Shared/Server), Testing Decisions
+
+### Community 12 - "PlayerRosterState"
+Cohesion: 0.18
+Nodes (6): DebugToolbarCallbacks, EquipmentModalCallbacks, RosterModalCallbacks, RosterManager, FormationSlot, PlayerRosterState
+
+### Community 13 - "SkillManager"
+Cohesion: 0.21
+Nodes (9): ELEMENTAL_SKILLS, getSkillDefinition(), SKILL_DATABASE, SkillCategory, SkillDefinition, SkillManager, ADR-0021, CombatantSkillSlot (+1 more)
 
 ### Community 14 - "battle-engine.ts"
-Cohesion: 0.15
-Nodes (10): ELEMENTAL_SKILLS, SkillDefinition, calculateDamage(), canTriggerCombo(), ELEMENT_ADVANTAGES, getElementMultiplier(), BattleOutcome, TeamActionsMap (+2 more)
+Cohesion: 0.19
+Nodes (13): BattleSkillExecutor, ADR-0021, calculateDamage(), canTriggerCombo(), ELEMENT_ADVANTAGES, getElementMultiplier(), BattleEvent, BattleOutcome (+5 more)
 
-### Community 15 - "OverworldRoom.ts"
-Cohesion: 0.14
-Nodes (7): Authoritative Roaming Wild Beasts and Overworld Collision Encounters, OverworldState, RoamingBeastNetworkState, 02-colyseus-roaming-beast-schema-and-ai, Answer, Description, 2.2 Server AI & State Synchronization
+### Community 15 - "RoamingBeastNetworkState"
+Cohesion: 0.19
+Nodes (8): Authoritative Roaming Wild Beasts and Overworld Collision Encounters, OverworldState, RoamingBeastNetworkState, @colyseus/schema, 02-colyseus-roaming-beast-schema-and-ai, Answer, Description, 2.2 Server AI & State Synchronization
 
 ### Community 16 - "InventoryModalController"
 Cohesion: 0.10
 Nodes (16): InventoryModalController, getItemCategory(), getItemCategoryLabel(), ItemCategory, Description, Issue 03: Inventory Modal Controller, HTML Grid & Scoped Styling, Tasks, Verification (+8 more)
 
-### Community 18 - "03: Server Persistence and Colyseus Room Messages"
-Cohesion: 0.40
-Nodes (4): 03: Server Persistence and Colyseus Room Messages, Blocked By: 02-equipment-manager-and-stat-calculation.md, Description, Status: resolved
+### Community 18 - "BattleNetwork"
+Cohesion: 0.14
+Nodes (4): BattleEndCallback, BattleNetwork, TurnResolutionCallback, colyseus.js
 
 ### Community 19 - "compilerOptions"
 Cohesion: 0.12
@@ -202,10 +221,6 @@ Nodes (15): compilerOptions, declaration, declarationMap, esModuleInterop, exper
 Cohesion: 0.08
 Nodes (24): devDependencies, husky, lint-staged, prettier, typescript, vitest, name, private (+16 more)
 
-### Community 21 - "TileCoord"
-Cohesion: 0.16
-Nodes (5): MinimapController, TileCoord, Context, Requirements, Ticket 02: Minimap Radar Canvas and Click Navigation
-
 ### Community 23 - ".sendChatMessage"
 Cohesion: 0.13
 Nodes (13): 1. Minimap Radar Architecture, 2. In-Game Chat System Architecture, Minimap Radar and In-Game Chat System Architecture, 2. Server Authority & Broadcasting (`packages/server`), 3. Minimap Controller (`packages/client/src/ui/MinimapController.ts`), 4. Chat UI Controller (`packages/client/src/ui/ChatModalController.ts`), 5. Overworld Speech Bubbles (`packages/client/src/scenes/OverworldScene.ts`), Acceptance Criteria (+5 more)
@@ -214,21 +229,25 @@ Nodes (13): 1. Minimap Radar Architecture, 2. In-Game Chat System Architecture, 
 Cohesion: 0.14
 Nodes (13): 1. Database & Persistence Architecture, 1. Seams Tested, 2. HTTP REST Auth API (Port 2567), 2. Prior Art, 4. Server Colyseus Room Handshake & State Loading, Feature Spec: Authentication, Multi-Hero Character Selection, and SQLite Persistence, Further Notes, Implementation Decisions (+5 more)
 
+### Community 25 - "ChatController"
+Cohesion: 0.13
+Nodes (8): 17. Record of Ragnarok Theme Pivot - Isekai Traveler, Gods/Einherjar Roster, and Valkyrie Völundr Mechanics, Consequences, Context, Decision, Negative, Positive, Status, ChatController
+
 ### Community 27 - "Combatant"
-Cohesion: 0.10
-Nodes (20): Decision, CharacterModalCallbacks, DebugToolbarCallbacks, InventoryModalCallbacks, RosterModalCallbacks, ShopModalCallbacks, HeroFullSaveState, SyncHeroStatePayload (+12 more)
+Cohesion: 0.11
+Nodes (10): CharacterModalCallbacks, BattleRoomOptions, LevelUpResult, ProgressionEngine, StatAllocationResult, Combatant, TeamFormation, Issue 01: Core Progression Engine, EXP Formulas & Stat Allocation (+2 more)
 
 ### Community 28 - "BattleScene.ts"
-Cohesion: 0.11
-Nodes (9): getValidTargets(), BattleEndCallback, TurnResolutionCallback, BattleRoomOptions, BattleState, CombatAction, CombatActionType, TeamFormation (+1 more)
+Cohesion: 0.14
+Nodes (7): config, game, soundBtn, BattleSkillMenuCallbacks, ADR-0020, ItemType, phaser
 
 ### Community 29 - "MapConfig"
-Cohesion: 0.21
-Nodes (10): findPath(), PathfindingOptions, RoamingBeastManager, Direction, EncounterPoolEntry, MapConfig, RoamingBeastEntity, 01-shared-roaming-beast-types (+2 more)
+Cohesion: 0.20
+Nodes (10): PathfindingOptions, RoamingBeastManager, Direction, EncounterPoolEntry, MapConfig, RoamingBeastEntity, ZoneDefinition, 01-shared-roaming-beast-types (+2 more)
 
 ### Community 30 - "check-god-files.mjs"
-Cohesion: 0.21
-Nodes (10): ADR-0020, CEILINGS, countLines(), __dirname, __filename, getCeilingForFile(), getFiles(), LEGACY_WHITELIST (+2 more)
+Cohesion: 0.19
+Nodes (10): CEILINGS, countLines(), __dirname, __filename, getCeilingForFile(), getFiles(), LEGACY_WHITELIST, main() (+2 more)
 
 ### Community 32 - "shared/package.json"
 Cohesion: 0.20
@@ -238,13 +257,9 @@ Nodes (9): main, name, private, scripts, build, test, type, types (+1 more)
 Cohesion: 0.24
 Nodes (6): checkPortOpen(), http, runE2ESmoke(), send(), { spawn }, WebSocket
 
-### Community 34 - "NPCDefinition"
-Cohesion: 0.29
-Nodes (4): DialogueModalCallbacks, DialogueModalController, NPCDefinition, NPCDialogueOption
-
-### Community 35 - "OverworldRenderer.ts"
-Cohesion: 0.24
-Nodes (4): OverworldRendererConfig, MinimapControllerOptions, MinimapEntities, MinimapEntity
+### Community 34 - "DialogueModalController"
+Cohesion: 0.27
+Nodes (3): DialogueModalCallbacks, DialogueModalController, NPCDialogueOption
 
 ### Community 36 - "05: Full System Verification and Smoke Test"
 Cohesion: 0.33
@@ -255,16 +270,16 @@ Cohesion: 0.13
 Nodes (14): 1. Overview, 2.1 EXP Requirement Curve, 2.2 Enemy EXP Reward Curve, 2.3 Level Up Rewards, 2.4 Stat Point Allocation Effects, 2. Mathematical Domain Formulas, 3.1 Combatant Model Extension (`@poktsonline/shared`), 3.2 Progression Engine (`@poktsonline/shared/src/progression/`) (+6 more)
 
 ### Community 38 - "OverworldRoom"
-Cohesion: 0.21
-Nodes (6): OverworldRoom, PlayerNetworkState, 04: Colyseus Overworld Room Handshake and Full State Persistence, Issue 02: Colyseus Server Multi-Map State and Portal Warp Synchronization, Objective, Requirements
+Cohesion: 0.17
+Nodes (8): OverworldRoom, HeroFullSaveState, 03: Server Persistence and Colyseus Room Messages, Acceptance Criteria, Blocked By: 02-equipment-manager-and-stat-calculation.md, Description, Status: resolved, 04: Colyseus Overworld Room Handshake and Full State Persistence
 
 ### Community 40 - "server/package.json"
-Cohesion: 0.06
-Nodes (32): dependencies, colyseus, @colyseus/schema, @colyseus/ws-transport, cors, express, @poktsonline/shared, sql.js (+24 more)
+Cohesion: 0.12
+Nodes (16): @poktsonline/shared, main, name, private, scripts, build, start, test (+8 more)
 
-### Community 41 - "17. Record of Ragnarok Theme Pivot - Isekai Traveler, Gods/Einherjar Roster, and Valkyrie Völundr Mechanics"
-Cohesion: 0.25
-Nodes (7): 17. Record of Ragnarok Theme Pivot - Isekai Traveler, Gods/Einherjar Roster, and Valkyrie Völundr Mechanics, Consequences, Context, Decision, Negative, Positive, Status
+### Community 41 - "InventoryState"
+Cohesion: 0.31
+Nodes (5): InventoryManager, LootEngine, InventoryState, Tasks, 5. Verification
 
 ### Community 42 - "server/tsconfig.json"
 Cohesion: 0.25
@@ -274,9 +289,9 @@ Nodes (7): compilerOptions, noEmit, outDir, rootDir, extends, include, ../../tsc
 Cohesion: 0.25
 Nodes (7): compilerOptions, noEmit, outDir, rootDir, extends, include, ../../tsconfig.json
 
-### Community 44 - "Key Navigation Pointers"
-Cohesion: 0.22
-Nodes (7): Agent skills, Anti-God-Files Architecture & Deep Module Guardrails (ADR 0020), Codebase Navigation & Knowledge Graph (Mandatory Graphify-First), Domain docs, Issue tracker, Key Navigation Pointers, Triage labels
+### Community 44 - "AGENTS.md"
+Cohesion: 0.25
+Nodes (6): Agent skills, Anti-God-Files Architecture & Deep Module Guardrails (ADR 0020), Codebase Navigation & Knowledge Graph (Mandatory Graphify-First), Domain docs, Issue tracker, Triage labels
 
 ### Community 45 - "Domain Docs"
 Cohesion: 0.33
@@ -291,12 +306,12 @@ Cohesion: 0.33
 Nodes (5): 1. Overview & Goals, 2. Domain Models & Types (@poktsonline/shared), 3. Authoritative Combat Integration (@poktsonline/server), 4. Client UI & Interactions (@poktsonline/client), Feature Specification: Inventory & Consumable Item System
 
 ### Community 48 - "BattleEngine"
-Cohesion: 0.22
-Nodes (9): BattleEngine, 2. Deep Module: `BattleEngine` (Shared/Server), Further Notes, Out of Scope, Problem Statement, Solution, Spec: Poktsonline Core Gameplay and Battle Loop (MVP), Testing Decisions (+1 more)
+Cohesion: 0.17
+Nodes (12): BattleEngine, 1. Architectural Structure, 2. Deep Module: `BattleEngine` (Shared/Server), 4. Room Management (Server), 5. In-Memory Data and Seed Definitions, Further Notes, Implementation Decisions, Out of Scope (+4 more)
 
-### Community 49 - "shared/src/index.ts"
-Cohesion: 0.16
-Nodes (10): HeroService, CharacterSelectCallbacks, CreateHeroPayload, HeroSummary, Element, Earth, Fire, Water (+2 more)
+### Community 49 - "HeroRepository.ts"
+Cohesion: 0.15
+Nodes (5): InventoryModalCallbacks, ShopModalCallbacks, ShopTab, getItemIcon(), 01: Shared Ragnarok Champions Roster and Divine Item Database
 
 ### Community 50 - "2. Detailed Requirements"
 Cohesion: 0.25
@@ -315,92 +330,128 @@ Cohesion: 0.50
 Nodes (3): Context, Requirements, Ticket 04: Overworld Speech Bubbles, System Event Hook, and Verification
 
 ### Community 54 - "RosterModalController"
-Cohesion: 0.12
-Nodes (7): CharacterModalController, RosterModalController, 04: Client UI Paperdoll and Modals Integration, Acceptance Criteria, Blocked By: 03-server-persistence-and-room-messages.md, Description, Status: closed
-
-### Community 55 - "BattleState.ts"
-Cohesion: 0.33
-Nodes (3): BattleRoomState, CombatantNetworkState, @colyseus/schema
+Cohesion: 0.10
+Nodes (12): 19. Equipment and Völundr System for Hero and Champions, Consequences, Context, Decision, Status, CharacterModalController, RosterModalController, 04: Client UI Paperdoll and Modals Integration (+4 more)
 
 ### Community 78 - "20. Anti-God Files Architecture and Mandatory Graphify-First Navigation"
 Cohesion: 0.33
 Nodes (5): 20. Anti-God Files Architecture and Mandatory Graphify-First Navigation, Consequences, Context, Decision, Status
 
 ### Community 79 - "HeroRepository"
-Cohesion: 0.25
-Nodes (5): createHeroRouter(), HeroRepository, createServer(), Acceptance Criteria, 02: Valhalla World Maps, Bifrost Portals, and Server Spawning
+Cohesion: 0.33
+Nodes (4): createHeroRouter(), HeroRepository, createServer(), 02: Valhalla World Maps, Bifrost Portals, and Server Spawning
 
-### Community 80 - "19. Equipment and Völundr System for Hero and Champions"
-Cohesion: 0.40
-Nodes (4): 19. Equipment and Völundr System for Hero and Champions, Consequences, Context, Status
+### Community 80 - "dependencies"
+Cohesion: 0.12
+Nodes (15): dependencies, colyseus, @colyseus/schema, @colyseus/ws-transport, cors, express, @poktsonline/shared, sql.js (+7 more)
 
 ### Community 81 - "18. Mock Boundaries and Testing Conventions"
 Cohesion: 0.33
 Nodes (5): 18. Mock Boundaries and Testing Conventions, Consequences, Context, Decision, Status
 
-### Community 82 - "Issue 02: Authoritative Battle Room EXP Distribution & Victory Resolution"
-Cohesion: 0.50
+### Community 82 - ".addExpToCombatant"
+Cohesion: 0.40
 Nodes (3): Issue 02: Authoritative Battle Room EXP Distribution & Victory Resolution, Objective, Tasks
 
 ### Community 83 - "Issue 02: Battle Engine Item Action & BattleRoom Loot Rewards"
 Cohesion: 0.40
 Nodes (4): Description, Issue 02: Battle Engine Item Action & BattleRoom Loot Rewards, Tasks, Verification
 
-### Community 84 - "AccountRepository"
-Cohesion: 0.30
-Nodes (4): createAuthRouter(), toAccountSummary(), validateCredentials(), AccountRepository
+### Community 85 - "PlayerNetworkState"
+Cohesion: 0.18
+Nodes (9): PlayerNetworkState, Issue 02: Colyseus Server Multi-Map State and Portal Warp Synchronization, Objective, Requirements, 3. Server Multiplayer Synchronization (`@poktsonline/server`), 4. Client Multi-Map Rendering & Visuals (`@poktsonline/client`), Overview, Requirements (+1 more)
 
-### Community 85 - "Implementation Decisions"
-Cohesion: 0.40
-Nodes (5): 1. Architectural Structure, 3. Deep Module: `OverworldEngine` (Shared/Server), 4. Room Management (Server), 5. In-Memory Data and Seed Definitions, Implementation Decisions
+### Community 86 - "BattleSkillMenuController"
+Cohesion: 0.20
+Nodes (6): BattleSkillMenuController, 1. Overview, 2.2 Battle Engine Integration (`packages/shared/src/battle/battle-engine.ts`), 2.3 Client UI Presentation (`@poktsonline/client`), 2. Detailed Architecture, Specification: 5-Slot Skill System, Signature Skills, and Elemental Affinity
 
-### Community 86 - "Coding Standards"
-Cohesion: 0.50
-Nodes (3): 2. Monorepo Architecture & Contracts, 3. Client State & Lifecycle, Coding Standards
+### Community 87 - "2. Requirements"
+Cohesion: 0.29
+Nodes (6): 1. Overview, 2.1 Shared Data & Types, 2.3 Client Presentation & Interaction, 2.4 Dual Encounter Coexistence, 2. Requirements, Specification: Roaming Wild Beasts and Dual Encounter System
 
-### Community 87 - ".movePlayer"
-Cohesion: 0.13
-Nodes (11): PlayerOverworldState, 03: Overworld Navigation and Encounter Engine, 05-dual-encounter-coexistence-and-testing, Answer, Description, 1. Overview, 2.1 Shared Data & Types, 2.3 Client Presentation & Interaction (+3 more)
-
-### Community 88 - "PortalDefinition"
-Cohesion: 0.16
-Nodes (13): OverworldEntityManagerConfig, MovementResult, PortalDefinition, Issue 01: Shared Portal Types, Map Database, and Overworld Engine Detection, Objective, Requirements, 1. Domain Types & Map Configurations (`@poktsonline/shared`), 2. Overworld Engine Portal Resolution (`@poktsonline/shared`) (+5 more)
+### Community 88 - ".movePlayer"
+Cohesion: 0.19
+Nodes (10): OverworldEntityManagerConfig, MovementResult, PlayerOverworldState, PortalDefinition, Issue 01: Shared Portal Types, Map Database, and Overworld Engine Detection, Objective, Requirements, 1. Domain Types & Map Configurations (`@poktsonline/shared`) (+2 more)
 
 ### Community 89 - "04-client-roaming-beast-renderer-and-interaction"
 Cohesion: 0.50
 Nodes (3): 04-client-roaming-beast-renderer-and-interaction, Answer, Description
 
-### Community 90 - "isometric.ts"
-Cohesion: 0.23
-Nodes (6): 1. Parameters & Primitive Types, IsometricConfig, IsometricGrid, IsoTileCoord, ScreenCoord, screenToIso()
+### Community 90 - "01: Shared Equipment Types and Catalog"
+Cohesion: 0.16
+Nodes (9): 01: Shared Equipment Types and Catalog, Blocked By: None, Description, Status: resolved, 02: Equipment Manager and Stat Calculation, Acceptance Criteria, Blocked By: 01-shared-equipment-types-and-catalog.md, Description (+1 more)
+
+### Community 91 - "DatabaseEngine"
+Cohesion: 0.24
+Nodes (3): Key Navigation Pointers, IsometricConfig, DatabaseEngine
+
+### Community 92 - "21. 5-Slot Skill System, Signature Skills, and Elemental Affinity"
+Cohesion: 0.33
+Nodes (5): 21. 5-Slot Skill System, Signature Skills, and Elemental Affinity, Consequences, Context, Decision, Status
 
 ### Community 93 - "06: Dedicated Equipment Modal [E] and Unit Switcher"
 Cohesion: 0.33
 Nodes (5): 06: Dedicated Equipment Modal [E] and Unit Switcher, Acceptance Criteria, Blocked By: 04-client-ui-paperdoll-and-modals.md, Description, Status: closed
 
+### Community 94 - "Issue 01: Shared Skill Types, Catalog, and SkillManager Deep Module"
+Cohesion: 0.33
+Nodes (5): Blocked By: None, Description, Issue 01: Shared Skill Types, Catalog, and SkillManager Deep Module, Status: open, Tasks
+
+### Community 95 - "Issue 02: Skill Tomes and Inventory Learning Integration"
+Cohesion: 0.33
+Nodes (5): Blocked By: 01-shared-skill-types-and-skill-manager.md, Description, Issue 02: Skill Tomes and Inventory Learning Integration, Status: closed, Tasks
+
+### Community 96 - "Issue 03: BattleEngine Skill Resolution and Damage Calculation"
+Cohesion: 0.33
+Nodes (5): Blocked By: 01-shared-skill-types-and-skill-manager.md, Description, Issue 03: BattleEngine Skill Resolution and Damage Calculation, Status: closed, Tasks
+
+### Community 97 - "Issue 04: BattleScene Skill Menu Controller and Roster Skill Slots"
+Cohesion: 0.33
+Nodes (5): Blocked By: 03-battle-engine-skill-execution.md, Description, Issue 04: BattleScene Skill Menu Controller and Roster Skill Slots, Status: closed, Tasks
+
+### Community 98 - "Issue 04: In-Combat Item Action Picker & QA Toolbar Cheats"
+Cohesion: 0.40
+Nodes (4): Description, Issue 04: In-Combat Item Action Picker & QA Toolbar Cheats, Tasks, Verification
+
+### Community 99 - "Equipment and Völundr System Specification"
+Cohesion: 0.50
+Nodes (3): Architecture & Data Flow, Equipment and Völundr System Specification, Objective
+
+### Community 100 - "Issue 01: Inventory Domain Model, InventoryManager & LootEngine"
+Cohesion: 0.50
+Nodes (3): Description, Issue 01: Inventory Domain Model, InventoryManager & LootEngine, Verification
+
 ### Community 101 - ".onCreate"
-Cohesion: 0.24
+Cohesion: 0.28
 Nodes (5): determineDirection(), getMapConfig(), 03-server-encounter-trigger-and-respawn, Answer, Description
 
+### Community 102 - "Requirements"
+Cohesion: 0.50
+Nodes (3): Context, Requirements, Ticket 02: Minimap Radar Canvas and Click Navigation
+
+### Community 103 - "05-dual-encounter-coexistence-and-testing"
+Cohesion: 0.50
+Nodes (3): 05-dual-encounter-coexistence-and-testing, Answer, Description
+
 ## Knowledge Gaps
-- **22 isolated node(s):** `husky`, `lint-staged`, `prettier`, `typescript`, `@poktsonline/shared` (+17 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 416 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **25 isolated node(s):** `husky`, `lint-staged`, `prettier`, `typescript`, `@poktsonline/shared` (+20 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 445 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `OverworldRoom` connect `OverworldRoom` to `src/types.ts`, `.onCreate`, `PortalDefinition`, `Key Navigation Pointers`, `ChatMessagePayload`, `OverworldRoom.ts`, `HeroRepository`, `18. Mock Boundaries and Testing Conventions`, `shared/src/index.ts`, `03: Server Persistence and Colyseus Room Messages`, `AccountRepository`, `Implementation Decisions`, `2. Detailed Requirements`, `.sendChatMessage`, `Feature Spec: Authentication, Multi-Hero Character Selection, and SQLite Persistence`, `Combatant`, `MapConfig`, `BattleRoom`?**
-  _High betweenness centrality (0.096) - this node is a cross-community bridge._
-- **Are the 3 inferred relationships involving `Combatant` (e.g. with `Tasks` and `3.1 Combatant Model Extension (`@poktsonline/shared`)`) actually correct?**
-  _`Combatant` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Combatant` connect `Combatant` to `OverworldScene.ts`, `BattleScene`, `src/types.ts`, `.setupUIControllers`, `shared/src/index.ts`, `PlayerRosterState`, `SkillManager`, `battle-engine.ts`, `InventoryModalController`, `EquipmentModalController`, `DebugToolbarController`, `BattleScene.ts`, `MapConfig`, `3. Architecture & Data Structures`, `OverworldRoom`, `InventoryState`, `HeroRepository.ts`, `RosterModalController`, `BattleState.ts`, `HeroRepository`, `.addExpToCombatant`, `Issue 01: Shared Skill Types, Catalog, and SkillManager Deep Module`, `.onCreate`?**
+  _High betweenness centrality (0.092) - this node is a cross-community bridge._
+- **Are the 4 inferred relationships involving `Combatant` (e.g. with `Tasks` and `3.1 Combatant Model Extension (`@poktsonline/shared`)`) actually correct?**
+  _`Combatant` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `husky`, `lint-staged`, `prettier` to the rest of the system?**
-  _22 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `CharacterSelectModalController` be split into smaller, more focused modules?**
-  _Cohesion score 0.09397163120567376 - nodes in this community are weakly interconnected._
-- **Why does `Combatant` connect `Combatant` to `BattleScene`, `src/types.ts`, `.onCreate`, `3. Architecture & Data Structures`, `OverworldScene.ts`, `overworld-engine.test.ts`, `InventoryModalController.ts`, `battle-engine.ts`, `HeroRepository`, `InventoryModalController`, `shared/src/index.ts`, `BattleState.ts`, `RosterModalController`, `EquipmentModalController`, `.create`, `BattleScene.ts`, `MapConfig`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+  _25 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `server/src/index.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.1396011396011396 - nodes in this community are weakly interconnected._
+- **Why does `OverworldScene` connect `.create` to `OverworldScene.ts`, `BattleScene`, `OverworldEntityManager`, `.setupUIControllers`, `PlayerRosterState`, `InventoryModalController`, `OverworldRenderer`, `MinimapController`, `EquipmentModalController`, `ChatController`, `DebugToolbarController`, `BattleScene.ts`, `MapConfig`, `DialogueModalController`, `getItemDefinition`, `3. Architecture & Data Structures`, `InventoryState`, `RosterModalController`, `2. Requirements`, `04-client-roaming-beast-renderer-and-interaction`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
 - **Are the 7 inferred relationships involving `OverworldScene` (e.g. with `Objective` and `Tasks`) actually correct?**
   _`OverworldScene` has 7 INFERRED edges - model-reasoned connections that need verification._
-- **Should `BattleScene` be split into smaller, more focused modules?**
-  _Cohesion score 0.07428571428571429 - nodes in this community are weakly interconnected._
+- **Should `OverworldScene.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.06018018018018018 - nodes in this community are weakly interconnected._
